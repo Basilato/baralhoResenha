@@ -11,6 +11,8 @@ export type CardDefinition = {
   deckType: 'main' | 'ghost'
   copies: number
   targetRule: string
+  /** Código do efeito (handler no banco), usado para montar o diálogo. */
+  effectCode: string
   isReaction: boolean
   /** Exige descartar outra carta da mão como custo. */
   discardCost: boolean

@@ -858,13 +858,13 @@ export const supabase = createClient<Database>(
 
 ## Fase 7 — Sabotagem, caos, recuperação e reviravoltas (P0)
 
-- [ ] Cinco sabotagens: roubo aleatório, inspeção, marca, troca, descarte.
-- [ ] Quatro cartas de caos, com escolhas simultâneas privadas.
-- [ ] Cinco recuperações, respeitando teto de vida e custo.
-- [ ] Troca total de mãos (`Lucboy & Laragirl`).
-- [ ] Retaliação (`Última Palavra`) e contabilização de eliminação.
-- [ ] Marcas/efeitos temporários, expiração e consumo único.
-- [ ] Testar mãos vazias, múltiplos efeitos, cancelação de sabotagem.
+- [x] Cinco sabotagens: roubo aleatório, inspeção, marca, troca, descarte.
+- [x] Quatro cartas de caos, com escolhas simultâneas privadas.
+- [x] Cinco recuperações, respeitando teto de vida e custo.
+- [x] Troca total de mãos (`Lucboy & Laragirl`).
+- [x] Retaliação (`Última Palavra`) e contabilização de eliminação.
+- [x] Marcas/efeitos temporários, expiração e consumo único.
+- [x] Testar mãos vazias, múltiplos efeitos, cancelação de sabotagem.
 
 **Entrega:** todos os **30 modelos principais** jogáveis.
 

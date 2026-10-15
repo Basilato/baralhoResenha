@@ -146,6 +146,7 @@ function Table({
               isMe={player.id === game.myPlayerId}
               isActive={game.status === 'playing' && player.id === game.activePlayerId}
               isLeader={player.id === game.leaderPlayerId}
+              isMarked={game.markedPlayerIds.includes(player.id)}
               online={onlineUserIds.has(player.userId)}
             />
           ))}
@@ -376,12 +377,14 @@ function PlayerPanel({
   isMe,
   isActive,
   isLeader,
+  isMarked,
   online,
 }: {
   player: Participant
   isMe: boolean
   isActive: boolean
   isLeader: boolean
+  isMarked: boolean
   online: boolean
 }) {
   return (
@@ -414,13 +417,18 @@ function PlayerPanel({
           <span className="sr-only">cartas na mão</span>
         </span>
       </div>
-      {(isActive || isLeader) && (
+      {(isActive || isLeader || isMarked) && (
         <div className="flex flex-wrap gap-1">
           {isActive && <Badge className="h-5">Jogando</Badge>}
           {isLeader && (
             <Badge variant="outline" className="h-5 gap-1 border-cat-attack text-cat-attack">
               <FlameIcon className="size-3" aria-hidden />
               Mais Odiado
+            </Badge>
+          )}
+          {isMarked && (
+            <Badge variant="outline" className="h-5 border-cat-sabotage text-cat-sabotage">
+              Marcado +2
             </Badge>
           )}
         </div>
@@ -554,10 +562,16 @@ function PendingBanner({
     id === game.myPlayerId ? 'você' : (players.get(id)?.displayName ?? 'alguém')
   const waiting = pending.responses.filter((response) => !response.responded)
   const card = catalog.get(pending.cardCode)?.name ?? pending.cardCode
+  const targetRoles = ['target', 'sabotage_target', 'chaos_target']
   const targets = pending.responses
-    .filter((response) => response.role === 'target')
-    .map((response) => `${name(response.playerId)} (${response.baseDamage})`)
+    .filter((response) => targetRoles.includes(response.role))
+    .map((response) =>
+      response.role === 'sabotage_target'
+        ? name(response.playerId)
+        : `${name(response.playerId)} (${response.baseDamage})`,
+    )
     .join(' e ')
+  const choosing = pending.stage === 'choice'
 
   return (
     <div
@@ -566,11 +580,13 @@ function PendingBanner({
       data-testid="pending-banner"
     >
       <p className="font-medium">
-        {name(pending.actorPlayerId)} jogou {card} em {targets}.
+        {name(pending.actorPlayerId)} jogou {card}
+        {targets ? ` em ${targets}` : ''}.
       </p>
       {waiting.length > 0 && (
         <p className="text-muted-foreground">
-          Aguardando resposta de {waiting.map((response) => name(response.playerId)).join(', ')}…
+          {choosing ? 'Aguardando escolha de ' : 'Aguardando resposta de '}
+          {waiting.map((response) => name(response.playerId)).join(', ')}…
         </p>
       )}
     </div>

@@ -4,7 +4,7 @@ Jogo de cartas multiplayer online e privado, feito com os memes, fotos, apelidos
 
 A ideia é ser fácil de pegar: **comprar cartas, usar até duas ações por turno, atacar e defender, sobreviver e vencer**. Quem é derrotado vira **fantasma**, continua atrapalhando a partida e pode ressuscitar uma única vez.
 
-> **Status:** Fases 1 a 6 prontas: login privado, salas em tempo real, catálogo e baralhos, motor de turnos e combate (7 ataques, defesas, Reverso do Reverso, Mais Odiado, golpe fatal com Ressuscitou o Tio Paulo e Última Palavra). Próximo passo: sabotagem, caos, recuperação e reviravoltas (Fase 7). A especificação completa está em [BARALHO_DA_RESENHA_PLANO_TECNICO.md](BARALHO_DA_RESENHA_PLANO_TECNICO.md).
+> **Status:** Fases 1 a 7 prontas: login privado, salas em tempo real, catálogo e baralhos, motor de turnos, combate e os 30 modelos do baralho principal jogáveis (sabotagens, caos com escolhas simultâneas, recuperação e troca de mãos). Próximo passo: fantasmas, Ressaca e fim de partida (Fase 8). A especificação completa está em [BARALHO_DA_RESENHA_PLANO_TECNICO.md](BARALHO_DA_RESENHA_PLANO_TECNICO.md).
 
 ## O que o MVP vai ter
 
@@ -122,6 +122,12 @@ O Supabase Auth só aceita senha junto com e-mail ou telefone. Por isso, cada us
 - `PLAY_CARD` valida carta, alvos e custo, gasta a ação e abre uma janela de reação com o dano já fixado (inclui o +1 do Mais Odiado).
 - Cada alvo responde com `RESPOND`, mesmo fora da vez: aceitar ou usar uma reação permitida. A lista de reações válidas vem do banco e só aparece para a própria pessoa.
 - Com todas as respostas, o banco aplica o dano em lote, transforma os mortos em fantasmas, conta as eliminações e trata Última Palavra, o dano próprio da A Braba e a morte no próprio turno.
+
+### Sabotagem, caos e escolhas
+
+- Sabotagens abrem uma janela em que só o Evento Raro serve. O sorteio de cartas acontece depois da defesa.
+- Escolhas de cartas (Terapia de Boteco, Plano Dental Negado, Tio Paulo, Bucetada, O Acre Existe!) são privadas e simultâneas: nada muda até todos escolherem. Na Terapia de Boteco, a mão do alvo aparece só para quem jogou.
+- A marca do Tem Alguém Seguindo fica em `status_effects`: +2 no próximo ataque, consumida no anúncio e expirando no fim da rodada seguinte.
 
 ### Estrutura
 

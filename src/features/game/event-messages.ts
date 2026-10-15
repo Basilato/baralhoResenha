@@ -46,12 +46,46 @@ export function describeEvent(
     }
     case 'card_played': {
       const targets = Array.isArray(p.targets)
-        ? (p.targets as { playerId: string; damage: number }[])
+        ? (p.targets as { playerId: string; damage?: number }[])
         : []
-      const who = targets.map((target) => `${name(target.playerId)} (${target.damage})`).join(' e ')
-      const cost = p.costCode ? `, descartando ${cardName(p.costCode)},` : ''
-      return `${actor} jogou ${cardName(p.cardCode)}${cost} em ${who}.`
+      const cost = p.costCode ? `, descartando ${cardName(p.costCode)}` : ''
+      if (targets.length === 0) return `${actor} jogou ${cardName(p.cardCode)}${cost}.`
+      const who = targets
+        .map((target) =>
+          target.damage === undefined
+            ? name(target.playerId)
+            : `${name(target.playerId)} (${target.damage})`,
+        )
+        .join(' e ')
+      return `${actor} jogou ${cardName(p.cardCode)}${cost ? `${cost},` : ''} em ${who}.`
     }
+    case 'sabotage_blocked':
+      return `${actor} cancelou ${cardName(p.cardCode)} com Evento Raro.`
+    case 'card_stolen':
+      return Number(p.count) > 0
+        ? `${actor} roubou 1 carta de ${name(p.fromPlayerId)}.`
+        : `${name(p.fromPlayerId)} não tinha cartas para roubar.`
+    case 'target_marked':
+      return `${name(p.targetPlayerId)} foi marcado: o próximo ataque contra ele causa +2 (vale até a rodada ${p.untilRound}).`
+    case 'card_swapped':
+      return `${actor} trocou 1 carta com ${name(p.targetPlayerId)}.`
+    case 'cards_discarded': {
+      const codes = Array.isArray(p.codes) ? (p.codes as string[]) : []
+      return `${actor} descartou ${codes.map(cardName).join(', ') || 'nada'}.`
+    }
+    case 'cards_passed':
+      return `${p.count} cartas foram passadas para a direita.`
+    case 'chaos_no_effect':
+      return `${cardName(p.cardCode)} não teve efeito: faltou gente com cartas.`
+    case 'choice_made':
+      return `${actor} escolheu.`
+    case 'healed': {
+      const drew = Number(p.drew ?? 0)
+      const draw = drew > 0 ? ` e comprou ${drew === 1 ? '1 carta' : `${drew} cartas`}` : ''
+      return `${actor} recuperou PV (ficou com ${p.hp})${draw}.`
+    }
+    case 'hands_swapped':
+      return `${actor} trocou a mão inteira com ${name(p.targetPlayerId)}.`
     case 'reaction_played':
       return p.role === 'counter'
         ? `${actor} se defendeu do ataque devolvido com ${cardName(p.cardCode)}.`

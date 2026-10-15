@@ -83,3 +83,7 @@ export function giveCard(gameId: string, username: string, code: string) {
 export function setHp(gameId: string, username: string, hp: number) {
   sql(`update app_private.game_players set hp = ${hp} where id = ${playerOf(gameId, username)};`)
 }
+
+export function resetActions(gameId: string) {
+  sql(`update app_private.games set actions_used = 0 where id = '${gameId}';`)
+}

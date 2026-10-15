@@ -25,14 +25,23 @@ export type HandCard = { instanceId: string; code: string }
 
 export type GamePhase = 'turn_main' | 'turn_ghost' | 'awaiting_reactions'
 
-export type ResponseRole = 'target' | 'counter' | 'self'
+export type ReactionRole = 'target' | 'counter' | 'self' | 'sabotage_target' | 'chaos_target'
+export type ChoiceRole = 'actor_pick' | 'target_discard' | 'pass_pick' | 'discard_pick'
+export type ResponseRole = ReactionRole | ChoiceRole
+
+export const CHOICE_ROLES: readonly ResponseRole[] = [
+  'actor_pick',
+  'target_discard',
+  'pass_pick',
+  'discard_pick',
+]
 
 /** Jogada esperando respostas (pública: não diz o que cada um tem na mão). */
 export type PendingAction = {
   id: string
   actorPlayerId: string
   cardCode: string
-  stage: 'defense' | 'counter' | 'self_fatal'
+  stage: 'defense' | 'counter' | 'self_fatal' | 'choice'
   responses: {
     playerId: string
     role: ResponseRole
@@ -49,7 +58,12 @@ export type MyDecision = {
   baseDamage: number
   actorPlayerId: string
   cardCode: string
+  targetPlayerId: string | null
+  /** Reações: cartas da minha mão que servem. */
   eligibleCardIds: string[]
+  /** Escolhas: quantas cartas escolher e de onde (na Terapia de Boteco, a mão do alvo). */
+  choiceCount: number | null
+  options: HandCard[]
 }
 
 export type GameResult = {
@@ -96,6 +110,7 @@ export type GameView = {
   events: GameEvent[]
   pendingAction: PendingAction | null
   myDecision: MyDecision | null
+  markedPlayerIds: string[]
 }
 
 export type GameCommand =
@@ -105,12 +120,14 @@ export type GameCommand =
       cardInstanceId: string
       targetPlayerIds: string[]
       discardCostCardId?: string | null
+      ownSwapCardId?: string | null
     }
   | {
       type: 'RESPOND'
       pendingActionId: string
-      response: 'PASS' | 'REACT'
+      response: 'PASS' | 'REACT' | 'CHOOSE'
       cardInstanceId?: string
+      selectedCardIds?: string[]
     }
 
 export async function getGameView(gameId: string): Promise<GameView> {

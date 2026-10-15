@@ -11,6 +11,7 @@ const card: CardDefinition = {
   deckType: 'main',
   copies: 8,
   targetRule: 'attack_reaction',
+  effectCode: 'block_attack',
   isReaction: true,
   discardCost: false,
   rulesText: 'Reação: anula o dano de 1 ataque contra você.',

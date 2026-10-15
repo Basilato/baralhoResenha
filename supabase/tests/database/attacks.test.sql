@@ -305,8 +305,8 @@ select pg_temp.set('def01', pg_temp.give(1, 'DEF-01')::text);
 select throws_ok(format('select pg_temp.play(1, %L, array[2])', pg_temp.v('def01')),
   'P0001', 'REACTION_ONLY', 'reação não é jogada como ação');
 select pg_temp.set('rec', pg_temp.give(1, 'REC-01')::text);
-select throws_ok(format('select pg_temp.play(1, %L, array[]::int[])', pg_temp.v('rec')),
-  'P0001', 'NOT_AVAILABLE_YET', 'categorias da Fase 7 ainda não são jogáveis');
+select throws_ok(format('select pg_temp.play(1, %L, array[2])', pg_temp.v('rec')),
+  'P0001', 'INVALID_TARGET', 'recuperação não tem alvo');
 update app_private.games set actions_used = 2 where id = pg_temp.g();
 select pg_temp.set('atk', pg_temp.give(1, 'ATK-01')::text);
 select throws_ok(format('select pg_temp.play(1, %L, array[2])', pg_temp.v('atk')),
