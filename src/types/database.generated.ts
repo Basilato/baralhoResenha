@@ -84,6 +84,9 @@ export type Database = {
                            },
 "start_game":
 { Args: { "p_expected_version": number,"p_game_id": string }; Returns: undefined
+                           },
+"submit_game_command":
+{ Args: { "p_command": Json,"p_expected_version": number,"p_game_id": string,"p_request_id": string }; Returns: Json
                            }
           }
           Enums: {

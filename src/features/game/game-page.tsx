@@ -1,13 +1,24 @@
 import { useState } from 'react'
-import { Navigate, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useNavigate, useParams } from 'react-router'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { CrownIcon, GhostIcon, LayersIcon, WifiOffIcon, XCircleIcon } from 'lucide-react'
+import {
+  CheckIcon,
+  CrownIcon,
+  FlameIcon,
+  GhostIcon,
+  LayersIcon,
+  Loader2Icon,
+  TrophyIcon,
+  WifiOffIcon,
+  XCircleIcon,
+} from 'lucide-react'
 import { ConfirmAction } from '@/components/confirm-action'
 import { FullPageSpinner } from '@/components/full-page-spinner'
 import { PlayerAvatar } from '@/components/player-avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useAuth } from '@/features/auth/auth-context'
 import { useCardCatalog, type CardCatalog, type CardDefinition } from '@/features/cards/catalog'
@@ -16,10 +27,17 @@ import { CardDetailsDialog } from '@/features/cards/card-details-dialog'
 import { closeRoom } from '@/features/rooms/rooms-service'
 import { RoomUnavailable } from '@/features/rooms/room-unavailable'
 import { useGameChannel } from '@/features/rooms/use-room'
-import { HAND_LIMIT } from '@/lib/constants'
-import { toFriendlyMessage } from '@/lib/errors'
+import { isAppError, toFriendlyMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
-import { useGameView, type GameView, type Participant } from './game-service'
+import { describeEvent } from './event-messages'
+import {
+  newRequestId,
+  useGameCommand,
+  useGameView,
+  type GameView,
+  type HandCard,
+  type Participant,
+} from './game-service'
 
 export function GamePage() {
   const { gameId } = useParams<{ gameId: string }>()
@@ -31,7 +49,7 @@ export function GamePage() {
   if (!game.data) return <RoomUnavailable error={game.error} />
   if (catalog.isError) return <RoomUnavailable error={catalog.error} />
   if (game.data.status === 'lobby') return <Navigate to={`/sala/${game.data.gameId}`} replace />
-  if (game.data.status !== 'playing') return <RoomUnavailable closed />
+  if (game.data.status === 'cancelled') return <RoomUnavailable closed />
 
   return (
     <Table
@@ -57,7 +75,12 @@ function Table({
   const { user } = useAuth()
   const navigate = useNavigate()
   const [selected, setSelected] = useState<CardDefinition | null>(null)
+
+  const players = new Map(game.participants.map((player) => [player.id, player]))
+  const me = game.myPlayerId ? players.get(game.myPlayerId) : undefined
+  const active = game.activePlayerId ? players.get(game.activePlayerId) : undefined
   const isHost = game.hostUserId === user?.id
+  const isMyTurn = game.status === 'playing' && !!me && me.id === game.activePlayerId
   const discardTop = game.mainDiscardTop ? catalog.get(game.mainDiscardTop) : undefined
 
   const close = useMutation({
@@ -70,15 +93,17 @@ function Table({
   })
 
   return (
-    <div className="flex min-w-0 flex-col gap-6">
+    <div className={cn('flex min-w-0 flex-col gap-6', isMyTurn && 'max-sm:pb-20')}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-2xl font-black tracking-tight">
             Rodada {game.round} de {game.maxRounds}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Turnos e jogadas chegam na próxima fase. Toque numa carta para ver os detalhes.
-          </p>
+          {game.status === 'playing' && (
+            <p className="text-sm text-muted-foreground" data-testid="turn-status">
+              {isMyTurn ? 'Sua vez!' : `Vez de ${active?.displayName ?? '…'}`}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {offline && (
@@ -87,7 +112,7 @@ function Table({
               Reconectando…
             </Badge>
           )}
-          {isHost && (
+          {isHost && game.status === 'playing' && (
             <ConfirmAction
               trigger={
                 <Button variant="ghost" size="sm" className="text-destructive">
@@ -105,6 +130,8 @@ function Table({
         </div>
       </div>
 
+      {game.status === 'finished' && game.result && <ResultPanel game={game} players={players} />}
+
       <section aria-label="Jogadores" className="min-w-0">
         <ul className="relative -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4">
           {game.participants.map((player) => (
@@ -112,6 +139,8 @@ function Table({
               key={player.id}
               player={player}
               isMe={player.id === game.myPlayerId}
+              isActive={game.status === 'playing' && player.id === game.activePlayerId}
+              isLeader={player.id === game.leaderPlayerId}
               online={onlineUserIds.has(player.userId)}
             />
           ))}
@@ -145,62 +174,198 @@ function Table({
         </Pile>
       </section>
 
-      <section aria-labelledby="my-hand-title" className="flex min-w-0 flex-col gap-2">
-        <h2 id="my-hand-title" className="flex items-center gap-2 font-heading text-lg font-bold">
-          Sua mão
-          <Badge variant="secondary" data-testid="my-hand-count">
-            {game.myHand.length}/{HAND_LIMIT}
-          </Badge>
-        </h2>
-        {game.myHand.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Sem cartas na mão.</p>
-        ) : (
-          <ul
-            className="relative -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pt-1 pb-3"
-            data-testid="my-hand"
-          >
-            {game.myHand.map((handCard) => {
-              const card = catalog.get(handCard.code)
-              if (!card) return null
-              return (
-                <li key={handCard.instanceId} className="snap-start">
-                  <button
-                    type="button"
-                    className="rounded-xl transition-transform hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-                    onClick={() => setSelected(card)}
-                    aria-label={`Ver ${card.name}`}
-                  >
-                    <GameCard card={card} size="md" />
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </section>
+      {me && (
+        <MyArea
+          // Recomeça a seleção de descarte a cada turno.
+          key={`${game.round}-${game.activePlayerId}`}
+          game={game}
+          me={me}
+          isMyTurn={isMyTurn}
+          catalog={catalog}
+          onInspect={setSelected}
+        />
+      )}
+
+      <EventLog game={game} players={players} catalog={catalog} />
 
       <CardDetailsDialog card={selected} onOpenChange={(open) => !open && setSelected(null)} />
     </div>
   )
 }
 
+/** Minha mão (ou mão do Além) e o controle do turno. */
+function MyArea({
+  game,
+  me,
+  isMyTurn,
+  catalog,
+  onInspect,
+}: {
+  game: GameView
+  me: Participant
+  isMyTurn: boolean
+  catalog: CardCatalog
+  onInspect: (card: CardDefinition) => void
+}) {
+  const command = useGameCommand(game)
+  const [discarding, setDiscarding] = useState<ReadonlySet<string>>(new Set())
+
+  const ghost = !me.alive
+  const hand = ghost ? game.myGhostHand : game.myHand
+  const limit = ghost ? game.ghostHandLimit : game.handLimit
+  const excess = Math.max(0, hand.length - limit)
+  const mustDiscard = isMyTurn && excess > 0
+  const ready = discarding.size === excess
+
+  const toggle = (instanceId: string) =>
+    setDiscarding((current) => {
+      const next = new Set(current)
+      if (next.has(instanceId)) next.delete(instanceId)
+      else if (next.size < excess) next.add(instanceId)
+      return next
+    })
+
+  const endTurn = () =>
+    command.mutate(
+      {
+        requestId: newRequestId(),
+        command: { type: 'END_TURN', discardCardIds: [...discarding] },
+      },
+      {
+        onError: (error) => {
+          toast.error(toFriendlyMessage(error))
+          if (isAppError(error, 'VERSION_CONFLICT')) setDiscarding(new Set())
+        },
+      },
+    )
+
+  return (
+    <section aria-labelledby="my-hand-title" className="flex min-w-0 flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="my-hand-title" className="flex items-center gap-2 font-heading text-lg font-bold">
+          {ghost ? 'Suas cartas do Além' : 'Sua mão'}
+          <Badge variant={excess > 0 ? 'destructive' : 'secondary'} data-testid="my-hand-count">
+            {hand.length}/{limit}
+          </Badge>
+        </h2>
+
+        {isMyTurn && (
+          // No celular, a barra fica presa embaixo da tela durante a sua vez.
+          <div className="flex flex-wrap items-center gap-2 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:justify-between max-sm:border-t max-sm:bg-background/95 max-sm:p-3 max-sm:backdrop-blur">
+            {!ghost && (
+              <span className="text-sm text-muted-foreground" data-testid="actions-left">
+                Ações: {game.actionsUsed}/{game.maxActions}
+              </span>
+            )}
+            <Button
+              size="lg"
+              className="h-11"
+              disabled={command.isPending || (mustDiscard && !ready)}
+              onClick={endTurn}
+            >
+              {command.isPending ? <Loader2Icon className="animate-spin" /> : <CheckIcon />}
+              {mustDiscard ? `Descartar ${excess} e encerrar` : 'Encerrar turno'}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {mustDiscard && (
+        <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
+          Você está com {hand.length} cartas. Toque em{' '}
+          {excess === 1 ? '1 carta' : `${excess} cartas`} para descartar antes de encerrar (
+          {discarding.size}/{excess}).
+        </p>
+      )}
+
+      {hand.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Sem cartas na mão.</p>
+      ) : (
+        <ul
+          className="relative -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pt-2 pb-3"
+          data-testid="my-hand"
+        >
+          {hand.map((handCard) => (
+            <HandItem
+              key={handCard.instanceId}
+              handCard={handCard}
+              card={catalog.get(handCard.code)}
+              selectable={mustDiscard}
+              selected={discarding.has(handCard.instanceId)}
+              onSelect={() => toggle(handCard.instanceId)}
+              onInspect={onInspect}
+            />
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+}
+
+function HandItem({
+  handCard,
+  card,
+  selectable,
+  selected,
+  onSelect,
+  onInspect,
+}: {
+  handCard: HandCard
+  card: CardDefinition | undefined
+  selectable: boolean
+  selected: boolean
+  onSelect: () => void
+  onInspect: (card: CardDefinition) => void
+}) {
+  if (!card) return null
+  return (
+    <li className="snap-start">
+      <button
+        type="button"
+        className={cn(
+          'relative rounded-xl transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none',
+          !selectable && 'hover:-translate-y-1 focus-visible:-translate-y-1',
+          selected && '-translate-y-2 opacity-60 ring-3 ring-destructive',
+        )}
+        onClick={() => (selectable ? onSelect() : onInspect(card))}
+        aria-label={selectable ? `Descartar ${card.name}` : `Ver ${card.name}`}
+        aria-pressed={selectable ? selected : undefined}
+        data-instance={handCard.instanceId}
+      >
+        <GameCard card={card} size="md" />
+        {selected && (
+          <span className="absolute inset-x-0 top-1/2 mx-auto w-fit -translate-y-1/2 rounded-full bg-destructive px-2 py-0.5 text-xs font-bold text-white">
+            Descartar
+          </span>
+        )}
+      </button>
+    </li>
+  )
+}
+
 function PlayerPanel({
   player,
   isMe,
+  isActive,
+  isLeader,
   online,
 }: {
   player: Participant
   isMe: boolean
+  isActive: boolean
+  isLeader: boolean
   online: boolean
 }) {
   return (
     <li
       className={cn(
-        'flex min-w-56 snap-start flex-col gap-2 rounded-xl border bg-card p-3',
-        isMe && 'border-primary/50 ring-1 ring-primary/30',
+        'flex min-w-56 snap-start flex-col gap-2 rounded-xl border bg-card p-3 transition-shadow',
+        isMe && 'border-primary/50',
+        isActive && 'shadow-md ring-2 ring-primary',
         !player.alive && 'opacity-70',
       )}
       data-testid="table-player"
+      data-active={isActive || undefined}
     >
       <div className="flex items-center gap-2">
         <PlayerAvatar name={player.displayName} online={online} className="size-8" />
@@ -221,6 +386,17 @@ function PlayerPanel({
           <span className="sr-only">cartas na mão</span>
         </span>
       </div>
+      {(isActive || isLeader) && (
+        <div className="flex flex-wrap gap-1">
+          {isActive && <Badge className="h-5">Jogando</Badge>}
+          {isLeader && (
+            <Badge variant="outline" className="h-5 gap-1 border-cat-attack text-cat-attack">
+              <FlameIcon className="size-3" aria-hidden />
+              Mais Odiado
+            </Badge>
+          )}
+        </div>
+      )}
       {player.alive ? (
         <div className="flex items-center gap-2">
           <Progress
@@ -263,5 +439,74 @@ function Pile({
         </span>
       </p>
     </div>
+  )
+}
+
+function EventLog({
+  game,
+  players,
+  catalog,
+}: {
+  game: GameView
+  players: ReadonlyMap<string, Participant>
+  catalog: CardCatalog
+}) {
+  const recent = [...game.events].reverse().slice(0, 15)
+  return (
+    <section aria-labelledby="log-title" className="flex flex-col gap-2">
+      <h2 id="log-title" className="font-heading text-lg font-bold">
+        Histórico
+      </h2>
+      <ol
+        className="flex flex-col divide-y rounded-xl border bg-card text-sm"
+        data-testid="event-log"
+      >
+        {recent.map((event) => (
+          <li key={event.seq} className="px-3 py-2">
+            {describeEvent(event, players, catalog, game.myPlayerId)}
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}
+
+function ResultPanel({
+  game,
+  players,
+}: {
+  game: GameView
+  players: ReadonlyMap<string, Participant>
+}) {
+  const result = game.result!
+  const winners = result.winnerPlayerIds
+    .map((id) => players.get(id))
+    .filter((player): player is Participant => player !== undefined)
+  const iWon = !!game.myPlayerId && result.winnerPlayerIds.includes(game.myPlayerId)
+  const why = {
+    hp: 'Fim das 10 rodadas: venceu quem terminou com mais PV.',
+    knockouts: 'Fim das 10 rodadas: PV empatado, desempate por eliminações.',
+    shared: 'Fim das 10 rodadas: empate em PV e eliminações, vitória compartilhada.',
+  }[result.criteria]
+
+  return (
+    <Card className="border-amber-400/60 bg-amber-50/60" data-testid="result">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <TrophyIcon className="size-6 text-amber-500" aria-hidden />
+          {iWon ? 'Você venceu!' : winners.length > 1 ? 'Vitória compartilhada' : 'Fim da resenha'}
+        </CardTitle>
+        <CardDescription>{why}</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <p className="font-medium" data-testid="winners">
+          {winners.length === 1 ? 'Vencedor: ' : 'Vencedores: '}
+          {winners.map((winner) => winner.displayName).join(', ')}
+        </p>
+        <Button asChild variant="outline" className="self-start">
+          <Link to="/lobby">Voltar ao lobby</Link>
+        </Button>
+      </CardContent>
+    </Card>
   )
 }

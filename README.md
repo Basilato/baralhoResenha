@@ -4,7 +4,7 @@ Jogo de cartas multiplayer online e privado, feito com os memes, fotos, apelidos
 
 A ideia é ser fácil de pegar: **comprar cartas, usar até duas ações por turno, atacar e defender, sobreviver e vencer**. Quem é derrotado vira **fantasma**, continua atrapalhando a partida e pode ressuscitar uma única vez.
 
-> **Status:** Fases 1 a 4 prontas: login privado, salas em tempo real, catálogo com as 35 cartas, baralhos embaralhados no banco e mesa mostrando só a sua mão. Próximo passo: motor de turnos (Fase 5). A especificação completa está em [BARALHO_DA_RESENHA_PLANO_TECNICO.md](BARALHO_DA_RESENHA_PLANO_TECNICO.md).
+> **Status:** Fases 1 a 5 prontas: login privado, salas em tempo real, catálogo e baralhos, e o motor de turnos (compra, 2 ações, limite de 7, rodadas, Mais Odiado e fim na rodada 10). Próximo passo: ataques, defesas e reações (Fase 6). A especificação completa está em [BARALHO_DA_RESENHA_PLANO_TECNICO.md](BARALHO_DA_RESENHA_PLANO_TECNICO.md).
 
 ## O que o MVP vai ter
 
@@ -111,6 +111,11 @@ O Supabase Auth só aceita senha junto com e-mail ou telefone. Por isso, cada us
 - Cada partida cria 180 linhas em `game_cards`, uma por cópia, com zona (baralho, descarte, mão) e posição. O embaralhamento acontece no banco.
 - O navegador nunca lê `game_cards`. A RPC `get_game_view` devolve a sua mão; dos outros jogadores, só a quantidade de cartas. A ordem dos baralhos nunca sai do banco.
 - **GHO-05 ("Eu Sei o Que Você Fez")** está marcada como provisória (`is_provisional`) até o grupo aprovar o efeito novo.
+
+### Turnos
+
+- Toda jogada passa por `submit_game_command`, com a versão da mesa e um `request_id` por clique. O banco trava a partida, valida quem está na vez e a fase, aplica tudo numa transação e grava um evento público. O mesmo `request_id` nunca é aplicado duas vezes, então clique duplo e retry de rede são seguros.
+- O histórico (`game_events`) mostra compras só como contagem. Descartes aparecem com as cartas, porque a pilha é aberta.
 
 ### Estrutura
 

@@ -185,11 +185,11 @@ select is(
   'ler a mesa (reload) não muda os lugares');
 
 select ok(
-  (select bool_and(n = 5) from (
-     select count(*) as n from app_private.game_cards c
+  (select bool_and(n = case when seat = 1 then 7 else 5 end) from (
+     select gp.seat, count(*) as n from app_private.game_cards c
      join app_private.game_players gp on gp.id = c.owner_player_id
-     where gp.game_id = pg_temp.v('big')::uuid group by gp.id) x),
-  'cartas distribuídas depois do sorteio, 5 para cada');
+     where gp.game_id = pg_temp.v('big')::uuid group by gp.id, gp.seat) x),
+  'cartas distribuídas depois do sorteio: 5 para cada, e o lugar 1 já comprou 2');
 
 select ok(
   (select is_deferrable from information_schema.table_constraints

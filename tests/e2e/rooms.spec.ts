@@ -43,12 +43,16 @@ test('três pessoas entram, veem tudo em tempo real e o host inicia', async ({
   for (const page of [host, second, third]) {
     await expect(page).toHaveURL(/\/jogo\//)
     await expect(page.getByTestId('table-player')).toHaveCount(3)
-    // Cada um vê as próprias 5 cartas; dos outros, só a contagem.
-    await expect(page.getByTestId('my-hand').getByRole('button')).toHaveCount(5)
-    await expect(page.getByTestId('my-hand-count')).toHaveText('5/7')
-    await expect(page.getByTestId('main-deck-count')).toHaveText('145')
+    // Cada um vê as próprias cartas; dos outros, só a contagem. O lugar 1 já
+    // comprou as 2 do primeiro turno (5 + 2).
+    const myTurn = (await page.getByTestId('turn-status').textContent()) === 'Sua vez!'
+    const expected = myTurn ? 7 : 5
+    await expect(page.getByTestId('my-hand').getByRole('button')).toHaveCount(expected)
+    await expect(page.getByTestId('my-hand-count')).toHaveText(`${expected}/7`)
+    await expect(page.getByTestId('main-deck-count')).toHaveText('143')
     await expect(page.getByTestId('ghost-deck-count')).toHaveText('20')
-    await expect(page.getByTestId('cards-in-hand').filter({ hasText: '5' })).toHaveCount(3)
+    await expect(page.getByTestId('cards-in-hand').filter({ hasText: '5' })).toHaveCount(2)
+    await expect(page.getByTestId('cards-in-hand').filter({ hasText: '7' })).toHaveCount(1)
     await expect(page.getByText('16/16 PV')).toHaveCount(3)
     await expectNoHorizontalOverflow(page)
   }
@@ -58,10 +62,11 @@ test('três pessoas entram, veem tudo em tempo real e o host inicia', async ({
   await expect(host.getByRole('dialog').getByRole('article')).toBeInViewport({ ratio: 1 })
   await host.keyboard.press('Escape')
 
-  // F5 na mesa mantém a partida.
+  // F5 na mesa mantém a partida e a mão.
+  const handBefore = await third.getByTestId('my-hand').getByRole('button').count()
   await third.reload()
   await expect(third.getByTestId('table-player')).toHaveCount(3)
-  await expect(third.getByTestId('my-hand').getByRole('button')).toHaveCount(5)
+  await expect(third.getByTestId('my-hand').getByRole('button')).toHaveCount(handBefore)
 
   await host.getByRole('button', { name: 'Encerrar partida' }).click()
   await host.getByRole('button', { name: 'Encerrar', exact: true }).click()
@@ -166,7 +171,7 @@ test('mesa cheia: oito pessoas veem tudo ao vivo e a nona é recusada', async ({
   for (const page of [host, ...guests]) {
     await expect(page).toHaveURL(/\/jogo\//)
     await expect(page.getByTestId('table-player')).toHaveCount(8)
-    await expect(page.getByTestId('main-deck-count')).toHaveText('120')
+    await expect(page.getByTestId('main-deck-count')).toHaveText('118')
   }
 
   await host.getByRole('button', { name: 'Encerrar partida' }).click()

@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(39);
+select plan(40);
 
 create function pg_temp.login(p_uid text)
 returns void
@@ -87,17 +87,17 @@ select results_eq(
 
 select is((select count(*)::int from app_private.game_cards
            where game_id = (select v::uuid from t where k = 'g3') and zone = 'player_hand'),
-  15, '5 cartas para cada um dos 3');
+  17, '5 cartas para cada um dos 3, mais as 2 da compra do lugar 1');
 select ok(
-  (select bool_and(n = 5) from (
-     select count(*) as n from app_private.game_cards c
+  (select bool_and(n = case when seat = 1 then 7 else 5 end) from (
+     select gp.seat, count(*) as n from app_private.game_cards c
      join app_private.game_players gp on gp.id = c.owner_player_id
      where gp.game_id = (select v::uuid from t where k = 'g3')
-     group by gp.id) x),
-  'ninguém recebe mais ou menos que 5');
+     group by gp.id, gp.seat) x),
+  'cada um recebe 5; o lugar 1 já comprou as 2 do primeiro turno (A3)');
 select is((select count(*)::int from app_private.game_cards
            where game_id = (select v::uuid from t where k = 'g3') and zone = 'main_deck'),
-  145, 'sobram 145 no baralho principal');
+  143, 'sobram 143 no baralho principal');
 select is((select count(*)::int from app_private.game_cards
            where game_id = (select v::uuid from t where k = 'g3') and zone = 'ghost_deck'),
   20, 'Além intacto com 20');
@@ -112,8 +112,8 @@ select ok(
 select is(
   (select array_agg(pile_position order by pile_position) from app_private.game_cards
    where game_id = (select v::uuid from t where k = 'g3') and zone = 'main_deck'),
-  (select array_agg(n) from generate_series(1, 145) n),
-  'posições do baralho são 1..145, sem buracos nem repetição');
+  (select array_agg(n) from generate_series(1, 143) n),
+  'posições do baralho são 1..143, sem buracos nem repetição');
 
 -- PV por número de jogadores
 insert into t values ('g4', pg_temp.started_game(array['4', '5', '6', '7'])::text);
@@ -149,10 +149,12 @@ select pg_temp.login('1');
 insert into t select 'view1', public.get_game_view((select v::uuid from t where k = 'g3'))::text;
 reset role;
 
-select is(jsonb_array_length((select v::jsonb from t where k = 'view1') -> 'myHand'), 5,
-  'jogador vê as 5 cartas da própria mão');
+select is(jsonb_array_length((select v::jsonb from t where k = 'view1') -> 'myHand'),
+  (select count(*)::int from app_private.game_cards
+   where owner_player_id = (select v::uuid from t where k = 'p1') and zone = 'player_hand'),
+  'jogador vê todas as cartas da própria mão');
 select ok(
-  (select bool_and((p ->> 'cardsInHand')::int = 5)
+  (select bool_and((p ->> 'cardsInHand')::int = case when (p ->> 'seat')::int = 1 then 7 else 5 end)
    from jsonb_array_elements((select v::jsonb from t where k = 'view1') -> 'participants') p),
   'vê quantas cartas cada um tem');
 select ok(
@@ -167,7 +169,7 @@ select ok(
   position('pile_position' in (select v from t where k = 'view1')) = 0
   and position('pilePosition' in (select v from t where k = 'view1')) = 0,
   'a ordem dos baralhos não sai do banco');
-select is(((select v::jsonb from t where k = 'view1') ->> 'mainDeckCount')::int, 145,
+select is(((select v::jsonb from t where k = 'view1') ->> 'mainDeckCount')::int, 143,
   'visão mostra só a contagem do baralho');
 
 select pg_temp.login('9');
@@ -179,16 +181,19 @@ reset role;
 
 -- Compra e descarte ----------------------------------------------------------
 
+insert into t select 'hand_before', count(*)::text from app_private.game_cards
+where owner_player_id = (select v::uuid from t where k = 'p1') and zone = 'player_hand';
+
 select is(app_private.draw_cards((select v::uuid from t where k = 'g3'), (select v::uuid from t where k = 'p1'), 'main', 3),
   3, 'compra 3 cartas');
 select is((select count(*)::int from app_private.game_cards
            where owner_player_id = (select v::uuid from t where k = 'p1') and zone = 'player_hand'),
-  8, 'mão fica com 8');
+  (select v::int + 3 from t where k = 'hand_before'), 'mão cresce 3');
 
 select throws_ok(
   format('select app_private.discard_to_hand_limit(%L, %L, array[]::uuid[])',
          (select v from t where k = 'g3'), (select v from t where k = 'p1')),
-  'P0001', 'WRONG_DISCARD_COUNT', 'com 8 cartas precisa descartar 1 para fechar o turno');
+  'P0001', 'WRONG_DISCARD_COUNT', 'acima de 7 cartas precisa descartar o excedente');
 
 select throws_ok(
   format('select app_private.discard_cards(%L, %L, array[%L]::uuid[])',
@@ -196,14 +201,24 @@ select throws_ok(
          (select id from app_private.game_cards where owner_player_id = (select v::uuid from t where k = 'p2') limit 1)),
   'P0001', 'CARD_NOT_IN_HAND', 'não descarta carta da mão de outro');
 
-insert into t select 'disc', id::text from app_private.game_cards
-where owner_player_id = (select v::uuid from t where k = 'p1') and zone = 'player_hand'
-order by pile_position limit 1;
+-- Excedente = mão - 7; a última da lista vai para o topo do descarte.
+insert into t select 'excess', string_agg(id::text, ',' order by pile_position)
+from (
+  select id, pile_position from app_private.game_cards
+  where owner_player_id = (select v::uuid from t where k = 'p1') and zone = 'player_hand'
+  order by pile_position
+  limit (select v::int + 3 - 7 from t where k = 'hand_before')
+) x;
+insert into t select 'disc', (string_to_array(v, ','))[cardinality(string_to_array(v, ','))]
+from t where k = 'excess';
 
 select is(
   app_private.discard_to_hand_limit((select v::uuid from t where k = 'g3'), (select v::uuid from t where k = 'p1'),
-    array[(select v::uuid from t where k = 'disc')]),
-  1, 'descarta o excedente e fica com 7');
+    string_to_array((select v from t where k = 'excess'), ',')::uuid[]),
+  (select v::int + 3 - 7 from t where k = 'hand_before'), 'descarta exatamente o excedente');
+select is((select count(*)::int from app_private.game_cards
+           where owner_player_id = (select v::uuid from t where k = 'p1') and zone = 'player_hand'),
+  7, 'fica com 7');
 
 insert into t select 'disc_code', card_code from app_private.game_cards
 where id = (select v::uuid from t where k = 'disc');

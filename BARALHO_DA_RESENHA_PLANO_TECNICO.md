@@ -789,60 +789,60 @@ export const supabase = createClient<Database>(
 
 ## Fase 1 — Base técnica (P0)
 
-- [ ] Criar repositório, Vite/React/TS strict e configurar Tailwind + shadcn.
-- [ ] Configurar Router, TanStack Query, layout, erros e loading.
-- [ ] Criar projeto Supabase dev, CLI, migrations e geração de types.
-- [ ] Configurar `.env.example`, lint, format, Vitest e pipeline de build.
-- [ ] Criar design tokens (cores das sete categorias, tamanhos da carta).
+- [x] Criar repositório, Vite/React/TS strict e configurar Tailwind + shadcn.
+- [x] Configurar Router, TanStack Query, layout, erros e loading.
+- [x] Criar projeto Supabase dev, CLI, migrations e geração de types.
+- [x] Configurar `.env.example`, lint, format, Vitest e pipeline de build.
+- [x] Criar design tokens (cores das sete categorias, tamanhos da carta).
 
 **Entrega:** aplicação navegável com layout e conexão Supabase sem jogo.
 
 ## Fase 2 — Login privado (P0)
 
-- [ ] Provisionar três contas de teste com nomes de usuário únicos.
-- [ ] Implementar login username + password com mapeamento para Auth.
-- [ ] Implementar persistência de sessão, logout e redirects.
-- [ ] Criar `profiles` e políticas de leitura mínima.
-- [ ] Testar senhas incorretas, usuário inexistente, expiração de sessão e duas abas.
+- [x] Provisionar três contas de teste com nomes de usuário únicos.
+- [x] Implementar login username + password com mapeamento para Auth.
+- [x] Implementar persistência de sessão, logout e redirects.
+- [x] Criar `profiles` e políticas de leitura mínima.
+- [x] Testar senhas incorretas, usuário inexistente, expiração de sessão e duas abas.
 
 **Entrega:** login funcional em desktop e celular; nenhuma credencial secreta no frontend.
 
 ## Fase 3 — Salas e presença (P0)
 
-- [ ] Criar tabelas `games`, `game_players`, `game_invites` com constraints.
-- [ ] RPC de criação com código de sala aleatório e não reutilizado.
-- [ ] RPC de entrar, sair do lobby, marcar pronto e iniciar (host; 3–8).
-- [ ] Tratar entrada duplicada, código inválido, sala cheia e início simultâneo.
-- [ ] Implementar canal Realtime privado e indicador online (Presence é informativo).
-- [ ] Host pode remover jogador **somente antes** do início; removido só volta com liberação do host (E5).
-- [ ] Código de 10 caracteres, rotação pelo host e limites de tentativas e de salas (E1, E3).
-- [ ] Presença registrada pelo servidor e transferência de host ao conectado mais antigo (E6).
+- [x] Criar tabelas `games`, `game_players`, `game_invites` com constraints.
+- [x] RPC de criação com código de sala aleatório e não reutilizado.
+- [x] RPC de entrar, sair do lobby, marcar pronto e iniciar (host; 3–8).
+- [x] Tratar entrada duplicada, código inválido, sala cheia e início simultâneo.
+- [x] Implementar canal Realtime privado e indicador online (Presence é informativo).
+- [x] Host pode remover jogador **somente antes** do início; removido só volta com liberação do host (E5).
+- [x] Código de 10 caracteres, rotação pelo host e limites de tentativas e de salas (E1, E3).
+- [x] Presença registrada pelo servidor e transferência de host ao conectado mais antigo (E6).
 
 **Entrega:** oito usuários entram na mesma sala e veem as mudanças sem atualizar manualmente.
 
 ## Fase 4 — Catálogo e baralho (P0)
 
-- [ ] Inserir 35 modelos de cartas com IDs, cópias, categoria e regras.
-- [ ] Gerar **180 instâncias virtuais** por partida ao iniciar.
-- [ ] Embaralhar no banco; distribuir 5 por jogador.
-- [ ] Guardar zonas e ordem dos decks sem permitir SELECT direto.
-- [ ] `get_game_view`: minha mão visível, mãos adversárias apenas contagem.
-- [ ] Implementar compra, descarte, limite de 7 e reciclagem de baralho.
-- [ ] Preparar renderização por imagem/placeholder e carta ampliada.
+- [x] Inserir 35 modelos de cartas com IDs, cópias, categoria e regras.
+- [x] Gerar **180 instâncias virtuais** por partida ao iniciar.
+- [x] Embaralhar no banco; distribuir 5 por jogador.
+- [x] Guardar zonas e ordem dos decks sem permitir SELECT direto.
+- [x] `get_game_view`: minha mão visível, mãos adversárias apenas contagem.
+- [x] Implementar compra, descarte, limite de 7 e reciclagem de baralho.
+- [x] Preparar renderização por imagem/placeholder e carta ampliada.
 
 **Entrega:** mesa mostra mãos corretas e não revela informações ocultas.
 
 ## Fase 5 — Motor de turnos (P0)
 
-- [ ] Criar `games.version` e idempotência de comandos.
-- [ ] Criar estado de turno/fases e validação por usuário.
-- [ ] Duas compras iniciais, duas ações e encerrar turno.
-- [ ] Alternar assentos sem pular fantasmas.
-- [ ] Fechar rodada, atualizar número e líder, parar na décima.
-- [ ] Criar eventos públicos e fluxo de notificação Realtime.
-- [ ] Testar concorrência, refresh durante ação e tentativa fora de turno.
+- [x] Criar `games.version` e idempotência de comandos.
+- [x] Criar estado de turno/fases e validação por usuário.
+- [x] Duas compras iniciais, duas ações e encerrar turno.
+- [x] Alternar assentos sem pular fantasmas.
+- [x] Fechar rodada, atualizar número e líder, parar na décima.
+- [x] Criar eventos públicos e fluxo de notificação Realtime.
+- [x] Testar concorrência, refresh durante ação e tentativa fora de turno.
 
-**Entrega:** partida sem efeitos de cartas atravessa dez rodadas sem corromper o estado.
+**Entrega:** partida sem efeitos de cartas atravessa dez rodadas sem corromper o estado. Fantasmas já têm turno (ficha + 1 carta do Além); a escolha de ressuscitar, a Ressaca e a vitória antecipada ficam na Fase 8.
 
 ## Fase 6 — Ataques, defesas e reações (P0)
 
