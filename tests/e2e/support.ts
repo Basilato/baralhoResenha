@@ -17,3 +17,11 @@ export async function playerPage(browser: Browser, username: string, options = {
   await login(page, username)
   return page
 }
+
+/** Nenhuma tela pode rolar para o lado no celular. */
+export async function expectNoHorizontalOverflow(page: Page) {
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  )
+  expect(overflow, 'a página está mais larga que a tela').toBeLessThanOrEqual(0)
+}

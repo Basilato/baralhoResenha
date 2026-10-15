@@ -79,7 +79,7 @@ export function AppLayout() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+      <main className="mx-auto w-full max-w-5xl min-w-0 flex-1 px-4 py-6">
         {profile.isError ? (
           <p className="text-destructive">{toFriendlyMessage(profile.error)}</p>
         ) : (

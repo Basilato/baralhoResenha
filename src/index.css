@@ -7,13 +7,13 @@
 
 @theme inline {
   /* Categorias de cartas */
-  --color-cat-ataque: var(--cat-ataque);
-  --color-cat-defesa: var(--cat-defesa);
-  --color-cat-sabotagem: var(--cat-sabotagem);
-  --color-cat-caos: var(--cat-caos);
-  --color-cat-recuperacao: var(--cat-recuperacao);
-  --color-cat-reviravolta: var(--cat-reviravolta);
-  --color-cat-alem: var(--cat-alem);
+  --color-cat-attack: var(--cat-attack);
+  --color-cat-defense: var(--cat-defense);
+  --color-cat-sabotage: var(--cat-sabotage);
+  --color-cat-chaos: var(--cat-chaos);
+  --color-cat-recovery: var(--cat-recovery);
+  --color-cat-reversal: var(--cat-reversal);
+  --color-cat-ghost: var(--cat-ghost);
 
   /* Proporção da carta (63 x 88 mm, padrão pôquer) */
   --aspect-card: 63 / 88;
@@ -93,13 +93,13 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --cat-ataque: oklch(0.58 0.22 27);
-  --cat-defesa: oklch(0.55 0.17 250);
-  --cat-sabotagem: oklch(0.52 0.2 320);
-  --cat-caos: oklch(0.7 0.17 60);
-  --cat-recuperacao: oklch(0.6 0.15 150);
-  --cat-reviravolta: oklch(0.58 0.12 200);
-  --cat-alem: oklch(0.45 0.08 285);
+  --cat-attack: oklch(0.58 0.22 27);
+  --cat-defense: oklch(0.55 0.17 250);
+  --cat-sabotage: oklch(0.52 0.2 320);
+  --cat-chaos: oklch(0.7 0.17 60);
+  --cat-recovery: oklch(0.6 0.15 150);
+  --cat-reversal: oklch(0.58 0.12 200);
+  --cat-ghost: oklch(0.45 0.08 285);
 }
 
 .dark {
@@ -134,13 +134,13 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-  --cat-ataque: oklch(0.68 0.2 27);
-  --cat-defesa: oklch(0.68 0.15 250);
-  --cat-sabotagem: oklch(0.66 0.19 320);
-  --cat-caos: oklch(0.78 0.16 65);
-  --cat-recuperacao: oklch(0.72 0.15 150);
-  --cat-reviravolta: oklch(0.72 0.12 200);
-  --cat-alem: oklch(0.68 0.1 285);
+  --cat-attack: oklch(0.68 0.2 27);
+  --cat-defense: oklch(0.68 0.15 250);
+  --cat-sabotage: oklch(0.66 0.19 320);
+  --cat-chaos: oklch(0.78 0.16 65);
+  --cat-recovery: oklch(0.72 0.15 150);
+  --cat-reversal: oklch(0.72 0.12 200);
+  --cat-ghost: oklch(0.68 0.1 285);
 }
 
 @layer base {

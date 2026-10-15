@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { playerPage } from './support.ts'
+import { expectNoHorizontalOverflow, playerPage } from './support.ts'
 
 test('três pessoas entram, veem tudo em tempo real e o host inicia', async ({
   browser,
@@ -30,6 +30,8 @@ test('três pessoas entram, veem tudo em tempo real e o host inicia', async ({
   // O host vê os dois chegarem sem recarregar.
   await expect(host.getByTestId('seat')).toHaveCount(3)
   await expect(host.getByText('Teste Seis')).toBeVisible()
+  await expectNoHorizontalOverflow(host)
+  await expectNoHorizontalOverflow(second)
 
   await second.getByRole('button', { name: 'Marcar como pronto' }).click()
   await expect(
@@ -41,11 +43,25 @@ test('três pessoas entram, veem tudo em tempo real e o host inicia', async ({
   for (const page of [host, second, third]) {
     await expect(page).toHaveURL(/\/jogo\//)
     await expect(page.getByTestId('table-player')).toHaveCount(3)
+    // Cada um vê as próprias 5 cartas; dos outros, só a contagem.
+    await expect(page.getByTestId('my-hand').getByRole('button')).toHaveCount(5)
+    await expect(page.getByTestId('my-hand-count')).toHaveText('5/7')
+    await expect(page.getByTestId('main-deck-count')).toHaveText('145')
+    await expect(page.getByTestId('ghost-deck-count')).toHaveText('20')
+    await expect(page.getByTestId('cards-in-hand').filter({ hasText: '5' })).toHaveCount(3)
+    await expect(page.getByText('16/16 PV')).toHaveCount(3)
+    await expectNoHorizontalOverflow(page)
   }
+
+  // Carta ampliada com o texto da regra.
+  await host.getByTestId('my-hand').getByRole('button').first().click()
+  await expect(host.getByRole('dialog').getByRole('article')).toBeInViewport({ ratio: 1 })
+  await host.keyboard.press('Escape')
 
   // F5 na mesa mantém a partida.
   await third.reload()
   await expect(third.getByTestId('table-player')).toHaveCount(3)
+  await expect(third.getByTestId('my-hand').getByRole('button')).toHaveCount(5)
 
   await host.getByRole('button', { name: 'Encerrar partida' }).click()
   await host.getByRole('button', { name: 'Encerrar', exact: true }).click()
@@ -126,6 +142,7 @@ test('mesa cheia: oito pessoas veem tudo ao vivo e a nona é recusada', async ({
   for (const page of [host, ...guests]) {
     await expect(page).toHaveURL(/\/jogo\//)
     await expect(page.getByTestId('table-player')).toHaveCount(8)
+    await expect(page.getByTestId('main-deck-count')).toHaveText('120')
   }
 
   await host.getByRole('button', { name: 'Encerrar partida' }).click()

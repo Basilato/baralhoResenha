@@ -4,7 +4,7 @@ Jogo de cartas multiplayer online e privado, feito com os memes, fotos, apelidos
 
 A ideia é ser fácil de pegar: **comprar cartas, usar até duas ações por turno, atacar e defender, sobreviver e vencer**. Quem é derrotado vira **fantasma**, continua atrapalhando a partida e pode ressuscitar uma única vez.
 
-> **Status:** M0 (fundação) e Fase 3 (salas) prontos: login privado, criação de sala, entrada por código ou link, sala de espera em tempo real e início com 3 a 8 jogadores. Próximo passo: catálogo de cartas e baralho (Fase 4). A especificação completa está em [BARALHO_DA_RESENHA_PLANO_TECNICO.md](BARALHO_DA_RESENHA_PLANO_TECNICO.md).
+> **Status:** Fases 1 a 4 prontas: login privado, salas em tempo real, catálogo com as 35 cartas, baralhos embaralhados no banco e mesa mostrando só a sua mão. Próximo passo: motor de turnos (Fase 5). A especificação completa está em [BARALHO_DA_RESENHA_PLANO_TECNICO.md](BARALHO_DA_RESENHA_PLANO_TECNICO.md).
 
 ## O que o MVP vai ter
 
@@ -100,6 +100,13 @@ O Supabase Auth só aceita senha junto com e-mail ou telefone. Por isso, cada us
 - Toda mudança aumenta `games.version` e o banco manda um aviso `game_changed` no canal privado `game:<id>`. O aviso só leva o id e a versão. Quem recebe busca o estado de novo.
 - Se o tempo real cair, a tela passa a consultar a cada 5 segundos até reconectar.
 - **Em produção:** em Realtime → Settings, desligue o acesso público (deixe só canais privados).
+
+### Cartas
+
+- O catálogo (`app_private.card_definitions`) é versionado por `set_version`. Se mudar um efeito, crie uma versão nova em vez de editar a atual: partidas que já começaram continuam na versão em que começaram.
+- Cada partida cria 180 linhas em `game_cards`, uma por cópia, com zona (baralho, descarte, mão) e posição. O embaralhamento acontece no banco.
+- O navegador nunca lê `game_cards`. A RPC `get_game_view` devolve a sua mão; dos outros jogadores, só a quantidade de cartas. A ordem dos baralhos nunca sai do banco.
+- **GHO-05 ("Eu Sei o Que Você Fez")** está marcada como provisória (`is_provisional`) até o grupo aprovar o efeito novo.
 
 ### Estrutura
 

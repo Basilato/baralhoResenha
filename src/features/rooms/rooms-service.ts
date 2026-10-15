@@ -40,6 +40,7 @@ export const roomKeys = {
   all: ['rooms'] as const,
   mine: () => [...roomKeys.all, 'mine'] as const,
   view: (gameId: string) => [...roomKeys.all, 'view', gameId] as const,
+  game: (gameId: string) => [...roomKeys.all, 'game', gameId] as const,
 }
 
 /** Caminho certo para uma sala de acordo com o status. */

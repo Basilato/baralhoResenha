@@ -49,6 +49,12 @@ export type Database = {
 "create_room":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"get_card_catalog":
+{ Args: { "p_set_version"?: string }; Returns: Json
+                           },
+"get_game_view":
+{ Args: { "p_game_id": string }; Returns: Json
+                           },
 "get_room_view":
 { Args: { "p_game_id": string }; Returns: Json
                            },
