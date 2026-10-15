@@ -63,24 +63,33 @@ O painel do banco local fica em http://127.0.0.1:54323.
 
 ### Scripts
 
-| Comando                               | O que faz                                                                            |
-| ------------------------------------- | ------------------------------------------------------------------------------------ |
-| `pnpm dev`                            | Servidor de desenvolvimento                                                          |
-| `pnpm build`                          | Typecheck e build de produção em `dist/`                                             |
-| `pnpm check`                          | Typecheck, lint, formatação e testes unitários                                       |
-| `pnpm test`                           | Testes unitários (Vitest)                                                            |
-| `pnpm test:db`                        | Testes do banco: RLS e permissões (pgTAP)                                            |
-| `pnpm test:e2e`                       | Testes ponta a ponta no desktop e no celular (Playwright, precisa do Supabase local) |
-| `pnpm db:reset`                       | Recria o banco local do zero: migrações e seed                                       |
-| `pnpm db:types`                       | Regenera `src/types/database.generated.ts` depois de mudar o schema                  |
-| `pnpm user:create <usuario> "<Nome>"` | Cria uma conta de jogador (precisa do `.env.admin`)                                  |
+| Comando                | O que faz                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| `pnpm dev`             | Servidor de desenvolvimento                                                          |
+| `pnpm build`           | Typecheck e build de produção em `dist/`                                             |
+| `pnpm check`           | Typecheck, lint, formatação e testes unitários                                       |
+| `pnpm test`            | Testes unitários (Vitest)                                                            |
+| `pnpm test:db`         | Testes do banco: RLS e permissões (pgTAP)                                            |
+| `pnpm test:e2e`        | Testes ponta a ponta no desktop e no celular (Playwright, precisa do Supabase local) |
+| `pnpm db:reset`        | Recria o banco local do zero: migrações e seed                                       |
+| `pnpm db:types`        | Regenera `src/types/database.generated.ts` depois de mudar o schema                  |
+| `pnpm users <comando>` | Gestão de contas pelo administrador (veja abaixo; precisa do `.env.admin`)           |
 
 ### Contas e login
 
 O Supabase Auth só aceita senha junto com e-mail ou telefone. Por isso, cada usuário (`leo`, por exemplo) corresponde a um e-mail técnico `leo@<VITE_AUTH_EMAIL_DOMAIN>`. O jogador nunca vê esse e-mail.
 
 - Não existe cadastro público. Ele está bloqueado no Auth (`enable_signup = false`).
-- Quem cria as contas é o administrador, com `pnpm user:create`. O script gera uma senha aleatória e o perfil é criado automaticamente a partir do `app_metadata.username`.
+- Quem cria e gerencia as contas é o administrador. Senhas novas são geradas aleatoriamente e aparecem uma única vez no terminal:
+
+  ```bash
+  pnpm users create leo "Leo"      # cria a conta (o perfil nasce do app_metadata.username)
+  pnpm users reset-password leo    # recuperação de senha (não existe "esqueci a senha" por e-mail)
+  pnpm users disable leo           # bloqueia no Auth e derruba a sessão aberta no app
+  pnpm users enable leo
+  pnpm users list
+  ```
+
 - O `.env.admin` guarda a secret key. Copie de `.env.admin.example` e nunca faça commit desse arquivo.
 
 > Só `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` e `VITE_AUTH_EMAIL_DOMAIN` podem ficar em variáveis `VITE_*`. Elas vão para o navegador. A secret key / `service_role` nunca pode ir para lá.

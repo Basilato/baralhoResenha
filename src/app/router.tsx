@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router'
 import { AppLayout } from '@/components/app-layout'
 import { RouteError } from '@/components/route-error'
 import { RedirectIfAuthenticated, RequireAuth } from '@/features/auth/guards'

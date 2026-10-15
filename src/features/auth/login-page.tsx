@@ -108,8 +108,8 @@ export function LoginPage() {
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
-                    className="absolute top-1 right-1"
+                    size="icon-lg"
+                    className="absolute top-0.5 right-0.5"
                     onClick={() => setShowPassword((value) => !value)}
                     aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'}
                     aria-pressed={showPassword}

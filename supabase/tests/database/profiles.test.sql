@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(15);
+select plan(21);
 
 -- Estrutura -------------------------------------------------------------------
 
@@ -78,6 +78,33 @@ select throws_ok(
   'username inválido é recusado'
 );
 
+insert into auth.users (id, email, raw_app_meta_data)
+values ('66666666-6666-4666-8666-666666666666', 'pgtap_d@contas.baralhoresenha.test',
+        '{"username": "pgtap_d", "display_name": "   "}');
+
+select is(
+  (select display_name from public.profiles where id = '66666666-6666-4666-8666-666666666666'),
+  'pgtap_d',
+  'apelido vazio cai para o username'
+);
+
+-- Privilégios padrão ----------------------------------------------------------
+
+create function public.pgtap_nova_funcao() returns int language sql as 'select 1';
+
+select ok(
+  not has_function_privilege('anon', 'public.pgtap_nova_funcao()', 'execute'),
+  'funções novas em public não ficam executáveis por anon'
+);
+select ok(
+  not has_function_privilege('authenticated', 'public.pgtap_nova_funcao()', 'execute'),
+  'funções novas em public exigem grant explícito para authenticated'
+);
+select ok(
+  not has_schema_privilege('authenticated', 'app_private', 'usage'),
+  'authenticated não acessa o schema app_private'
+);
+
 -- Anônimo não lê nada ---------------------------------------------------------
 
 set local role anon;
@@ -116,6 +143,18 @@ select is(
   (select display_name from public.profiles where id = '22222222-2222-4222-8222-222222222222'),
   'pgtap_b',
   'usuário não altera perfil alheio'
+);
+
+select throws_ok(
+  $$ select is_admin from public.profiles $$,
+  '42501',
+  null,
+  'is_admin não é legível pelo navegador'
+);
+
+select ok(
+  (select count(*) from public.profiles) >= 2,
+  'count(*) funciona com grant por coluna'
 );
 
 select throws_ok(

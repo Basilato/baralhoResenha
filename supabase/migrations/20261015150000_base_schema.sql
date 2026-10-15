@@ -8,6 +8,13 @@ create schema if not exists app_private;
 
 revoke all on schema app_private from public, anon, authenticated;
 
+-- O Supabase concede EXECUTE em funções novas a anon/authenticated por padrão.
+-- Aqui invertemos: cada RPC pública precisa de GRANT explícito.
+-- O EXECUTE para PUBLIC é um padrão global do Postgres, então sai sem schema.
+alter default privileges revoke execute on functions from public;
+alter default privileges in schema public revoke execute on functions from public, anon, authenticated;
+alter default privileges in schema app_private revoke execute on functions from public, anon, authenticated;
+
 -- -----------------------------------------------------------------------------
 -- profiles (public, com RLS)
 -- -----------------------------------------------------------------------------
@@ -33,9 +40,11 @@ comment on table public.profiles is
 
 alter table public.profiles enable row level security;
 
--- Privilégios mínimos: navegador lê perfis e só altera apelido/avatar.
+-- Privilégios mínimos: navegador lê os campos públicos (sem is_admin) e só
+-- altera apelido/avatar. Por isso o cliente nunca deve usar select('*').
 revoke all on table public.profiles from public, anon, authenticated;
-grant select on table public.profiles to authenticated;
+grant select (id, username, display_name, avatar_path, is_active, created_at, updated_at)
+  on table public.profiles to authenticated;
 grant update (display_name, avatar_path) on table public.profiles to authenticated;
 
 create policy "profiles_select_authenticated"
@@ -66,6 +75,8 @@ begin
 end;
 $$;
 
+revoke execute on function app_private.touch_updated_at() from public, anon, authenticated;
+
 create trigger profiles_touch_updated_at
   before update on public.profiles
   for each row
@@ -90,10 +101,10 @@ set search_path = ''
 as $$
 declare
   v_username text := lower(btrim(new.raw_app_meta_data ->> 'username'));
-  v_display_name text := btrim(coalesce(
-    new.raw_app_meta_data ->> 'display_name',
-    new.raw_app_meta_data ->> 'username'
-  ));
+  v_display_name text := coalesce(
+    nullif(btrim(new.raw_app_meta_data ->> 'display_name'), ''),
+    v_username
+  );
 begin
   if v_username is null
     or exists (select 1 from public.profiles where id = new.id) then
@@ -106,7 +117,9 @@ begin
   end if;
 
   insert into public.profiles (id, username, display_name)
-  values (new.id, v_username, left(v_display_name, 32));
+  values (new.id, v_username, btrim(left(v_display_name, 32)))
+  -- Perfil já existe (ou duas atualizações simultâneas): mantém o original.
+  on conflict (id) do nothing;
 
   return new;
 end;

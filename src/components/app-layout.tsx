@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, Outlet } from 'react-router-dom'
+import { Link, Outlet } from 'react-router'
 import { toast } from 'sonner'
 import { BookOpenIcon, LogOutIcon } from 'lucide-react'
 import { BrandMark, BrandName } from '@/components/brand'
