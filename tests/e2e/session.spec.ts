@@ -1,15 +1,6 @@
 import { execSync } from 'node:child_process'
-import { expect, test, type Page } from '@playwright/test'
-
-const PASSWORD = 'resenha123'
-
-async function login(page: Page, username: string) {
-  await page.goto('/login')
-  await page.getByLabel('Usuário').fill(username)
-  await page.getByLabel('Senha', { exact: true }).fill(PASSWORD)
-  await page.getByRole('button', { name: 'Entrar' }).click()
-  await expect(page).toHaveURL(/\/lobby$/)
-}
+import { expect, test } from '@playwright/test'
+import { login, PASSWORD } from './support.ts'
 
 test('sessão expirada que não renova volta para o login', async ({ page }) => {
   await login(page, 'teste1')

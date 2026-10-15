@@ -3,7 +3,10 @@ import { AppLayout } from '@/components/app-layout'
 import { RouteError } from '@/components/route-error'
 import { RedirectIfAuthenticated, RequireAuth } from '@/features/auth/guards'
 import { LoginPage } from '@/features/auth/login-page'
+import { GamePage } from '@/features/game/game-page'
 import { LobbyPage } from '@/features/lobby/lobby-page'
+import { JoinLinkPage } from '@/features/rooms/join-link-page'
+import { RoomPage } from '@/features/rooms/room-page'
 import { RulesPage } from '@/features/rules/rules-page'
 
 export const router = createBrowserRouter([
@@ -23,6 +26,9 @@ export const router = createBrowserRouter([
             children: [
               { path: 'lobby', element: <LobbyPage /> },
               { path: 'regras', element: <RulesPage /> },
+              { path: 'sala/:gameId', element: <RoomPage /> },
+              { path: 'jogo/:gameId', element: <GamePage /> },
+              { path: 'entrar/:code', element: <JoinLinkPage /> },
             ],
           },
         ],

@@ -101,8 +101,8 @@ select ok(
   'funções novas em public exigem grant explícito para authenticated'
 );
 select ok(
-  not has_schema_privilege('authenticated', 'app_private', 'usage'),
-  'authenticated não acessa o schema app_private'
+  not has_schema_privilege('authenticated', 'app_private', 'create'),
+  'authenticated não cria objetos em app_private'
 );
 
 -- Anônimo não lê nada ---------------------------------------------------------

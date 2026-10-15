@@ -4,7 +4,7 @@ Jogo de cartas multiplayer online e privado, feito com os memes, fotos, apelidos
 
 A ideia é ser fácil de pegar: **comprar cartas, usar até duas ações por turno, atacar e defender, sobreviver e vencer**. Quem é derrotado vira **fantasma**, continua atrapalhando a partida e pode ressuscitar uma única vez.
 
-> **Status:** M0 (fundação) pronto, com login privado, navegação protegida e base do Supabase. Próximo passo: salas (Fase 3). A especificação completa está em [BARALHO_DA_RESENHA_PLANO_TECNICO.md](BARALHO_DA_RESENHA_PLANO_TECNICO.md).
+> **Status:** M0 (fundação) e Fase 3 (salas) prontos: login privado, criação de sala, entrada por código ou link, sala de espera em tempo real e início com 3 a 8 jogadores. Próximo passo: catálogo de cartas e baralho (Fase 4). A especificação completa está em [BARALHO_DA_RESENHA_PLANO_TECNICO.md](BARALHO_DA_RESENHA_PLANO_TECNICO.md).
 
 ## O que o MVP vai ter
 
@@ -57,7 +57,7 @@ cp .env.example .env.local   # cole a "Publishable key" impressa pelo db:start
 pnpm dev                     # http://localhost:5173
 ```
 
-O seed cria três contas de teste: **teste1**, **teste2** e **teste3**. A senha de todas é `resenha123`.
+O seed cria nove contas de teste, de **teste1** a **teste9**. A senha de todas é `resenha123`. Para testar uma sala, abra janelas anônimas diferentes, uma para cada conta.
 
 O painel do banco local fica em http://127.0.0.1:54323.
 
@@ -93,6 +93,13 @@ O Supabase Auth só aceita senha junto com e-mail ou telefone. Por isso, cada us
 - O `.env.admin` guarda a secret key. Copie de `.env.admin.example` e nunca faça commit desse arquivo.
 
 > Só `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` e `VITE_AUTH_EMAIL_DOMAIN` podem ficar em variáveis `VITE_*`. Elas vão para o navegador. A secret key / `service_role` nunca pode ir para lá.
+
+### Salas e tempo real
+
+- As tabelas das salas ficam no schema `app_private`, que não é exposto. O navegador só usa as RPCs (`create_room`, `join_room`, `start_game` e as outras), e cada uma confere quem está chamando e se a pessoa faz parte da sala.
+- Toda mudança aumenta `games.version` e o banco manda um aviso `game_changed` no canal privado `game:<id>`. O aviso só leva o id e a versão. Quem recebe busca o estado de novo.
+- Se o tempo real cair, a tela passa a consultar a cada 5 segundos até reconectar.
+- **Em produção:** em Realtime → Settings, desligue o acesso público (deixe só canais privados).
 
 ### Estrutura
 

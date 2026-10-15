@@ -17,14 +17,7 @@ import {
 import { signOut } from '@/features/auth/auth-service'
 import { useMyProfile } from '@/features/profile/use-profile'
 import { toFriendlyMessage } from '@/lib/errors'
-
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('')
-}
+import { initials } from '@/lib/format'
 
 async function handleSignOut() {
   try {

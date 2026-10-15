@@ -43,7 +43,33 @@ export type Database = {
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "close_room":
+{ Args: { "p_game_id": string }; Returns: undefined
+                           },
+"create_room":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"get_room_view":
+{ Args: { "p_game_id": string }; Returns: Json
+                           },
+"join_room":
+{ Args: { "p_code": string }; Returns: Json
+                           },
+"kick_player":
+{ Args: { "p_game_id": string,"p_player_id": string }; Returns: undefined
+                           },
+"leave_room":
+{ Args: { "p_game_id": string }; Returns: undefined
+                           },
+"list_my_rooms":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"set_ready":
+{ Args: { "p_game_id": string,"p_ready": boolean }; Returns: undefined
+                           },
+"start_game":
+{ Args: { "p_expected_version": number,"p_game_id": string }; Returns: undefined
+                           }
           }
           Enums: {
             [_ in never]: never

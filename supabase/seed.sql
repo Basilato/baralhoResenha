@@ -1,7 +1,8 @@
 -- =============================================================================
 -- Seed de DESENVOLVIMENTO LOCAL — nunca rodar em produção.
 -- =============================================================================
--- Três contas de teste. Senha de todas: resenha123
+-- Nove contas de teste (teste1..teste9; a 9ª serve para testar sala cheia).
+-- Senha de todas: resenha123
 -- O domínio do e-mail técnico precisa bater com VITE_AUTH_EMAIL_DOMAIN.
 
 do $$
@@ -14,7 +15,13 @@ begin
     from (values
       ('00000000-0000-4000-8000-000000000001'::uuid, 'teste1', 'Teste Um'),
       ('00000000-0000-4000-8000-000000000002'::uuid, 'teste2', 'Teste Dois'),
-      ('00000000-0000-4000-8000-000000000003'::uuid, 'teste3', 'Teste Três')
+      ('00000000-0000-4000-8000-000000000003'::uuid, 'teste3', 'Teste Três'),
+      ('00000000-0000-4000-8000-000000000004'::uuid, 'teste4', 'Teste Quatro'),
+      ('00000000-0000-4000-8000-000000000005'::uuid, 'teste5', 'Teste Cinco'),
+      ('00000000-0000-4000-8000-000000000006'::uuid, 'teste6', 'Teste Seis'),
+      ('00000000-0000-4000-8000-000000000007'::uuid, 'teste7', 'Teste Sete'),
+      ('00000000-0000-4000-8000-000000000008'::uuid, 'teste8', 'Teste Oito'),
+      ('00000000-0000-4000-8000-000000000009'::uuid, 'teste9', 'Teste Nove')
     ) as t (id, username, display_name)
   loop
     insert into auth.users (

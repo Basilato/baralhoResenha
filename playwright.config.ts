@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test'
 // Pré-requisito: Supabase local rodando (`pnpm db:start`) com o seed aplicado.
 export default defineConfig({
   testDir: './tests/e2e',
+  globalSetup: './tests/e2e/global-setup.ts',
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   use: {
