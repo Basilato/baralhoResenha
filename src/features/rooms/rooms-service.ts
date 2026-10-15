@@ -123,6 +123,15 @@ export async function sendHeartbeat(gameId: string) {
   if (error) throw fromRpcError(error)
 }
 
+/** Revanche: cria (ou entra n)a próxima partida do mesmo grupo. */
+export async function createRematch(
+  gameId: string,
+): Promise<{ gameId: string; status: RoomStatus }> {
+  const { data, error } = await supabase.rpc('create_rematch', { p_game_id: gameId })
+  if (error) throw fromRpcError(error)
+  return data as { gameId: string; status: RoomStatus }
+}
+
 export async function closeRoom(gameId: string) {
   const { error } = await supabase.rpc('close_room', { p_game_id: gameId })
   if (error) throw fromRpcError(error)

@@ -49,6 +49,9 @@ export type Database = {
 "close_room":
 { Args: { "p_game_id": string }; Returns: undefined
                            },
+"create_rematch":
+{ Args: { "p_game_id": string }; Returns: Json
+                           },
 "create_room":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -63,6 +66,9 @@ export type Database = {
                            },
 "heartbeat":
 { Args: { "p_game_id": string }; Returns: undefined
+                           },
+"join_rematch":
+{ Args: { "p_game_id": string }; Returns: Json
                            },
 "join_room":
 { Args: { "p_code": string }; Returns: Json

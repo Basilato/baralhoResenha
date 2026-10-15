@@ -30,9 +30,20 @@ describe('whyNotPlayable', () => {
 
   it('explica cada bloqueio', () => {
     expect(whyNotPlayable({ ...attack, isReaction: true }, game(), true)).toMatch(/reação/)
+    const ghostCard = { ...attack, category: 'ghost', deckType: 'ghost' } as CardDefinition
     expect(
-      whyNotPlayable({ ...attack, category: 'ghost', deckType: 'ghost' }, game(), true),
-    ).toMatch(/fantasma/)
+      whyNotPlayable(ghostCard, game({ phase: 'turn_ghost', maxGhostActions: 1 }), true),
+    ).toBeNull()
+    expect(whyNotPlayable(ghostCard, game({ phase: 'ghost_decision' }), true)).toMatch(
+      /ressuscitar/,
+    )
+    expect(
+      whyNotPlayable(
+        ghostCard,
+        game({ phase: 'turn_ghost', actionsUsed: 1, maxGhostActions: 1 }),
+        true,
+      ),
+    ).toMatch(/1 carta do Além/)
     expect(whyNotPlayable(attack, game(), false)).toMatch(/sua vez/)
     expect(whyNotPlayable(attack, game({ phase: 'awaiting_reactions' }), true)).toMatch(/terminar/)
     expect(whyNotPlayable(attack, game({ actionsUsed: 2 }), true)).toMatch(/2 ações/)

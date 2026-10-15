@@ -21,11 +21,11 @@ end;
 $$;
 
 create temp table t (k text primary key, v text);
-create function pg_temp.v(p_k text) returns text language sql as $$ select v from t where k = p_k $$;
+create function pg_temp.v(p_k text) returns text language sql stable as $$ select v from t where k = p_k $$;
 create function pg_temp.set(p_k text, p_v text) returns void language sql
 as $$ insert into t values (p_k, p_v) on conflict (k) do update set v = excluded.v $$;
 
-create function pg_temp.g() returns uuid language sql as $$ select v::uuid from t where k = 'g' $$;
+create function pg_temp.g() returns uuid language sql stable as $$ select v::uuid from t where k = 'g' $$;
 
 create function pg_temp.started_game(p_users text[])
 returns uuid
@@ -53,13 +53,13 @@ end;
 $$;
 
 -- Jogador por lugar: A = lugar 1 (joga), B = lugar 2, C = lugar 3.
-create function pg_temp.p(p_seat int) returns uuid language sql
+create function pg_temp.p(p_seat int) returns uuid language sql stable
 as $$ select id from app_private.game_players where game_id = pg_temp.g() and seat = p_seat $$;
-create function pg_temp.u(p_seat int) returns text language sql
+create function pg_temp.u(p_seat int) returns text language sql stable
 as $$ select substr(user_id::text, 36) from app_private.game_players where game_id = pg_temp.g() and seat = p_seat $$;
-create function pg_temp.hp(p_seat int) returns int language sql
+create function pg_temp.hp(p_seat int) returns int language sql stable
 as $$ select hp from app_private.game_players where id = pg_temp.p(p_seat) $$;
-create function pg_temp.hand(p_seat int) returns int language sql
+create function pg_temp.hand(p_seat int) returns int language sql stable
 as $$ select count(*)::int from app_private.game_cards where owner_player_id = pg_temp.p(p_seat) and zone = 'player_hand' $$;
 
 -- Mesa zerada: lugar 1 na vez, todos vivos com 16 PV, mãos vazias.
@@ -67,22 +67,31 @@ create function pg_temp.reset()
 returns void
 language plpgsql
 as $$
+declare
+  v_game uuid := pg_temp.g();
+  v_main_top integer;
+  v_ghost_top integer;
 begin
-  update app_private.pending_actions set status = 'resolved' where game_id = pg_temp.g() and status = 'open';
+  update app_private.pending_actions set status = 'resolved' where game_id = v_game and status = 'open';
   update app_private.games
   set phase = 'turn_main', actions_used = 0, active_seat = 1, leader_player_id = null, pending_action_id = null
   where id = pg_temp.g();
   update app_private.game_players
   set life_status = 'alive', hp = 16, max_hp = 16, knockouts = 0
   where game_id = pg_temp.g();
+  -- Topo de cada baralho calculado uma vez (sem subconsulta por linha).
+  select coalesce(max(pile_position) filter (where zone = 'main_deck'), 0),
+         coalesce(max(pile_position) filter (where zone = 'ghost_deck'), 0)
+    into v_main_top, v_ghost_top
+  from app_private.game_cards where game_id = v_game;
+
   update app_private.game_cards c
-  set zone = c.deck_type || '_deck', owner_player_id = null, pile_position = s.top + s.n
+  set zone = c.deck_type || '_deck', owner_player_id = null,
+      pile_position = case c.deck_type when 'main' then v_main_top else v_ghost_top end + s.n
   from (
-    select x.id, row_number() over (partition by x.deck_type) as n,
-           (select coalesce(max(d.pile_position), 0) from app_private.game_cards d
-            where d.game_id = pg_temp.g() and d.zone = x.deck_type || '_deck') as top
+    select x.id, row_number() over (partition by x.deck_type) as n
     from app_private.game_cards x
-    where x.game_id = pg_temp.g() and x.zone in ('player_hand', 'ghost_hand', 'in_resolution')
+    where x.game_id = v_game and x.zone in ('player_hand', 'ghost_hand', 'in_resolution')
   ) s
   where c.id = s.id;
 end;
@@ -137,7 +146,7 @@ as $$
     'discardCostCardId', p_cost))
 $$;
 
-create function pg_temp.pending() returns uuid language sql
+create function pg_temp.pending() returns uuid language sql stable
 as $$ select id from app_private.pending_actions where game_id = pg_temp.g() and status = 'open' $$;
 
 create function pg_temp.respond(p_seat int, p_card uuid default null)
@@ -167,7 +176,7 @@ begin
 end;
 $$;
 
-create function pg_temp.phase() returns text language sql
+create function pg_temp.phase() returns text language sql stable
 as $$ select phase from app_private.games where id = pg_temp.g() $$;
 
 
@@ -195,11 +204,11 @@ as $$
     'ownSwapCardId', p_own))
 $$;
 
-create function pg_temp.hand_ids(p_seat int) returns uuid[] language sql
+create function pg_temp.hand_ids(p_seat int) returns uuid[] language sql stable
 as $$ select coalesce(array_agg(id order by pile_position), array[]::uuid[]) from app_private.game_cards
       where owner_player_id = pg_temp.p(p_seat) and zone = 'player_hand' $$;
 
-create function pg_temp.owner(p_card text) returns int language sql
+create function pg_temp.owner(p_card text) returns int language sql stable
 as $$ select gp.seat::int from app_private.game_cards c join app_private.game_players gp on gp.id = c.owner_player_id
       where c.id = p_card::uuid $$;
 

@@ -4,7 +4,7 @@ Jogo de cartas multiplayer online e privado, feito com os memes, fotos, apelidos
 
 A ideia é ser fácil de pegar: **comprar cartas, usar até duas ações por turno, atacar e defender, sobreviver e vencer**. Quem é derrotado vira **fantasma**, continua atrapalhando a partida e pode ressuscitar uma única vez.
 
-> **Status:** Fases 1 a 7 prontas: login privado, salas em tempo real, catálogo e baralhos, motor de turnos, combate e os 30 modelos do baralho principal jogáveis (sabotagens, caos com escolhas simultâneas, recuperação e troca de mãos). Próximo passo: fantasmas, Ressaca e fim de partida (Fase 8). A especificação completa está em [BARALHO_DA_RESENHA_PLANO_TECNICO.md](BARALHO_DA_RESENHA_PLANO_TECNICO.md).
+> **Status:** Fases 1 a 8 prontas, com o ciclo completo do jogo: login privado, salas em tempo real, os 35 modelos de carta jogáveis (incluindo as cartas do Além), fantasmas e ressurreição, Ressaca Progressiva, fim de partida com desempates, remoção de ausentes e revanche. Próximo passo: visual e experiência (Fase 9). A especificação completa está em [BARALHO_DA_RESENHA_PLANO_TECNICO.md](BARALHO_DA_RESENHA_PLANO_TECNICO.md).
 
 ## O que o MVP vai ter
 
@@ -128,6 +128,13 @@ O Supabase Auth só aceita senha junto com e-mail ou telefone. Por isso, cada us
 - Sabotagens abrem uma janela em que só o Evento Raro serve. O sorteio de cartas acontece depois da defesa.
 - Escolhas de cartas (Terapia de Boteco, Plano Dental Negado, Tio Paulo, Bucetada, O Acre Existe!) são privadas e simultâneas: nada muda até todos escolherem. Na Terapia de Boteco, a mão do alvo aparece só para quem jogou.
 - A marca do Tem Alguém Seguindo fica em `status_effects`: +2 no próximo ataque, consumida no anúncio e expirando no fim da rodada seguinte.
+
+### Fantasmas e fim de partida
+
+- No turno de fantasma, a ficha entra no começo. Com 3 fichas, o fantasma decide entre ressuscitar (6 PV, 3 cartas, uma vez só) e continuar no Além (compra 1 carta e joga até 1).
+- A Ressaca Progressiva (1, 2 e 3 de dano nas rodadas 5 a 10) acontece no fim da rodada, sem reação e sem contar eliminação.
+- O fim da partida é verificado depois de cada jogada. O último vivo vence só se nenhum fantasma ainda puder ressuscitar até a rodada 10. Com todos mortos, vence quem caiu no lote mais tardio, com mais PV antes do golpe.
+- Quem fica mais de 2 minutos sem sinal pode ser removido pelo host e vira desistente. Se o host sumir, outro jogador pode assumir o posto.
 
 ### Estrutura
 

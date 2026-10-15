@@ -4,8 +4,14 @@ import type { GameView, Participant } from './game-service'
 /** Por que uma carta não pode ser jogada agora (null = pode). */
 export function whyNotPlayable(card: CardDefinition, game: GameView, isMyTurn: boolean) {
   if (card.isReaction) return 'Esta carta só é usada como reação, quando você é atacado.'
-  if (card.deckType === 'ghost') return 'Cartas do Além são jogadas no turno de fantasma.'
   if (!isMyTurn) return 'Espere a sua vez para jogar.'
+  if (card.deckType === 'ghost') {
+    if (game.phase === 'ghost_decision') return 'Decida primeiro se vai ressuscitar.'
+    if (game.phase !== 'turn_ghost') return 'Espere a jogada atual terminar.'
+    if (game.actionsUsed >= game.maxGhostActions)
+      return 'Fantasma joga no máximo 1 carta do Além por turno.'
+    return null
+  }
   if (game.phase !== 'turn_main') return 'Espere a jogada atual terminar.'
   if (game.actionsUsed >= game.maxActions) return 'Você já usou as 2 ações deste turno.'
   return null
@@ -62,6 +68,13 @@ export function targetOptions(card: CardDefinition, game: GameView): TargetOptio
         eligible: opponents.filter((player) => player.hp === max),
         emptyHanded: empty,
       }
+    }
+
+    case 'alive_player': {
+      // Cartas do Além: qualquer vivo com cartas na mão.
+      const alive = game.participants.filter((player) => player.alive)
+      for (const player of alive) if (player.cardsInHand === 0) empty.add(player.id)
+      return { needed: 1, eligible: alive, emptyHanded: empty }
     }
 
     default: {

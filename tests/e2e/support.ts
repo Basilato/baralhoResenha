@@ -87,3 +87,40 @@ export function setHp(gameId: string, username: string, hp: number) {
 export function resetActions(gameId: string) {
   sql(`update app_private.games set actions_used = 0 where id = '${gameId}';`)
 }
+
+/** Usuário (username) sentado no lugar indicado. */
+export function userAtSeat(gameId: string, seat: number) {
+  return sql(`select p.username from app_private.game_players gp join public.profiles p on p.id = gp.user_id
+              where gp.game_id = '${gameId}' and gp.seat = ${seat};`)
+}
+
+export function seatOf(gameId: string, username: string) {
+  return Number(
+    sql(`select seat from app_private.game_players where id = ${playerOf(gameId, username)};`),
+  )
+}
+
+/** Transforma em fantasma (mão principal vai para o descarte). */
+export function makeGhost(gameId: string, username: string, tokens: number, revivalUsed = false) {
+  sql(`
+    update app_private.game_cards c
+    set zone = 'main_discard', owner_player_id = null, pile_position = t.top + s.n
+    from (select id, row_number() over () as n from app_private.game_cards
+          where owner_player_id = ${playerOf(gameId, username)} and zone = 'player_hand') s,
+         (select coalesce(max(pile_position), 0) as top from app_private.game_cards
+          where game_id = '${gameId}' and zone = 'main_discard') t
+    where c.id = s.id;
+    update app_private.game_players set life_status = 'ghost', hp = 0, ghost_tokens = ${tokens},
+      revival_used = ${revivalUsed} where id = ${playerOf(gameId, username)};`)
+}
+
+export function setRevivalUsed(gameId: string, username: string) {
+  sql(
+    `update app_private.game_players set revival_used = true where id = ${playerOf(gameId, username)};`,
+  )
+}
+
+export function backdateLastSeen(gameId: string, username: string, minutes: number) {
+  sql(`update app_private.game_players set last_seen_at = now() - interval '${minutes} minutes'
+       where id = ${playerOf(gameId, username)};`)
+}

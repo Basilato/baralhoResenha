@@ -870,14 +870,14 @@ export const supabase = createClient<Database>(
 
 ## Fase 8 — Fantasmas, Ressaca e encerramento (P0)
 
-- [ ] Ao morrer, mudar status e descartar mão principal.
-- [ ] Turno de fantasma, 5 cartas do Além, mão limitada a 3.
-- [ ] Ganhar fichas e ressuscitar com 6 PV/3 cartas somente uma vez.
-- [ ] Impedir nova ressurreição após segunda morte.
-- [ ] Ressaca 0/1/2/3 nos intervalos corretos.
-- [ ] Regras de todos mortos, empate, eliminação simultânea, rodada 10.
-- [ ] Condição antecipada considera quem ainda pode reviver até a última rodada.
-- [ ] Congelar resultado e permitir revanche iniciando **outra partida**.
+- [x] Ao morrer, mudar status e descartar mão principal.
+- [x] Turno de fantasma, 5 cartas do Além, mão limitada a 3.
+- [x] Ganhar fichas e ressuscitar com 6 PV/3 cartas somente uma vez.
+- [x] Impedir nova ressurreição após segunda morte.
+- [x] Ressaca 0/1/2/3 nos intervalos corretos.
+- [x] Regras de todos mortos, empate, eliminação simultânea, rodada 10.
+- [x] Condição antecipada considera quem ainda pode reviver até a última rodada.
+- [x] Congelar resultado e permitir revanche iniciando **outra partida**.
 
 **Entrega:** ciclo de jogo completo, do lobby ao vencedor.
 

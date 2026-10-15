@@ -1,5 +1,5 @@
 import type { CardCatalog } from '@/features/cards/catalog'
-import type { GameEvent, Participant } from './game-service'
+import type { GameEvent, Participant, PrivateEvent } from './game-service'
 
 type DamageResult = { playerId: string; damage: number; hp: number; survived: boolean }
 
@@ -40,6 +40,7 @@ export function describeEvent(
     }
     case 'turn_ended': {
       if (p.reason === 'died') return `${actor} caiu no próprio turno e perdeu a vez.`
+      if (p.reason === 'removed') return `O turno de ${actor} foi pulado (ausente).`
       const discarded = Array.isArray(p.discarded) ? (p.discarded as string[]) : []
       if (discarded.length === 0) return `${actor} encerrou o turno.`
       return `${actor} encerrou o turno e descartou ${discarded.map(cardName).join(', ')}.`
@@ -114,9 +115,42 @@ export function describeEvent(
       return p.byPlayerId
         ? `${actor} foi eliminado por ${name(p.byPlayerId)} e virou fantasma.`
         : `${actor} caiu e virou fantasma.`
+    case 'hangover':
+      return `Ressaca da rodada ${p.round}: ${p.damage} de dano em todos os vivos.`
+    case 'player_revived':
+      return `${actor} ressuscitou com ${p.hp} PV e ${p.drew} cartas!`
+    case 'revive_declined':
+      return `${actor} preferiu continuar fantasma.`
+    case 'ghost_peeked':
+      return `${actor} espiou cartas de ${name(p.targetPlayerId)}.`
+    case 'card_to_bottom':
+      return `Uma carta de ${actor} foi para o fundo do baralho.`
+    case 'curse_cast':
+      return `${actor} lançou a Maldição da Ressaca: o próximo ataque ao Mais Odiado causa +1.`
+    case 'player_removed':
+      return `${actor} foi removido por ausência e saiu da disputa.`
+    case 'host_changed':
+      return `${actor} assumiu como host.`
     case 'game_finished':
       return 'Fim da partida!'
     default:
       return 'Algo aconteceu na mesa.'
   }
+}
+
+/** Revelação que só o próprio jogador recebeu. */
+export function describePrivateEvent(
+  event: PrivateEvent,
+  players: ReadonlyMap<string, Participant>,
+  catalog: CardCatalog,
+): string {
+  if (event.kind === 'cards_peeked') {
+    const codes = Array.isArray(event.payload.codes) ? (event.payload.codes as string[]) : []
+    const who = players.get(String(event.payload.targetPlayerId))?.displayName ?? 'o alvo'
+    const names = codes.map((code) => catalog.get(code)?.name ?? code).join(' e ')
+    return codes.length > 0
+      ? `Só você viu: ${who} tem ${names}.`
+      : `Só você viu: ${who} está sem cartas.`
+  }
+  return 'Você recebeu uma informação secreta.'
 }

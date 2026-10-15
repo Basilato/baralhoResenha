@@ -9,7 +9,9 @@ import {
   GhostIcon,
   LayersIcon,
   Loader2Icon,
+  RotateCcwIcon,
   TrophyIcon,
+  UserMinusIcon,
   WifiOffIcon,
   XCircleIcon,
 } from 'lucide-react'
@@ -24,12 +26,12 @@ import { useAuth } from '@/features/auth/auth-context'
 import { useCardCatalog, type CardCatalog, type CardDefinition } from '@/features/cards/catalog'
 import { CardBack, GameCard } from '@/features/cards/game-card'
 import { CardDetailsDialog } from '@/features/cards/card-details-dialog'
-import { closeRoom } from '@/features/rooms/rooms-service'
+import { closeRoom, createRematch } from '@/features/rooms/rooms-service'
 import { RoomUnavailable } from '@/features/rooms/room-unavailable'
 import { useGameChannel } from '@/features/rooms/use-room'
 import { isAppError, toFriendlyMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
-import { describeEvent } from './event-messages'
+import { describeEvent, describePrivateEvent } from './event-messages'
 import { PlayCardDialog, type PlayableCard } from './play-card-dialog'
 import { ReactionDialog } from './reaction-dialog'
 import {
@@ -39,6 +41,7 @@ import {
   type GameView,
   type HandCard,
   type Participant,
+  type Presence,
 } from './game-service'
 
 export function GamePage() {
@@ -109,6 +112,11 @@ function Table({
           )}
         </div>
         <div className="flex items-center gap-2">
+          {game.curseActive && game.status === 'playing' && (
+            <Badge variant="outline" className="border-cat-ghost text-cat-ghost">
+              Maldição da Ressaca ativa
+            </Badge>
+          )}
           {offline && (
             <Badge variant="outline" className="gap-1 text-muted-foreground">
               <WifiOffIcon className="size-3" />
@@ -135,6 +143,8 @@ function Table({
 
       {game.status === 'finished' && game.result && <ResultPanel game={game} players={players} />}
 
+      {game.status === 'playing' && !isHost && hostAway(game) && <ClaimHostBanner game={game} />}
+
       {game.pendingAction && <PendingBanner game={game} players={players} catalog={catalog} />}
 
       <section aria-label="Jogadores" className="min-w-0">
@@ -148,6 +158,10 @@ function Table({
               isLeader={player.id === game.leaderPlayerId}
               isMarked={game.markedPlayerIds.includes(player.id)}
               online={onlineUserIds.has(player.userId)}
+              presence={game.presence.find((item) => item.playerId === player.id)}
+              absenceLimit={game.absenceLimitSeconds}
+              canRemove={isHost && game.status === 'playing' && player.id !== game.myPlayerId}
+              game={game}
             />
           ))}
         </ul>
@@ -274,11 +288,11 @@ function MyArea({
         {isMyTurn && (
           // No celular, a barra fica presa embaixo da tela durante a sua vez.
           <div className="flex flex-wrap items-center gap-2 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:justify-between max-sm:border-t max-sm:bg-background/95 max-sm:p-3 max-sm:backdrop-blur">
-            {!ghost && (
-              <span className="text-sm text-muted-foreground" data-testid="actions-left">
-                Ações: {game.actionsUsed}/{game.maxActions}
-              </span>
-            )}
+            <span className="text-sm text-muted-foreground" data-testid="actions-left">
+              {ghost
+                ? `Carta do Além: ${game.actionsUsed}/${game.maxGhostActions}`
+                : `Ações: ${game.actionsUsed}/${game.maxActions}`}
+            </span>
             {mustDiscard && (
               <Button variant="ghost" className="h-11" onClick={cancelEnding}>
                 Cancelar
@@ -288,7 +302,10 @@ function MyArea({
               size="lg"
               className="h-11"
               disabled={
-                command.isPending || game.phase === 'awaiting_reactions' || (mustDiscard && !ready)
+                command.isPending ||
+                game.phase === 'awaiting_reactions' ||
+                game.phase === 'ghost_decision' ||
+                (mustDiscard && !ready)
               }
               onClick={excess > 0 && !endingTurn ? () => setEndingTurn(true) : endTurn}
             >
@@ -298,6 +315,8 @@ function MyArea({
           </div>
         )}
       </div>
+
+      {isMyTurn && game.phase === 'ghost_decision' && <ReviveChoice game={game} />}
 
       {mustDiscard && (
         <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
@@ -379,6 +398,10 @@ function PlayerPanel({
   isLeader,
   isMarked,
   online,
+  presence,
+  absenceLimit,
+  canRemove,
+  game,
 }: {
   player: Participant
   isMe: boolean
@@ -386,7 +409,21 @@ function PlayerPanel({
   isLeader: boolean
   isMarked: boolean
   online: boolean
+  presence: Presence | undefined
+  absenceLimit: number
+  canRemove: boolean
+  game: GameView
 }) {
+  const command = useGameCommand(game)
+  const quit = presence?.quit ?? false
+  const away = presence && !quit ? presence.secondsAway : 0
+  const removable = canRemove && !quit && away > absenceLimit
+  const remove = () =>
+    command.mutate(
+      { requestId: newRequestId(), command: { type: 'REMOVE_ABSENT', playerId: player.id } },
+      { onError: (error) => toast.error(toFriendlyMessage(error)) },
+    )
+
   return (
     <li
       className={cn(
@@ -433,7 +470,9 @@ function PlayerPanel({
           )}
         </div>
       )}
-      {player.alive ? (
+      {quit ? (
+        <p className="text-xs text-muted-foreground">Desistiu (removido por ausência)</p>
+      ) : player.alive ? (
         <div className="flex items-center gap-2">
           <Progress
             value={(player.hp / Math.max(player.maxHp, 1)) * 100}
@@ -447,8 +486,28 @@ function PlayerPanel({
       ) : (
         <p className="flex items-center gap-1 text-xs text-cat-ghost">
           <GhostIcon className="size-3.5" aria-hidden />
-          Fantasma · {player.ghostTokens}/3 fichas
+          Fantasma · {player.revivalUsed ? 'já ressuscitou' : `${player.ghostTokens}/3 fichas`}
         </p>
+      )}
+      {away > 60 && (
+        <p className="text-xs text-amber-600" data-testid="away">
+          Sem conexão há {Math.floor(away / 60)} min
+        </p>
+      )}
+      {removable && (
+        <ConfirmAction
+          trigger={
+            <Button size="sm" variant="outline" className="self-start text-destructive">
+              <UserMinusIcon />
+              Remover (ausente)
+            </Button>
+          }
+          title={`Remover ${player.displayName}?`}
+          description="Sem conexão há mais de 2 minutos. A pessoa vira desistente: perde as cartas, sai da disputa e não volta para esta partida."
+          confirmLabel="Remover"
+          destructive
+          onConfirm={remove}
+        />
       )}
     </li>
   )
@@ -488,6 +547,7 @@ function EventLog({
   catalog: CardCatalog
 }) {
   const recent = [...game.events].reverse().slice(0, 15)
+  const secrets = game.myPrivateEvents.slice(0, 3)
   return (
     <section aria-labelledby="log-title" className="flex flex-col gap-2">
       <h2 id="log-title" className="font-heading text-lg font-bold">
@@ -497,6 +557,11 @@ function EventLog({
         className="flex flex-col divide-y rounded-xl border bg-card text-sm"
         data-testid="event-log"
       >
+        {secrets.map((event, index) => (
+          <li key={`secret-${index}`} className="bg-cat-ghost/5 px-3 py-2 italic">
+            {describePrivateEvent(event, players, catalog)}
+          </li>
+        ))}
         {recent.map((event) => (
           <li key={event.seq} className="px-3 py-2">
             {describeEvent(event, players, catalog, game.myPlayerId)}
@@ -519,10 +584,23 @@ function ResultPanel({
     .map((id) => players.get(id))
     .filter((player): player is Participant => player !== undefined)
   const iWon = !!game.myPlayerId && result.winnerPlayerIds.includes(game.myPlayerId)
+  const navigate = useNavigate()
+  const rematch = useMutation({
+    mutationFn: () => createRematch(game.gameId),
+    onSuccess: (room) => navigate(`/sala/${room.gameId}`),
+    onError: (error) => toast.error(toFriendlyMessage(error)),
+  })
+  const when = {
+    round_limit: 'Fim das 10 rodadas',
+    last_alive: 'Último vivo de pé',
+    all_dead: 'Todo mundo caiu',
+  }[result.reason]
   const why = {
-    hp: 'Fim das 10 rodadas: venceu quem terminou com mais PV.',
-    knockouts: 'Fim das 10 rodadas: PV empatado, desempate por eliminações.',
-    shared: 'Fim das 10 rodadas: empate em PV e eliminações, vitória compartilhada.',
+    hp: 'venceu quem terminou com mais PV.',
+    knockouts: 'empate desfeito pelas eliminações.',
+    shared: 'empate total, vitória compartilhada.',
+    last_alive: 'nenhum fantasma podia mais voltar.',
+    last_standing: 'venceu quem caiu por último (e com mais PV antes do golpe).',
   }[result.criteria]
 
   return (
@@ -532,16 +610,24 @@ function ResultPanel({
           <TrophyIcon className="size-6 text-amber-500" aria-hidden />
           {iWon ? 'Você venceu!' : winners.length > 1 ? 'Vitória compartilhada' : 'Fim da resenha'}
         </CardTitle>
-        <CardDescription>{why}</CardDescription>
+        <CardDescription>
+          {when}: {why}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <p className="font-medium" data-testid="winners">
           {winners.length === 1 ? 'Vencedor: ' : 'Vencedores: '}
           {winners.map((winner) => winner.displayName).join(', ')}
         </p>
-        <Button asChild variant="outline" className="self-start">
-          <Link to="/lobby">Voltar ao lobby</Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button disabled={rematch.isPending} onClick={() => rematch.mutate()}>
+            {rematch.isPending ? <Loader2Icon className="animate-spin" /> : <RotateCcwIcon />}
+            {game.rematchGameId ? 'Entrar na revanche' : 'Revanche'}
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/lobby">Voltar ao lobby</Link>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )
@@ -591,4 +677,63 @@ function PendingBanner({
       )}
     </div>
   )
+}
+
+/** Fantasma com 3 fichas: ressuscitar agora ou seguir no Além. */
+function ReviveChoice({ game }: { game: GameView }) {
+  const command = useGameCommand(game)
+  const send = (type: 'GHOST_REVIVE' | 'GHOST_STAY') =>
+    command.mutate(
+      { requestId: newRequestId(), command: { type } },
+      { onError: (error) => toast.error(toFriendlyMessage(error)) },
+    )
+
+  return (
+    <div
+      className="flex flex-col gap-3 rounded-xl border border-cat-ghost/40 bg-cat-ghost/5 p-4"
+      data-testid="revive-choice"
+    >
+      <p className="font-medium">Você juntou 3 fichas de ressaca!</p>
+      <p className="text-sm text-muted-foreground">
+        Ressuscitar: volta com 6 PV e 3 cartas novas, perde as cartas do Além e o turno acaba. Só dá
+        para fazer isso uma vez. Ou continue fantasma: compra 1 carta do Além e joga normalmente.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button disabled={command.isPending} onClick={() => send('GHOST_REVIVE')}>
+          Ressuscitar
+        </Button>
+        <Button variant="outline" disabled={command.isPending} onClick={() => send('GHOST_STAY')}>
+          Continuar fantasma
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+/** Host sumido há mais de 2 minutos: qualquer jogador pode assumir o posto. */
+function ClaimHostBanner({ game }: { game: GameView }) {
+  const command = useGameCommand(game)
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400/60 bg-amber-50 p-3 text-sm">
+      <p>O host está sem conexão há mais de 2 minutos.</p>
+      <Button
+        size="sm"
+        disabled={command.isPending}
+        onClick={() =>
+          command.mutate(
+            { requestId: newRequestId(), command: { type: 'CLAIM_HOST' } },
+            { onError: (error) => toast.error(toFriendlyMessage(error)) },
+          )
+        }
+      >
+        Assumir como host
+      </Button>
+    </div>
+  )
+}
+
+function hostAway(game: GameView) {
+  const host = game.participants.find((player) => player.userId === game.hostUserId)
+  const presence = host && game.presence.find((item) => item.playerId === host.id)
+  return !!presence && !presence.quit && presence.secondsAway > game.absenceLimitSeconds
 }

@@ -23,7 +23,7 @@ export type Participant = {
 
 export type HandCard = { instanceId: string; code: string }
 
-export type GamePhase = 'turn_main' | 'turn_ghost' | 'awaiting_reactions'
+export type GamePhase = 'turn_main' | 'turn_ghost' | 'ghost_decision' | 'awaiting_reactions'
 
 export type ReactionRole = 'target' | 'counter' | 'self' | 'sabotage_target' | 'chaos_target'
 export type ChoiceRole = 'actor_pick' | 'target_discard' | 'pass_pick' | 'discard_pick'
@@ -67,10 +67,14 @@ export type MyDecision = {
 }
 
 export type GameResult = {
-  reason: 'round_limit'
-  criteria: 'hp' | 'knockouts' | 'shared'
+  reason: 'round_limit' | 'last_alive' | 'all_dead'
+  criteria: 'hp' | 'knockouts' | 'shared' | 'last_alive' | 'last_standing'
   winnerPlayerIds: string[]
 }
+
+export type Presence = { playerId: string; secondsAway: number; quit: boolean }
+
+export type PrivateEvent = { kind: string; payload: Record<string, unknown>; at: string }
 
 export type GameEvent = {
   seq: number
@@ -111,6 +115,13 @@ export type GameView = {
   pendingAction: PendingAction | null
   myDecision: MyDecision | null
   markedPlayerIds: string[]
+  maxGhostActions: number
+  absenceLimitSeconds: number
+  rematchGameId: string | null
+  curseActive: boolean
+  presence: Presence[]
+  /** Revelações que só eu vi (ex.: Fantasma Fofoqueiro). */
+  myPrivateEvents: PrivateEvent[]
 }
 
 export type GameCommand =
@@ -129,6 +140,10 @@ export type GameCommand =
       cardInstanceId?: string
       selectedCardIds?: string[]
     }
+  | { type: 'GHOST_REVIVE' }
+  | { type: 'GHOST_STAY' }
+  | { type: 'REMOVE_ABSENT'; playerId: string }
+  | { type: 'CLAIM_HOST' }
 
 export async function getGameView(gameId: string): Promise<GameView> {
   const { data, error } = await supabase.rpc('get_game_view', { p_game_id: gameId })
@@ -157,7 +172,7 @@ export function useGameView(gameId: string | undefined, channelStatus: ChannelSt
     queryKey: roomKeys.game(gameId ?? ''),
     queryFn: () => getGameView(gameId!),
     enabled: !!gameId,
-    refetchInterval: channelStatus === 'connected' ? false : 5_000,
+    refetchInterval: channelStatus === 'connected' ? 30_000 : 5_000,
     retry: (failureCount, error) => !isAppError(error, 'ROOM_NOT_FOUND') && failureCount < 2,
   })
 }

@@ -89,6 +89,10 @@ declare
   v_limit int := case when v_ghost then 3 else 7 end;
   v_ids jsonb;
 begin
+  -- Fantasma com 3 fichas decide antes: aqui ele continua fantasma.
+  if (select phase from app_private.games where id = p_game) = 'ghost_decision' then
+    perform pg_temp.cmd(pg_temp.user_at(p_game, v_seat), p_game, '{"type": "GHOST_STAY"}'::jsonb);
+  end if;
   select coalesce(jsonb_agg(id), '[]'::jsonb) into v_ids from (
     select id from app_private.game_cards
     where owner_player_id = v_player and zone = v_zone
