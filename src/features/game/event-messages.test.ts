@@ -44,4 +44,28 @@ describe('describeEvent', () => {
       describeEvent(event('turn_started', { drew: 1, ghost: true }, 'p2'), players, catalog, 'p1'),
     ).toBe('Turno fantasma de Beto: comprou 1 carta do Além.')
   })
+
+  it('descreve ataque com dano por alvo e custo', () => {
+    const played = event(
+      'card_played',
+      { cardCode: 'ATK-01', targets: [{ playerId: 'p2', damage: 4 }], costCode: null },
+      'p1',
+    )
+    expect(describeEvent(played, players, catalog, 'p2')).toBe('Ana jogou Falou Merda em Você (4).')
+  })
+
+  it('descreve dano, sobrevivência e morte', () => {
+    const damage = event('damage_dealt', {
+      results: [
+        { playerId: 'p2', damage: 3, hp: 13, survived: false },
+        { playerId: 'p1', damage: 3, hp: 1, survived: true },
+      ],
+    })
+    expect(describeEvent(damage, players, catalog, null)).toBe(
+      'Beto sofreu 3 (ficou com 13 PV). Ana sobreviveu com 1 PV.',
+    )
+    expect(
+      describeEvent(event('player_died', { byPlayerId: 'p1' }, 'p2'), players, catalog, null),
+    ).toBe('Beto foi eliminado por Ana e virou fantasma.')
+  })
 })

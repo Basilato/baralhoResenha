@@ -846,15 +846,15 @@ export const supabase = createClient<Database>(
 
 ## Fase 6 — Ataques, defesas e reações (P0)
 
-- [ ] Implementar `pending_actions`/`action_responses`.
-- [ ] Implementar 7 ataques, incluindo alvo de maior mão e dois alvos.
-- [ ] Implementar 6 defesas e redirecionamento sem reação em loop.
-- [ ] Implementar custo de descarte, compra após dano e bônus Mais Odiado.
-- [ ] Implementar dano fatal e reação `Ressuscitou o Tio Paulo`.
-- [ ] Garantir que defesa não consuma as duas ações do próprio turno.
-- [ ] Tratar ataque a líder, líder morto, ataque multi-alvo, um oponente restante.
+- [x] Implementar `pending_actions`/`action_responses`.
+- [x] Implementar 7 ataques, incluindo alvo de maior mão e dois alvos.
+- [x] Implementar 6 defesas e redirecionamento sem reação em loop.
+- [x] Implementar custo de descarte, compra após dano e bônus Mais Odiado.
+- [x] Implementar dano fatal e reação `Ressuscitou o Tio Paulo`.
+- [x] Garantir que defesa não consuma as duas ações do próprio turno.
+- [x] Tratar ataque a líder, líder morto, ataque multi-alvo, um oponente restante.
 
-**Entrega:** ataques e reações íntegros com dois navegadores e também com três alvos participantes.
+**Entrega:** ataques e reações íntegros com dois navegadores e também com três alvos participantes. `Última Palavra` também entrou nesta fase; `Evento Raro` (contra sabotagem) entra com as sabotagens na Fase 7.
 
 ## Fase 7 — Sabotagem, caos, recuperação e reviravoltas (P0)
 

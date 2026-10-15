@@ -4,7 +4,7 @@ Jogo de cartas multiplayer online e privado, feito com os memes, fotos, apelidos
 
 A ideia é ser fácil de pegar: **comprar cartas, usar até duas ações por turno, atacar e defender, sobreviver e vencer**. Quem é derrotado vira **fantasma**, continua atrapalhando a partida e pode ressuscitar uma única vez.
 
-> **Status:** Fases 1 a 5 prontas: login privado, salas em tempo real, catálogo e baralhos, e o motor de turnos (compra, 2 ações, limite de 7, rodadas, Mais Odiado e fim na rodada 10). Próximo passo: ataques, defesas e reações (Fase 6). A especificação completa está em [BARALHO_DA_RESENHA_PLANO_TECNICO.md](BARALHO_DA_RESENHA_PLANO_TECNICO.md).
+> **Status:** Fases 1 a 6 prontas: login privado, salas em tempo real, catálogo e baralhos, motor de turnos e combate (7 ataques, defesas, Reverso do Reverso, Mais Odiado, golpe fatal com Ressuscitou o Tio Paulo e Última Palavra). Próximo passo: sabotagem, caos, recuperação e reviravoltas (Fase 7). A especificação completa está em [BARALHO_DA_RESENHA_PLANO_TECNICO.md](BARALHO_DA_RESENHA_PLANO_TECNICO.md).
 
 ## O que o MVP vai ter
 
@@ -116,6 +116,12 @@ O Supabase Auth só aceita senha junto com e-mail ou telefone. Por isso, cada us
 
 - Toda jogada passa por `submit_game_command`, com a versão da mesa e um `request_id` por clique. O banco trava a partida, valida quem está na vez e a fase, aplica tudo numa transação e grava um evento público. O mesmo `request_id` nunca é aplicado duas vezes, então clique duplo e retry de rede são seguros.
 - O histórico (`game_events`) mostra compras só como contagem. Descartes aparecem com as cartas, porque a pilha é aberta.
+
+### Combate
+
+- `PLAY_CARD` valida carta, alvos e custo, gasta a ação e abre uma janela de reação com o dano já fixado (inclui o +1 do Mais Odiado).
+- Cada alvo responde com `RESPOND`, mesmo fora da vez: aceitar ou usar uma reação permitida. A lista de reações válidas vem do banco e só aparece para a própria pessoa.
+- Com todas as respostas, o banco aplica o dano em lote, transforma os mortos em fantasmas, conta as eliminações e trata Última Palavra, o dano próprio da A Braba e a morte no próprio turno.
 
 ### Estrutura
 

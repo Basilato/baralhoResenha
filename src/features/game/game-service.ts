@@ -23,7 +23,34 @@ export type Participant = {
 
 export type HandCard = { instanceId: string; code: string }
 
-export type GamePhase = 'turn_main' | 'turn_ghost'
+export type GamePhase = 'turn_main' | 'turn_ghost' | 'awaiting_reactions'
+
+export type ResponseRole = 'target' | 'counter' | 'self'
+
+/** Jogada esperando respostas (pública: não diz o que cada um tem na mão). */
+export type PendingAction = {
+  id: string
+  actorPlayerId: string
+  cardCode: string
+  stage: 'defense' | 'counter' | 'self_fatal'
+  responses: {
+    playerId: string
+    role: ResponseRole
+    baseDamage: number
+    responded: boolean
+    reactionCode: string | null
+  }[]
+}
+
+/** Decisão esperando o próprio jogador (privada). */
+export type MyDecision = {
+  pendingActionId: string
+  role: ResponseRole
+  baseDamage: number
+  actorPlayerId: string
+  cardCode: string
+  eligibleCardIds: string[]
+}
 
 export type GameResult = {
   reason: 'round_limit'
@@ -67,9 +94,24 @@ export type GameView = {
   mainDiscardTop: string | null
   ghostDiscardTop: string | null
   events: GameEvent[]
+  pendingAction: PendingAction | null
+  myDecision: MyDecision | null
 }
 
-export type GameCommand = { type: 'END_TURN'; discardCardIds?: string[] }
+export type GameCommand =
+  | { type: 'END_TURN'; discardCardIds?: string[] }
+  | {
+      type: 'PLAY_CARD'
+      cardInstanceId: string
+      targetPlayerIds: string[]
+      discardCostCardId?: string | null
+    }
+  | {
+      type: 'RESPOND'
+      pendingActionId: string
+      response: 'PASS' | 'REACT'
+      cardInstanceId?: string
+    }
 
 export async function getGameView(gameId: string): Promise<GameView> {
   const { data, error } = await supabase.rpc('get_game_view', { p_game_id: gameId })

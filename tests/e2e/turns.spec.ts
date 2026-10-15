@@ -1,23 +1,5 @@
-import { expect, test, type Page } from '@playwright/test'
-import { expectNoHorizontalOverflow, playerPage } from './support.ts'
-
-/** Página do jogador que está na vez (a que mostra "Sua vez!"). */
-async function activePage(pages: Page[]) {
-  await expect
-    .poll(async () => {
-      const flags = await Promise.all(
-        pages.map(
-          async (page) => (await page.getByTestId('turn-status').textContent()) === 'Sua vez!',
-        ),
-      )
-      return flags.filter(Boolean).length
-    })
-    .toBe(1)
-  for (const page of pages) {
-    if ((await page.getByTestId('turn-status').textContent()) === 'Sua vez!') return page
-  }
-  throw new Error('ninguém está na vez')
-}
+import { expect, test } from '@playwright/test'
+import { activePage, expectNoHorizontalOverflow, playerPage } from './support.ts'
 
 test('turnos passam em ordem, com compra, limite de 7 e histórico', async ({
   browser,
@@ -70,8 +52,15 @@ test('turnos passam em ordem, com compra, limite de 7 e histórico', async ({
     await expect(page.getByRole('heading', { name: 'Rodada 2 de 10' })).toBeVisible()
   expect(await activePage(pages)).toBe(first)
   await expect(first.getByTestId('my-hand-count')).toHaveText('9/7')
+  // O limite só vale ao encerrar: com 9 cartas, todas continuam jogáveis.
+  await expect(first.getByTestId('my-hand').getByRole('button', { name: /^Ver / })).toHaveCount(9)
+  await first.getByRole('button', { name: 'Encerrar turno' }).click()
   const discardButton = first.getByRole('button', { name: 'Descartar 2 e encerrar' })
   await expect(discardButton).toBeDisabled()
+  // Dá para desistir de encerrar e voltar a jogar.
+  await first.getByRole('button', { name: 'Cancelar' }).click()
+  await expect(first.getByTestId('my-hand').getByRole('button', { name: /^Ver / })).toHaveCount(9)
+  await first.getByRole('button', { name: 'Encerrar turno' }).click()
 
   const hand = first.getByTestId('my-hand').getByRole('button')
   await hand.nth(0).click()

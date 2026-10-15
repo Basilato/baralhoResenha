@@ -30,6 +30,8 @@ import { useGameChannel } from '@/features/rooms/use-room'
 import { isAppError, toFriendlyMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import { describeEvent } from './event-messages'
+import { PlayCardDialog, type PlayableCard } from './play-card-dialog'
+import { ReactionDialog } from './reaction-dialog'
 import {
   newRequestId,
   useGameCommand,
@@ -75,6 +77,7 @@ function Table({
   const { user } = useAuth()
   const navigate = useNavigate()
   const [selected, setSelected] = useState<CardDefinition | null>(null)
+  const [playing, setPlaying] = useState<PlayableCard | null>(null)
 
   const players = new Map(game.participants.map((player) => [player.id, player]))
   const me = game.myPlayerId ? players.get(game.myPlayerId) : undefined
@@ -132,6 +135,8 @@ function Table({
 
       {game.status === 'finished' && game.result && <ResultPanel game={game} players={players} />}
 
+      {game.pendingAction && <PendingBanner game={game} players={players} catalog={catalog} />}
+
       <section aria-label="Jogadores" className="min-w-0">
         <ul className="relative -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4">
           {game.participants.map((player) => (
@@ -182,11 +187,20 @@ function Table({
           me={me}
           isMyTurn={isMyTurn}
           catalog={catalog}
-          onInspect={setSelected}
+          onOpenCard={(handCard, card) => setPlaying({ handCard, card })}
         />
       )}
 
       <EventLog game={game} players={players} catalog={catalog} />
+
+      <PlayCardDialog
+        playable={playing}
+        game={game}
+        isMyTurn={isMyTurn}
+        catalog={catalog}
+        onClose={() => setPlaying(null)}
+      />
+      <ReactionDialog game={game} players={players} catalog={catalog} />
 
       <CardDetailsDialog card={selected} onOpenChange={(open) => !open && setSelected(null)} />
     </div>
@@ -199,23 +213,30 @@ function MyArea({
   me,
   isMyTurn,
   catalog,
-  onInspect,
+  onOpenCard,
 }: {
   game: GameView
   me: Participant
   isMyTurn: boolean
   catalog: CardCatalog
-  onInspect: (card: CardDefinition) => void
+  onOpenCard: (handCard: HandCard, card: CardDefinition) => void
 }) {
   const command = useGameCommand(game)
   const [discarding, setDiscarding] = useState<ReadonlySet<string>>(new Set())
+  // O limite de mão só vale ao encerrar: durante a vez dá para jogar com 9.
+  const [endingTurn, setEndingTurn] = useState(false)
 
   const ghost = !me.alive
   const hand = ghost ? game.myGhostHand : game.myHand
   const limit = ghost ? game.ghostHandLimit : game.handLimit
   const excess = Math.max(0, hand.length - limit)
-  const mustDiscard = isMyTurn && excess > 0
+  const mustDiscard = isMyTurn && excess > 0 && endingTurn
   const ready = discarding.size === excess
+
+  const cancelEnding = () => {
+    setEndingTurn(false)
+    setDiscarding(new Set())
+  }
 
   const toggle = (instanceId: string) =>
     setDiscarding((current) => {
@@ -257,11 +278,18 @@ function MyArea({
                 Ações: {game.actionsUsed}/{game.maxActions}
               </span>
             )}
+            {mustDiscard && (
+              <Button variant="ghost" className="h-11" onClick={cancelEnding}>
+                Cancelar
+              </Button>
+            )}
             <Button
               size="lg"
               className="h-11"
-              disabled={command.isPending || (mustDiscard && !ready)}
-              onClick={endTurn}
+              disabled={
+                command.isPending || game.phase === 'awaiting_reactions' || (mustDiscard && !ready)
+              }
+              onClick={excess > 0 && !endingTurn ? () => setEndingTurn(true) : endTurn}
             >
               {command.isPending ? <Loader2Icon className="animate-spin" /> : <CheckIcon />}
               {mustDiscard ? `Descartar ${excess} e encerrar` : 'Encerrar turno'}
@@ -293,7 +321,7 @@ function MyArea({
               selectable={mustDiscard}
               selected={discarding.has(handCard.instanceId)}
               onSelect={() => toggle(handCard.instanceId)}
-              onInspect={onInspect}
+              onOpen={onOpenCard}
             />
           ))}
         </ul>
@@ -308,14 +336,14 @@ function HandItem({
   selectable,
   selected,
   onSelect,
-  onInspect,
+  onOpen,
 }: {
   handCard: HandCard
   card: CardDefinition | undefined
   selectable: boolean
   selected: boolean
   onSelect: () => void
-  onInspect: (card: CardDefinition) => void
+  onOpen: (handCard: HandCard, card: CardDefinition) => void
 }) {
   if (!card) return null
   return (
@@ -327,7 +355,7 @@ function HandItem({
           !selectable && 'hover:-translate-y-1 focus-visible:-translate-y-1',
           selected && '-translate-y-2 opacity-60 ring-3 ring-destructive',
         )}
-        onClick={() => (selectable ? onSelect() : onInspect(card))}
+        onClick={() => (selectable ? onSelect() : onOpen(handCard, card))}
         aria-label={selectable ? `Descartar ${card.name}` : `Ver ${card.name}`}
         aria-pressed={selectable ? selected : undefined}
         data-instance={handCard.instanceId}
@@ -508,5 +536,43 @@ function ResultPanel({
         </Button>
       </CardContent>
     </Card>
+  )
+}
+
+/** Jogada esperando respostas: quem jogou, em quem e quem falta responder. */
+function PendingBanner({
+  game,
+  players,
+  catalog,
+}: {
+  game: GameView
+  players: ReadonlyMap<string, Participant>
+  catalog: CardCatalog
+}) {
+  const pending = game.pendingAction!
+  const name = (id: string) =>
+    id === game.myPlayerId ? 'você' : (players.get(id)?.displayName ?? 'alguém')
+  const waiting = pending.responses.filter((response) => !response.responded)
+  const card = catalog.get(pending.cardCode)?.name ?? pending.cardCode
+  const targets = pending.responses
+    .filter((response) => response.role === 'target')
+    .map((response) => `${name(response.playerId)} (${response.baseDamage})`)
+    .join(' e ')
+
+  return (
+    <div
+      className="flex flex-col gap-1 rounded-xl border border-cat-attack/40 bg-cat-attack/5 p-3 text-sm"
+      role="status"
+      data-testid="pending-banner"
+    >
+      <p className="font-medium">
+        {name(pending.actorPlayerId)} jogou {card} em {targets}.
+      </p>
+      {waiting.length > 0 && (
+        <p className="text-muted-foreground">
+          Aguardando resposta de {waiting.map((response) => name(response.playerId)).join(', ')}…
+        </p>
+      )}
+    </div>
   )
 }

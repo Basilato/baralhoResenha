@@ -12,6 +12,7 @@ const card: CardDefinition = {
   copies: 8,
   targetRule: 'attack_reaction',
   isReaction: true,
+  discardCost: false,
   rulesText: 'Reação: anula o dano de 1 ataque contra você.',
   imagePath: null,
   isProvisional: false,

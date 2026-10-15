@@ -12,6 +12,8 @@ export type CardDefinition = {
   copies: number
   targetRule: string
   isReaction: boolean
+  /** Exige descartar outra carta da mão como custo. */
+  discardCost: boolean
   rulesText: string
   imagePath: string | null
   isProvisional: boolean
