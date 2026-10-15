@@ -11,7 +11,7 @@ test('página de regras mostra as 35 cartas do catálogo', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Ampliar Eu Sei o Que Você Fez' }).click()
   const dialog = page.getByRole('dialog')
-  await expect(dialog.getByText('Regra em teste')).toBeVisible()
-  await expect(dialog.getByText(/Revele a todos 2 cartas/)).toBeVisible()
+  await expect(dialog.getByText('Regra em teste')).toHaveCount(0)
+  await expect(dialog.getByText(/só você vê/)).toBeVisible()
   await expect(dialog.getByRole('article')).toBeInViewport({ ratio: 1 })
 })

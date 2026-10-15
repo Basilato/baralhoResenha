@@ -66,8 +66,8 @@ select results_eq(
   'proporções por categoria batem com o plano');
 select is((select count(*)::int from app_private.card_definitions
            where set_version = '7.1' and is_reaction), 8, 'oito modelos de reação');
-select ok((select is_provisional from app_private.card_definitions where code = 'GHO-05'),
-  'GHO-05 marcada como provisória');
+select ok((select not is_provisional and effect_code = 'ghost_peek_discard' from app_private.card_definitions where code = 'GHO-05'),
+  'GHO-05 aprovada com o efeito privado (B1)');
 
 -- Partida de 3 ---------------------------------------------------------------
 

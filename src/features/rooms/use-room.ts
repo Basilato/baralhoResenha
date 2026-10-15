@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/features/auth/auth-context'
 import { isAppError } from '@/lib/errors'
 import { supabase } from '@/lib/supabase'
-import { getRoomView, roomKeys } from './rooms-service'
+import { getRoomView, roomKeys, sendHeartbeat } from './rooms-service'
 
 export type ChannelStatus = 'connecting' | 'connected' | 'offline'
 
@@ -13,6 +13,8 @@ export type ChannelStatus = 'connecting' | 'connected' | 'offline'
  * Presence só indica quem está com a tela aberta; não decide nada.
  */
 export function useGameChannel(gameId: string | undefined) {
+  useHeartbeat(gameId)
+
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const userId = user?.id
@@ -77,4 +79,32 @@ export function useRoomView(gameId: string | undefined, channelStatus: ChannelSt
     refetchInterval: channelStatus === 'connected' ? false : 5_000,
     retry: (failureCount, error) => !isAppError(error, 'ROOM_NOT_FOUND') && failureCount < 2,
   })
+}
+
+const HEARTBEAT_MS = 20_000
+
+/**
+ * Sinal de presença gravado pelo servidor (horário do banco). É ele que decide
+ * quem conta como conectado para passar o posto de host e, nas próximas fases,
+ * para a remoção por ausência. Falhas são ignoradas: o próximo sinal tenta de novo.
+ */
+function useHeartbeat(gameId: string | undefined) {
+  useEffect(() => {
+    if (!gameId) return
+
+    // Também em segundo plano: trocar de app não é desconectar. Se o sistema
+    // suspender a página, o sinal para sozinho — aí sim é ausência.
+    const beat = () => void sendHeartbeat(gameId).catch(() => {})
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') beat()
+    }
+
+    beat()
+    const timer = window.setInterval(beat, HEARTBEAT_MS)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [gameId])
 }

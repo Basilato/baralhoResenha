@@ -6,6 +6,9 @@
 //   pnpm users disable <username>
 //   pnpm users enable <username>
 //   pnpm users list
+//   pnpm users remove <username> --confirmar
+//     Exclui a conta. Se a pessoa já jogou, anonimiza em vez de excluir (E7):
+//     preserva as partidas, mas apaga nome, apelido, e-mail técnico e login.
 //
 // Lê do arquivo .env.admin (NUNCA commitar, NUNCA usar prefixo VITE_):
 //   SUPABASE_URL=https://SEU-PROJETO.supabase.co
@@ -21,14 +24,19 @@ const USERNAME_PATTERN = /^[a-z0-9_]{3,20}$/
 // ~100 anos: o Auth não tem "banido para sempre".
 const BAN_FOREVER = '876000h'
 
+class CliError extends Error {}
+
+// Interrompe o comando; a mensagem é impressa no fim, sem process.exit no meio
+// de requisições abertas.
 function fail(message) {
-  console.error(`Erro: ${message}`)
-  process.exit(1)
+  throw new CliError(message)
 }
 
 const { SUPABASE_URL, SUPABASE_SECRET_KEY, AUTH_EMAIL_DOMAIN } = process.env
 if (!SUPABASE_URL || !SUPABASE_SECRET_KEY || !AUTH_EMAIL_DOMAIN) {
-  fail('defina SUPABASE_URL, SUPABASE_SECRET_KEY e AUTH_EMAIL_DOMAIN em .env.admin')
+  // Nada aberto ainda: pode sair direto.
+  console.error('Erro: defina SUPABASE_URL, SUPABASE_SECRET_KEY e AUTH_EMAIL_DOMAIN em .env.admin')
+  process.exit(1)
 }
 
 const admin = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
@@ -106,6 +114,53 @@ async function setActive(rawUsername, active) {
   console.log(`${profile.username} ${active ? 'reativado' : 'desativado'}.`)
 }
 
+async function remove(rawUsername, confirmFlag) {
+  const profile = await findProfile(normalizeUsername(rawUsername))
+  if (confirmFlag !== '--confirmar') {
+    fail(`isso é irreversível. Rode de novo com: pnpm users remove ${profile.username} --confirmar`)
+  }
+
+  // Sem histórico de partidas, a exclusão passa (o perfil vai junto em cascata).
+  const { error: deleteError } = await admin.auth.admin.deleteUser(profile.id)
+  if (!deleteError) {
+    console.log(`${profile.username} excluído.`)
+    return
+  }
+
+  // Com histórico, o banco bloqueia a exclusão para não corromper partidas.
+  // Anonimiza: o assento continua existindo, mas sem nada que identifique a pessoa.
+  const tag = profile.id.replaceAll('-', '').slice(0, 8)
+  const anonymous = `removido_${tag}`
+
+  const { error: authError } = await admin.auth.admin.updateUserById(profile.id, {
+    email: `${anonymous}@${AUTH_EMAIL_DOMAIN}`,
+    email_confirm: true,
+    password: randomBytes(24).toString('base64url'),
+    ban_duration: BAN_FOREVER,
+    app_metadata: { username: anonymous, display_name: 'Jogador removido' },
+    user_metadata: {},
+  })
+  if (authError) fail(authError.message)
+
+  const { error } = await admin
+    .from('profiles')
+    .update({
+      username: anonymous,
+      display_name: 'Jogador removido',
+      avatar_path: null,
+      is_active: false,
+    })
+    .eq('id', profile.id)
+  if (error) fail(error.message)
+
+  console.log(
+    `${profile.username} tinha partidas no histórico: conta anonimizada como ${anonymous}.`,
+  )
+  console.log(
+    'Se estava numa partida em andamento, o host pode removê-la por ausência ou encerrar a sala.',
+  )
+}
+
 async function list() {
   const { data, error } = await admin
     .from('profiles')
@@ -124,22 +179,31 @@ async function list() {
 
 const [command, ...args] = process.argv.slice(2)
 
-switch (command) {
-  case 'create':
-    await create(args[0], args[1])
-    break
-  case 'reset-password':
-    await resetPassword(args[0])
-    break
-  case 'disable':
-    await setActive(args[0], false)
-    break
-  case 'enable':
-    await setActive(args[0], true)
-    break
-  case 'list':
-    await list()
-    break
-  default:
-    fail('comando inválido. Use: create, reset-password, disable, enable ou list')
+try {
+  switch (command) {
+    case 'create':
+      await create(args[0], args[1])
+      break
+    case 'reset-password':
+      await resetPassword(args[0])
+      break
+    case 'disable':
+      await setActive(args[0], false)
+      break
+    case 'enable':
+      await setActive(args[0], true)
+      break
+    case 'list':
+      await list()
+      break
+    case 'remove':
+      await remove(args[0], args[1])
+      break
+    default:
+      fail('comando inválido. Use: create, reset-password, disable, enable, list ou remove')
+  }
+} catch (error) {
+  if (!(error instanceof CliError)) throw error
+  console.error(`Erro: ${error.message}`)
+  process.exitCode = 1
 }

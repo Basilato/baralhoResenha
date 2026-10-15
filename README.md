@@ -88,6 +88,7 @@ O Supabase Auth só aceita senha junto com e-mail ou telefone. Por isso, cada us
   pnpm users disable leo           # bloqueia no Auth e derruba a sessão aberta no app
   pnpm users enable leo
   pnpm users list
+  pnpm users remove leo --confirmar  # exclui; se já jogou, anonimiza em vez de excluir
   ```
 
 - O `.env.admin` guarda a secret key. Copie de `.env.admin.example` e nunca faça commit desse arquivo.
@@ -99,6 +100,9 @@ O Supabase Auth só aceita senha junto com e-mail ou telefone. Por isso, cada us
 - As tabelas das salas ficam no schema `app_private`, que não é exposto. O navegador só usa as RPCs (`create_room`, `join_room`, `start_game` e as outras), e cada uma confere quem está chamando e se a pessoa faz parte da sala.
 - Toda mudança aumenta `games.version` e o banco manda um aviso `game_changed` no canal privado `game:<id>`. O aviso só leva o id e a versão. Quem recebe busca o estado de novo.
 - Se o tempo real cair, a tela passa a consultar a cada 5 segundos até reconectar.
+- O código da sala tem 10 caracteres, nunca se repete e o host pode trocar por um novo a qualquer momento. Quem o host remove só volta se ele liberar.
+- Cada tela aberta manda um sinal de presença ao banco a cada 20 segundos. É esse sinal, com o horário do servidor, que define quem está conectado: quando o host sai, o posto passa ao conectado mais antigo.
+- Os lugares da partida são sorteados no banco ao iniciar.
 - **Em produção:** em Realtime → Settings, desligue o acesso público (deixe só canais privados).
 
 ### Cartas
@@ -139,3 +143,4 @@ tests/e2e/      # Playwright
 ## Documentação
 
 - [Plano técnico completo](BARALHO_DA_RESENHA_PLANO_TECNICO.md): produto, regras, catálogo de cartas, arquitetura, banco de dados, segurança, fases e critérios de aceite
+- [Decisões aprovadas](BARALHO_DA_RESENHA_DECISOES_APROVADAS.md): regras e escolhas de produto que prevalecem sobre o plano em caso de conflito

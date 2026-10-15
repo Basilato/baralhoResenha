@@ -9,7 +9,9 @@ import {
   DoorOpenIcon,
   Loader2Icon,
   PlayIcon,
+  RefreshCwIcon,
   Share2Icon,
+  UserCheckIcon,
   UserXIcon,
   WifiOffIcon,
   XCircleIcon,
@@ -25,11 +27,14 @@ import { isAppError, toFriendlyMessage } from '@/lib/errors'
 import { MAX_PLAYERS, MIN_PLAYERS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import {
+  allowRejoin,
   closeRoom,
+  formatRoomCode,
   inviteLink,
   kickPlayer,
   leaveRoom,
   roomKeys,
+  rotateRoomCode,
   setReady,
   startGame,
   type RoomPlayer,
@@ -122,6 +127,19 @@ function Lobby({
     },
     onError,
   })
+  const rotate = useMutation({
+    mutationFn: () => rotateRoomCode(room.id),
+    onSuccess: () => {
+      toast.success('Código novo gerado. O anterior parou de funcionar.')
+      void refresh()
+    },
+    onError,
+  })
+  const allow = useMutation({
+    mutationFn: (userId: string) => allowRejoin(room.id, userId),
+    onSuccess: refresh,
+    onError,
+  })
   const close = useMutation({
     mutationFn: () => closeRoom(room.id),
     onSuccess: () => {
@@ -153,7 +171,14 @@ function Lobby({
         )}
       </div>
 
-      {room.code && <InviteCard code={room.code} />}
+      {room.code && (
+        <InviteCard
+          code={room.code}
+          canRotate={isHost}
+          rotating={rotate.isPending}
+          onRotate={() => rotate.mutate()}
+        />
+      )}
 
       <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Lugares">
         {seats.map((player, index) =>
@@ -179,6 +204,34 @@ function Lobby({
           ),
         )}
       </ul>
+
+      {room.removedPlayers.length > 0 && (
+        <section aria-labelledby="removed-title" className="flex flex-col gap-2">
+          <h2 id="removed-title" className="text-sm font-medium text-muted-foreground">
+            Removidos por você (só voltam se você liberar)
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {room.removedPlayers.map((removed) => (
+              <li
+                key={removed.userId}
+                className="flex items-center gap-2 rounded-full border bg-card py-1 pr-1 pl-3 text-sm"
+              >
+                {removed.displayName}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full"
+                  disabled={allow.isPending}
+                  onClick={() => allow.mutate(removed.userId)}
+                >
+                  <UserCheckIcon />
+                  Permitir volta
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="fixed inset-x-0 bottom-0 z-10 border-t bg-background/95 p-4 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0">
         <div className="mx-auto flex max-w-5xl flex-col gap-2 sm:flex-row sm:items-center">
@@ -249,7 +302,17 @@ function Lobby({
   )
 }
 
-function InviteCard({ code }: { code: string }) {
+function InviteCard({
+  code,
+  canRotate,
+  rotating,
+  onRotate,
+}: {
+  code: string
+  canRotate: boolean
+  rotating: boolean
+  onRotate: () => void
+}) {
   const link = inviteLink(code)
   const canShare = typeof navigator.share === 'function'
 
@@ -280,10 +343,12 @@ function InviteCard({ code }: { code: string }) {
         <div>
           <p className="text-sm text-muted-foreground">Código da sala</p>
           <p
-            className="font-mono text-4xl font-black tracking-[0.2em] text-primary"
+            className="font-mono text-3xl font-black tracking-[0.12em] whitespace-nowrap text-primary sm:text-4xl"
             data-testid="room-code"
+            data-code={code}
+            aria-label={`Código da sala: ${code.split('').join(' ')}`}
           >
-            {code}
+            {formatRoomCode(code)}
           </p>
         </div>
         <div className="flex gap-2">
@@ -301,6 +366,26 @@ function InviteCard({ code }: { code: string }) {
               <Share2Icon />
               Copiar link
             </Button>
+          )}
+          {canRotate && (
+            <ConfirmAction
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="icon-lg"
+                  className="h-10"
+                  disabled={rotating}
+                  aria-label="Gerar código novo"
+                  title="Gerar código novo"
+                >
+                  <RefreshCwIcon className={cn(rotating && 'animate-spin')} />
+                </Button>
+              }
+              title="Gerar um código novo?"
+              description="O código atual e o link de convite param de funcionar na hora. Quem já está na sala continua."
+              confirmLabel="Gerar novo"
+              onConfirm={onRotate}
+            />
           )}
         </div>
       </CardContent>
@@ -355,7 +440,7 @@ function SeatCard({
             </Button>
           }
           title={`Remover ${player.displayName}?`}
-          description="A pessoa sai da sala, mas pode voltar com o código enquanto a resenha não começar."
+          description="A pessoa sai da sala e só volta se você liberar."
           confirmLabel="Remover"
           destructive
           onConfirm={onKick}

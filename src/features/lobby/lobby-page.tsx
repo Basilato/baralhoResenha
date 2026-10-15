@@ -18,6 +18,7 @@ import {
   joinRoom,
   listMyRooms,
   roomKeys,
+  ROOM_CODE_LENGTH,
   roomPath,
 } from '@/features/rooms/rooms-service'
 import { MAX_PLAYERS } from '@/lib/constants'
@@ -27,7 +28,10 @@ const joinSchema = z.object({
   code: z
     .string()
     .transform(extractRoomCode)
-    .refine((code) => code.length === 6, 'O código tem 6 letras/números.'),
+    .refine(
+      (code) => code.length === ROOM_CODE_LENGTH,
+      `O código tem ${ROOM_CODE_LENGTH} letras e números.`,
+    ),
 })
 
 type JoinInput = z.input<typeof joinSchema>
@@ -101,7 +105,7 @@ export function LobbyPage() {
                 </Label>
                 <Input
                   id="room-code"
-                  placeholder="Ex.: K7QX2M"
+                  placeholder="Ex.: K7QX2 M9PLA"
                   autoCapitalize="characters"
                   autoComplete="off"
                   autoCorrect="off"

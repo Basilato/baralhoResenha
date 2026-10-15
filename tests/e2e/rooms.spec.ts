@@ -12,8 +12,8 @@ test('três pessoas entram, veem tudo em tempo real e o host inicia', async ({
 
   await host.getByRole('button', { name: 'Criar resenha' }).click()
   await expect(host).toHaveURL(/\/sala\//)
-  const code = (await host.getByTestId('room-code').textContent())!.trim()
-  expect(code).toMatch(/^[A-Z0-9]{6}$/)
+  const code = (await host.getByTestId('room-code').getAttribute('data-code'))!
+  expect(code).toMatch(/^[A-Z0-9]{10}$/)
 
   // Com menos de 3, o host não consegue começar.
   await expect(host.getByRole('button', { name: /Começar/ })).toBeDisabled()
@@ -79,7 +79,7 @@ test('host remove um jogador e ele volta para o lobby', async ({
   const guest = await playerPage(browser, 'teste8', options)
 
   await host.getByRole('button', { name: 'Criar resenha' }).click()
-  const code = (await host.getByTestId('room-code').textContent())!.trim()
+  const code = (await host.getByTestId('room-code').getAttribute('data-code'))!
 
   await guest.goto(`/entrar/${code}`)
   await expect(host.getByTestId('seat')).toHaveCount(2)
@@ -90,6 +90,30 @@ test('host remove um jogador e ele volta para o lobby', async ({
   await expect(host.getByTestId('seat')).toHaveCount(1)
   await expect(guest).toHaveURL(/\/lobby$/)
   await expect(guest.getByText('Você não está mais nesta sala.')).toBeVisible()
+
+  // E5: removido não volta só com o código…
+  await guest.goto(`/entrar/${code}`)
+  await expect(guest.getByText('O host removeu você desta sala.', { exact: false })).toBeVisible()
+
+  // …até o host liberar.
+  await host.getByRole('button', { name: 'Permitir volta' }).click()
+  await expect(host.getByRole('button', { name: 'Permitir volta' })).toHaveCount(0)
+  await guest.goto(`/entrar/${code}`)
+  await expect(guest).toHaveURL(host.url())
+  await expect(host.getByTestId('seat')).toHaveCount(2)
+
+  // E1: código novo invalida o anterior na hora.
+  await host.getByRole('button', { name: 'Gerar código novo' }).click()
+  await host.getByRole('button', { name: 'Gerar novo', exact: true }).click()
+  await expect(host.getByTestId('room-code')).not.toHaveAttribute('data-code', code)
+  const newCode = (await host.getByTestId('room-code').getAttribute('data-code'))!
+  expect(newCode).toMatch(/^[A-Z0-9]{10}$/)
+  // Membro também vê o código novo sem recarregar.
+  await expect(guest.getByTestId('room-code')).toHaveAttribute('data-code', newCode)
+
+  const outsider = await playerPage(browser, 'teste9', options)
+  await outsider.goto(`/entrar/${code}`)
+  await expect(outsider.getByText('Código não encontrado', { exact: false })).toBeVisible()
 
   await host.getByRole('button', { name: 'Encerrar sala' }).click()
   await host.getByRole('button', { name: 'Encerrar', exact: true }).click()
@@ -103,7 +127,7 @@ test('código errado mostra erro no lobby', async ({ page }) => {
   await page.getByRole('button', { name: 'Entrar' }).click()
   await expect(page).toHaveURL(/\/lobby$/)
 
-  await page.getByLabel('Código da sala').fill('ZZZZZZ')
+  await page.getByLabel('Código da sala').fill('ZZZZZ ZZZZZ')
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
   await expect(page.getByText('Código não encontrado')).toBeVisible()
 })
@@ -118,7 +142,7 @@ test('mesa cheia: oito pessoas veem tudo ao vivo e a nona é recusada', async ({
 
   const host = await playerPage(browser, 'teste1', options)
   await host.getByRole('button', { name: 'Criar resenha' }).click()
-  const code = (await host.getByTestId('room-code').textContent())!.trim()
+  const code = (await host.getByTestId('room-code').getAttribute('data-code'))!
 
   const guests = await Promise.all(
     ['teste2', 'teste3', 'teste4', 'teste5', 'teste6', 'teste7', 'teste8'].map(async (name) => {

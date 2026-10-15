@@ -78,7 +78,6 @@ export function LoginPage() {
                   autoCapitalize="none"
                   autoCorrect="off"
                   spellCheck={false}
-                  autoFocus
                   className="h-10"
                   aria-invalid={!!errors.username}
                   aria-describedby={errors.username ? 'username-error' : undefined}

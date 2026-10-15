@@ -1,9 +1,9 @@
 # BARALHO DA RESENHA
-## Documento mestre de produto, regras e desenvolvimento — versão 1.0
+## Documento mestre de produto, regras e desenvolvimento — versão 1.1
 
 **Referência de jogo:** Resenha Simples v7.1  
 **Data:** 15/10/2026  
-**Status:** especificação para desenvolvimento de MVP; ajustes de ambiguidades ainda precisam de validação em testes reais.  
+**Status:** especificação para desenvolvimento de MVP. A versão 1.1 incorpora `BARALHO_DA_RESENHA_DECISOES_APROVADAS.md` (itens A–F), que prevalece em caso de conflito. Balanceamento ainda depende de playtests.  
 **Idioma:** pt-BR  
 **Plataforma inicial:** web responsiva (desktop e celular).  
 **Modelo de operação:** multiplayer online privado, com jogadores autenticados e salas de 3 a 8 pessoas.  
@@ -75,7 +75,7 @@ O MVP terá:
 ## 3.1 Papéis
 
 - **Administrador da aplicação:** provisiona jogadores, gerencia acesso, publica catálogo e imagens. Não possui poderes especiais durante uma partida em andamento.
-- **Host da sala:** cria sala, recebe código, pode remover jogadores **apenas no lobby**, iniciar jogo com 3–8 pessoas e solicitar nova partida após término.
+- **Host da sala:** cria sala, recebe código, pode **gerar um código novo** (o anterior para de funcionar), remover jogadores **no lobby** (quem é removido só volta se o host liberar), iniciar jogo com 3–8 pessoas e solicitar nova partida após término. Durante a partida **não expulsa jogador conectado**; só pode pedir a remoção de quem está **sem conexão confirmada há mais de 2 minutos** (seção 5.10). Se sair do lobby, o posto passa ao **participante conectado mais antigo** (ordem de ingresso como desempate).
 - **Jogador:** entra no lobby, vê o estado público, sua própria mão, joga no seu turno e responde às reações.
 - **Fantasma:** é um jogador derrotado, continua na mesma sala, mas usa somente cartas do Além.
 
@@ -124,7 +124,7 @@ MVP sem espectador. Membro da sala não pode ver a mão ou a ordem do baralho, m
 
 **Lobby:** botão destacado “Criar resenha”, campo “Código da sala”, lista de partidas que o usuário pode retomar.
 
-**Sala de espera:** cadeiras 1–8, quem entrou, host, código para compartilhar, botão de pronto opcional; somente host inicia com 3–8.
+**Sala de espera:** cadeiras 1–8, quem entrou, host, código de **10 caracteres** para compartilhar (com link de convite), botão para o host gerar código novo, lista de removidos com "Permitir volta" (só o host vê), botão de pronto **apenas informativo**; somente host inicia com 3–8. A ordem das cadeiras no lobby é a de entrada; **os lugares da partida são sorteados ao iniciar**.
 
 **Mesa desktop:** jogadores no topo/laterais; pilhas de baralho/descarte e efeitos no centro; mão do usuário na parte inferior; lateral de histórico e regras rápidas.
 
@@ -139,7 +139,8 @@ MVP sem espectador. Membro da sala não pode ver a mão ou a ordem do baralho, m
 - Clique na carta abre descrição completa; jogar requer alvo e confirmação quando pertinente.
 - Jogada ilegal gera mensagem humana (“Você precisa descartar mais uma carta”).
 - Botões impossíveis desabilitados, mas **servidor também valida**.
-- Reações não dependem de cronômetro no MVP: jogador escolhe **Reagir** ou **Aceitar**. Isso evita turnos serem pulados injustamente por conexão lenta.
+- Reações não dependem de cronômetro no MVP: jogador escolhe **Reagir** ou **Aceitar**. Isso evita turnos serem pulados injustamente por conexão lenta. **Limitação aceita:** um jogador conectado e inativo não é tratado automaticamente; o grupo pede que ele jogue ou o host encerra a partida.
+- Cartas na mão aparecem na **ordem de recebimento**, com IDs de instância estáveis após reload; reorganizar arrastando fica para versão futura.
 - Acessibilidade: contraste, textos alternativos para ilustrações, navegação por teclado, modos com animações reduzidas.
 - Antes de usar fotos reais, obter concordância do grupo; preferir armazenamento privado.
 
@@ -152,9 +153,11 @@ MVP sem espectador. Membro da sala não pode ver a mão ou a ordem do baralho, m
 ## 5.1 Preparação e rodada
 
 - Jogadores: **3–8**; ordem fixa de assentos, sentido horário.
+- **Lugares sorteados no banco ao iniciar a partida** (uma única vez, na mesma transação que cria as cartas); a ordem de entrada na sala não importa. Reload não muda os lugares.
+- **O ocupante do lugar 1 começa a rodada 1.**
 - PV inicial/máximo: **3 jogadores = 16; 4–5 = 18; 6–8 = 16**.
 - Cada um inicia com **5 cartas** do baralho principal embaralhado.
-- No começo de cada turno de jogador **vivo**, compra **2 cartas**.
+- No começo de cada turno de jogador **vivo**, compra **2 cartas** — **inclusive o primeiro jogador na rodada 1** (pode ficar com 7 antes de agir).
 - Executa **até 2 ações** voluntárias por turno; pode encerrar antes.
 - Limite **7 cartas ao encerrar o próprio turno**; descarta excedentes escolhidos pelo usuário.
 - Defesas e outras reações são jogadas quando solicitadas, fora do próprio turno; não consomem ação.
@@ -196,8 +199,10 @@ Cartas de defesa só podem ser usadas no momento apropriado. Ao jogar carta que 
 7. Uma mesma pessoa não pode reagir duas vezes à mesma ação, exceto a contradefesa do novo alvo prevista acima.
 8. Jogadas ambientais não abrem janela de reação.
 9. Reação fatal (`Ressuscitou o Tio Paulo`) e `Última Palavra` disputam a única reação elegível ao golpe final: o jogador escolhe uma, não as duas.
+10. **Cada jogador afetado usa no máximo uma reação por ação.** `Ressuscitou o Tio Paulo` é sobrevivência preventiva (fica com 1 PV, sem registrar eliminação); `Última Palavra` acontece ao ser eliminado por **outro jogador**, não impede a morte e o dano de 2 pode causar nova eliminação. Registrar a origem de cada dano e resolver em ordem determinística.
+11. **Dano ambiental da Ressaca não permite** `Ressuscitou o Tio Paulo` nem `Última Palavra`.
 
-**Sabotagens direcionadas** podem ser canceladas por `Evento Raro`; ações globais e caos não são sabotagens direcionadas. No caso de efeitos que envolvam sorteio/troca da mão, aguardar defesa antes de efetuar o sorteio de carta.
+**Sabotagens direcionadas** podem ser canceladas por `Evento Raro`; ações globais e caos não são sabotagens direcionadas. **`Evento Raro` não cancela `Lucboy & Laragirl` (REV-02, categoria Reviravolta) nem cartas do Além** (não são Sabotagem). No caso de efeitos que envolvam sorteio/troca da mão, aguardar defesa antes de efetuar o sorteio de carta.
 
 ## 5.5 Prioridade de resolução
 
@@ -213,7 +218,9 @@ Cartas de defesa só podem ser usadas no momento apropriado. Ao jogar carta que 
 
 **Simultaneidade:** `Fofoca Mortal` aplica danos aos dois alvos num mesmo lote após receber as respostas. Se várias pessoas forem derrotadas pelo mesmo lote, registrar o mesmo grupo de resolução; as derrotas são simultâneas para critérios de empate. Retaliação da `Última Palavra` permanece atribuída ao autor da reação.
 
-**Dano próprio** de `A Braba` é um custo/efeito colateral da ação (não é um ataque contra si) e **não pode ser bloqueado com defesas normais**.
+**Dano próprio** de `A Braba` é um custo/efeito colateral da ação (não é um ataque contra si) e **não pode ser bloqueado com defesas normais**. Resolver o ataque ao alvo e as reações dele **antes** de aplicar o dano próprio ao autor. Se o dano próprio for fatal, o autor **pode usar `Ressuscitou o Tio Paulo`**; `Última Palavra` **não** ativa (não houve eliminação por outro jogador).
+
+**Morte no próprio turno:** o turno termina imediatamente e as ações não usadas são perdidas. O primeiro turno de fantasma ocorre na rodada seguinte.
 
 ## 5.6 Cartas especiais / casos limite
 
@@ -225,7 +232,7 @@ Cartas de defesa só podem ser usadas no momento apropriado. Ao jogar carta que 
 - `Tio Paulo`: cada vivo com mão não vazia escolhe 1 carta; somente os participantes que têm carta entregam 1 ao **próximo vivo à direita**; entregar simultaneamente para evitar que alguém repasse carta recém-recebida. Se houver menos de 2 vivos com carta, efeito sem troca.
 - `Bucetada`: cada vivo descarta uma carta **à própria escolha**, se possuir.
 - `O Acre Existe!`: todos os vivos compram 1 e escolhem 1 para descartar. As escolhas são privadas, a resolução da troca só termina após todos responderem.
-- `Família Basilato`: é dano de **caos**, e não recebe bônus de Mais Odiado. Alvo é o **oponente** vivo de maior PV; não exige existir líder único.
+- `Família Basilato`: é dano de **caos**, e não recebe bônus de Mais Odiado. Alvo é o **oponente** vivo de maior PV; não exige existir líder único. **Não admite defesa comum**, mas, se o dano for fatal, a vítima pode usar **uma** reação de dano fatal: `Ressuscitou o Tio Paulo` (fica com 1 PV) **ou** `Última Palavra` (morre e causa 2 ao autor).
 - `Tem Alguém Seguindo`: marca o alvo; o **próximo ataque anunciado contra ele** recebe +2 e consome a marca, mesmo que depois seja defendido; expira **ao final da rodada seguinte à aplicação**. Marcas iguais não acumulam; nova marca apenas substitui/renova.
 - `Maldição da Ressaca`: próxima tentativa de ataque contra o Mais Odiado atual recebe +1, consumindo o efeito ao anúncio válido do ataque. Se não houver Mais Odiado, o efeito fica pendente até surgir alvo, com validade **até o fim da rodada seguinte**; não acumula.
 - `Lucboy & Laragirl`: troca **mãos restantes** entre autor e adversário vivo; a própria carta jogada já saiu da mão. Pode ocorrer com uma mão vazia.
@@ -275,7 +282,14 @@ Dano simultâneo para todos os vivos. Não pode ser defendido, redirecionado nem
 
 ## 5.10 Desconexão / inatividade
 
-MVP **sem eliminação automática por desconexão**; estado fica persistido. Jogador que saiu pode voltar com a mesma conta. A mesa apresenta aviso “Aguardando resposta de X”. O host pode **encerrar a sala inteira** com confirmação e aviso a todos caso o jogo trave (não ganhar artificialmente por abandono).
+MVP **sem eliminação automática por desconexão**; estado fica persistido. Fechar a aba, perder internet ou recarregar **não é desistência**: o jogador pode voltar com a mesma conta. A mesa apresenta aviso “Aguardando resposta de X”.
+
+- **Presença registrada pelo servidor:** cada tela aberta envia um sinal (`heartbeat`) periódico; o horário é o do banco. "Conectado" = sinal nos últimos 60 s.
+- **Remoção por ausência (manual):** depois de **mais de 2 minutos sem sinal**, o host **pode pedir** a remoção, com confirmação, motivo e autoria registrados. A RPC valida autoridade do host, ausência do alvo e o período de tolerância.
+- O removido vira **desistente** (não fantasma): sem ressurreição, sem voltar à mesma partida e fora da disputa pela vitória; suas cartas vão para o descarte de forma consistente.
+- Se houver ação pendente aguardando o removido, ela se resolve de forma determinística (como "passar") na mesma transação, para a partida nunca travar.
+- Host **não expulsa jogador conectado** durante a partida. Perda temporária de conexão do host **não transfere o posto** na hora; sucessão durante a partida só por regra segura do servidor, transacional e sem ampliar acesso a cartas privadas.
+- O host continua podendo **encerrar a sala inteira** com confirmação caso o jogo trave (não ganhar artificialmente por abandono).
 
 **Versão futura:** timer autoritativo com expiração resolvida no servidor, e nunca por relógio do navegador; exigiria job/Supabase Cron ou processo equivalente, desenhado separadamente.
 
@@ -328,9 +342,9 @@ MVP **sem eliminação automática por desconexão**; estado fica persistido. Jo
 | GHO-02 | Fantasma Fofoqueiro | Lara | 5 | Veja até 2 cartas aleatórias da mão de 1 vivo (só você vê) |
 | GHO-03 | Mão de Defunto | Davi | 4 | Vivo coloca carta aleatória no fundo do baralho principal |
 | GHO-04 | Maldição da Ressaca | Artur | 4 | Próximo ataque ao Mais Odiado +1 (efeito temporário) |
-| GHO-05 | Eu Sei o Que Você Fez | Ju Amorim | 2 | **Ajuste proposto:** revele publicamente 2 cartas aleatórias da mão de um vivo; o fantasma escolhe 1 dessas para descartar |
+| GHO-05 | Eu Sei o Que Você Fez | Ju Amorim | 2 | Escolha um vivo, veja **até 2 cartas aleatórias** da mão dele e escolha **1 das vistas** para ele descartar. **Só o fantasma autor vê** as cartas; os demais veem a ação e o descarte resultante. Mão vazia: sem descarte |
 
-**Decisão pendente (aprovação do grupo):** o GHO-05 anterior duplicava quase integralmente o GHO-02. A versão acima diferencia espionagem privada (Lara) de exposição pública + descarte (Ju). O ajuste altera apenas o **efeito** de 2 cópias, não o total de cartas.
+**Decisão aprovada (B1):** GHO-05 mantém informação privada, como GHO-02, mas acrescenta o descarte escolhido pelo fantasma. O ajuste altera apenas o **efeito** de 2 cópias, não o total de cartas.
 
 **TOTAL: 35 modelos e 180 instâncias.** As artes não são por cópia: 35 faces de carta + **2 versos** (principal/Além).
 
@@ -464,9 +478,12 @@ Utilizar esquema **`app_private` não exposto na Data API** para tabelas sensív
 |---|---|---|
 | `profiles` (`public`, com RLS apropriada) | `id` Auth UUID, `username`, `display_name`, `avatar_path`, `created_at`, `is_active` | Nunca senha |
 | `games` | `id`, `host_user_id`, `status`, `phase`, `round_number`, `active_seat`, `leader_player_id`, `version`, `rules_version`, `created_at`, `finished_at`, `result_json` | Registro mestre |
-| `game_invites` | `game_id`, `code_hash`, `salt`, `expires_at`, `active`, `join_attempts` | Código aleatório suficientemente longo, armazenado como hash |
-| `game_players` | `id`, `game_id`, `user_id`, `seat`, `status`, `hp`, `max_hp`, `ghost_tokens`, `revival_used`, `knockouts`, `is_ready`, `joined_at` | Unicidade por partida/usuário/assento |
-| `card_definitions` | `id`, `name`, `category`, `copies`, `effect_code`, `rules_text`, `target_rule`, `image_path`, `set_version` | Catálogo/versionamento |
+| `game_invites` | `game_id`, `code`, `active`, `created_at` | Código de **10 caracteres** gerado no servidor, legível **só em schema privado** (o host precisa revê-lo após reload); sai apenas por RPC para membros, nunca em listagens ou Realtime. O host pode rotacionar (E1) |
+| `room_codes_used` | `code`, `created_at` | Todo código já emitido; impede reutilização, inclusive após rotação |
+| `join_failures` | `user_id`, `created_at` | Limite de **10 códigos errados em 10 min por conta** (E3) |
+| `game_bans` | `game_id`, `user_id`, `banned_by`, `created_at` | Removido do lobby não volta só com o código; o host libera explicitamente (E5) |
+| `game_players` | `id`, `game_id`, `user_id`, `seat`, `life_status`, `hp`, `max_hp`, `ghost_tokens`, `revival_used`, `knockouts`, `is_ready`, `joined_at`, `last_seen_at` | Unicidade por partida/usuário/assento (assento com unicidade adiável para o sorteio); `last_seen_at` = presença registrada pelo servidor |
+| `card_definitions` | `set_version`, `code`, `name`, `character_name`, `category`, `deck_type`, `copies`, `effect_code`, `effect_params`, `target_rule`, `is_reaction`, `rules_text`, `image_path`, `is_provisional`, `enabled` | Catálogo versionado; mudar efeito após o lançamento = nova `set_version`. Dados de apresentação (personagem, apelido, arte, frase) podem mudar sem alterar efeitos (C4) |
 | `game_cards` | `id`, `game_id`, `definition_id`, `deck_type`, `zone`, `owner_player_id`, `pile_position` | Uma linha **por cópia física virtual** |
 | `pending_actions` | `id`, `game_id`, `actor_player_id`, `card_instance_id`, `effect_snapshot`, `required_responders`, `phase`, `created_at` | Fase de respostas |
 | `action_responses` | `pending_action_id`, `responder_player_id`, `response_type`, `selected_cards_json` | Exclusivo por ação/respondedor |
@@ -588,7 +605,8 @@ A própria documentação do Supabase ressalta que as autorizações Realtime po
 - **Nunca** expor Supabase secret key, service role, token admin ou senha do banco.
 - Limitar tentativas de login conforme configurações Auth; usar senhas individuais.
 - Validar tamanho de textos/nicknames/códigos, prevenir abuso de RPC e salas.
-- Retenção: definir como remover partidas antigas e imagens quando solicitado.
+- **Retenção (D5):** apagar partidas encerradas há mais de **90 dias** por rotina confiável (ex.: Supabase Cron), com registros relacionados; manter só estatísticas agregadas não identificáveis, se necessário.
+- **Contas (E7):** desativar é o padrão (bloqueia login e derruba a sessão). Exclusão é possível: sem histórico, apaga; com histórico, **anonimiza** (nome, usuário, e-mail técnico e login), preservando a integridade das partidas.
 - Respeitar limites de conexões e mensagens do plano Supabase contratado; verificar no painel antes de adicionar mais de 8 jogadores por partida.
 
 ---
@@ -749,6 +767,8 @@ export const supabase = createClient<Database>(
 - Configurar rewrites para navegação SPA (acesso direto às rotas da mesa não deve retornar 404).
 - Variáveis públicas são informadas no deploy e apontam para projeto Supabase **de produção**.
 - Ambiente de staging separado para testes reais; nunca rodar `db reset --linked` em produção.
+- **Produção (D3):** projeto Supabase na região **São Paulo (`sa-east-1`)**, se disponível, criado pelo proprietário. **Staging (D6):** segundo projeto, preferencialmente gratuito, sem dados pessoais de produção.
+- **Contas técnicas (D1):** domínio ou subdomínio **controlado pelo projeto** (ex.: `contas.seudominio.com`). **Contas (D4):** provisionadas pelo administrador com `pnpm users create`, a partir da lista autorizada.
 
 ---
 
@@ -758,9 +778,9 @@ export const supabase = createClient<Database>(
 
 **Objetivo:** eliminar incertezas antes de investir em layout.
 
-- [ ] Confirmar MVP web 3–8 pessoas, sem cadastro público e sem timer automático.
-- [ ] Validar efeitos detalhados das cartas com regras ajustadas, especialmente GHO-05.
-- [ ] Definir método de cadastro/admin das contas e domínio de Auth.
+- [x] Confirmar MVP web 3–8 pessoas, sem cadastro público e sem timer automático (F).
+- [x] Validar efeitos detalhados das cartas com regras ajustadas, especialmente GHO-05 (B1–B7).
+- [x] Definir método de cadastro/admin das contas (D4, E7). Domínio de Auth: decisão D1 tomada, domínio real pendente.
 - [ ] Separar fotos/ilustrações autorizadas e placeholders.
 - [ ] Definir paleta, tipografia, logotipo, design responsivo da carta.
 - [ ] Revisar regras e exemplos com 3, 5 e 8 jogadores.
@@ -794,7 +814,9 @@ export const supabase = createClient<Database>(
 - [ ] RPC de entrar, sair do lobby, marcar pronto e iniciar (host; 3–8).
 - [ ] Tratar entrada duplicada, código inválido, sala cheia e início simultâneo.
 - [ ] Implementar canal Realtime privado e indicador online (Presence é informativo).
-- [ ] Host pode remover jogador **somente antes** do início.
+- [ ] Host pode remover jogador **somente antes** do início; removido só volta com liberação do host (E5).
+- [ ] Código de 10 caracteres, rotação pelo host e limites de tentativas e de salas (E1, E3).
+- [ ] Presença registrada pelo servidor e transferência de host ao conectado mais antigo (E6).
 
 **Entrega:** oito usuários entram na mesma sala e veem as mudanças sem atualizar manualmente.
 
@@ -904,7 +926,8 @@ export const supabase = createClient<Database>(
 - [ ] Votação de novos memes/cartas.
 - [ ] Suporte a mais jogadores mediante novo balanceamento.
 - [ ] “Modo festa” em TV com visual público sem mãos privadas.
-- [ ] Temporizador opcional com finalização autoritativa no servidor.
+- [ ] Temporizador opcional com finalização autoritativa no servidor (**fora do MVP**, F).
+- [ ] Reorganizar cartas da mão arrastando (E9).
 - [ ] Editor administrativo visual de personagens e artes.
 
 ---
@@ -918,6 +941,10 @@ export const supabase = createClient<Database>(
 - [ ] 2 pessoas não conseguem iniciar lobby com menos de 3.
 - [ ] 9ª entrada é recusada sem corromper mesa de 8.
 - [ ] Dois cliques simultâneos de iniciar não criam dois decks.
+- [ ] Removido do lobby não volta com o mesmo código; volta depois que o host libera.
+- [ ] Código rotacionado deixa de funcionar na hora; códigos nunca se repetem.
+- [ ] Lugares sorteados uma única vez ao iniciar; reload não muda a ordem.
+- [ ] Host que sai do lobby passa o posto ao conectado mais antigo.
 
 **Cartas e privacidade**
 
@@ -937,6 +964,7 @@ export const supabase = createClient<Database>(
 - [ ] Fantasma ganha ficha, usa carta do Além e revive uma vez só.
 - [ ] A partida termina com vencedor determinístico, mesmo com todos mortos.
 - [ ] Trocas simultâneas, reações fatais e mortes em lote são consistentes.
+- [ ] Remoção por ausência só depois de 2 min sem sinal, pedida pelo host; removido vira desistente e ação pendente dele não trava a partida.
 
 **Confiabilidade/UX**
 
@@ -971,7 +999,14 @@ export const supabase = createClient<Database>(
 | Fantasma com 2 fichas inicia turno | Recebe 3ª, pode reviver imediatamente |
 | Fantasma revive e morre de novo | Continua do Além sem nova ressurreição |
 | Todos mortos, mas fantasma pode reviver antes R10 | Não finalizar prematuramente |
-| Jogador desconecta durante defesa | Partida fica pendente; ao reconectar retoma decisão |
+| Jogador desconecta durante defesa | Partida fica pendente; ao reconectar retoma decisão. Após 2 min sem sinal, o host pode removê-lo e a defesa pendente se resolve como "passar" |
+| Primeiro turno da rodada 1 | Lugar 1 começa e compra 2 (fica com 7) |
+| `A Braba` com dano próprio fatal + `Ressuscitou o Tio Paulo` | Autor fica com 1 PV; `Última Palavra` não ativa |
+| `Família Basilato` fatal | Sem defesa comum; vítima escolhe `Ressuscitou o Tio Paulo` ou `Última Palavra` |
+| `Evento Raro` contra REV-02 ou carta do Além | Não pode ser usado |
+| GHO-05 | Só o fantasma autor vê as cartas; os outros veem só o descarte |
+| Jogador morre no próprio turno | Turno termina; ações restantes perdidas |
+| Removido do lobby tenta voltar com o código | Recusado até o host liberar |
 | Usuário externo tenta entrar em Broadcast de jogo | Acesso negado |
 | Tentativa de `SELECT` na ordem do deck | Acesso negado ao cliente |
 
@@ -1008,20 +1043,22 @@ export const supabase = createClient<Database>(
 - Sobrevivência com Ressaca Progressiva 7.1.
 - O host não vê dados secretos de ninguém.
 - Sem cronômetro obrigatório no MVP.
+- Itens A–F aprovados em `BARALHO_DA_RESENHA_DECISOES_APROVADAS.md` (v1.0, 15/10/2026), incorporados nesta versão. GHO-05 aprovada (B1). Ressaca 1/2/3, 10 rodadas e desempate por eliminações mantidos até o playtest (B7).
 
-## Validar com o grupo antes da arte definitiva
+## Dependências externas (não são dúvidas de regra)
 
-1. Novo efeito para `Eu Sei o Que Você Fez` (GHO-05), agora distinto da carta da Lara.
-2. Se o desempate por eliminações é aceitável (contagem automática, sem PR).
-3. Se a Ressaca 7.1 (1/2/3) elimina jogadores rápido demais em mesas pequenas.
-4. Se a duração de até dez rodadas é divertida ao vivo com oito participantes.
-5. Autorização para fotos e frases mais provocativas.
+1. Autorização individual de cada participante para fotos, nomes e frases (C1, C4).
+2. Identidade visual definitiva: logo, cores e fonte (C3). Placeholders até lá.
+3. Domínio ou subdomínio real para as contas técnicas (D1).
+4. Projeto Supabase de produção em `sa-east-1` e staging separado (D3, D6).
+5. Lista autorizada de usuários para provisionar as contas (D4).
+6. Playtests com 3, 5 e 8 jogadores para validar duração, Ressaca e diversão (B7).
 
 ## Evoluções técnicas possíveis
 
 - Geração de código e reversão automatizada de efeito.
 - Auditoria de partidas com reprodução determinística por eventos.
-- Timers e regras de abandono com job confiável no Supabase.
+- Timers automáticos com job confiável no Supabase (fora do MVP; a remoção manual por ausência já cobre desconectados).
 - Painel do administrador, editor de cartas, manutenção de fotos.
 - Balanceamento de 9–15 jogadores com novos perfis de PV/deck.
 

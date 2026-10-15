@@ -50,8 +50,8 @@ select 'room', r ->> 'id' from (select public.create_room() as r) x;
 insert into t
 select 'code', r ->> 'code' from (select public.get_room_view((select v::uuid from t where k = 'room')) as r) x;
 
-select matches((select v from t where k = 'code'), '^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$',
-  'código tem 6 caracteres sem ambíguos');
+select matches((select v from t where k = 'code'), '^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{10}$',
+  'código tem 10 caracteres sem ambíguos (E1)');
 
 select is(
   (select jsonb_array_length(public.get_room_view((select v::uuid from t where k = 'room')) -> 'players')),

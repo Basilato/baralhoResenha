@@ -43,7 +43,10 @@ export type Database = {
             [_ in never]: never
           }
           Functions: {
-            "close_room":
+            "allow_rejoin":
+{ Args: { "p_game_id": string,"p_user_id": string }; Returns: undefined
+                           },
+"close_room":
 { Args: { "p_game_id": string }; Returns: undefined
                            },
 "create_room":
@@ -58,6 +61,9 @@ export type Database = {
 "get_room_view":
 { Args: { "p_game_id": string }; Returns: Json
                            },
+"heartbeat":
+{ Args: { "p_game_id": string }; Returns: undefined
+                           },
 "join_room":
 { Args: { "p_code": string }; Returns: Json
                            },
@@ -69,6 +75,9 @@ export type Database = {
                            },
 "list_my_rooms":
 { Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"rotate_room_code":
+{ Args: { "p_game_id": string }; Returns: undefined
                            },
 "set_ready":
 { Args: { "p_game_id": string,"p_ready": boolean }; Returns: undefined

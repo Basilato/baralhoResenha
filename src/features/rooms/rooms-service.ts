@@ -9,6 +9,8 @@ export type RoomPlayer = {
   seat: number
   isReady: boolean
   isHost: boolean
+  /** Sinal de presença recebido pelo servidor nos últimos 60 s. */
+  connected: boolean
   displayName: string
   username: string
   avatarPath: string | null
@@ -25,6 +27,8 @@ export type RoomView = {
   code: string | null
   myPlayerId: string | null
   players: RoomPlayer[]
+  /** Removidos pelo host que não podem voltar. Só vem preenchido para o host. */
+  removedPlayers: { userId: string; displayName: string }[]
 }
 
 export type RoomSummary = {
@@ -104,6 +108,21 @@ export async function startGame(gameId: string, expectedVersion: number) {
   if (error) throw fromRpcError(error)
 }
 
+export async function rotateRoomCode(gameId: string) {
+  const { error } = await supabase.rpc('rotate_room_code', { p_game_id: gameId })
+  if (error) throw fromRpcError(error)
+}
+
+export async function allowRejoin(gameId: string, userId: string) {
+  const { error } = await supabase.rpc('allow_rejoin', { p_game_id: gameId, p_user_id: userId })
+  if (error) throw fromRpcError(error)
+}
+
+export async function sendHeartbeat(gameId: string) {
+  const { error } = await supabase.rpc('heartbeat', { p_game_id: gameId })
+  if (error) throw fromRpcError(error)
+}
+
 export async function closeRoom(gameId: string) {
   const { error } = await supabase.rpc('close_room', { p_game_id: gameId })
   if (error) throw fromRpcError(error)
@@ -113,6 +132,13 @@ export async function closeRoom(gameId: string) {
 export function extractRoomCode(input: string): string {
   const fromLink = input.match(/\/entrar\/([A-Za-z0-9]+)/)?.[1]
   return (fromLink ?? input).replace(/[^A-Za-z0-9]/g, '').toUpperCase()
+}
+
+export const ROOM_CODE_LENGTH = 10
+
+/** "K7QX2M9PLA" → "K7QX2 M9PLA" (mais fácil de ditar e conferir). */
+export function formatRoomCode(code: string): string {
+  return code.length === ROOM_CODE_LENGTH ? `${code.slice(0, 5)} ${code.slice(5)}` : code
 }
 
 export function inviteLink(code: string): string {
