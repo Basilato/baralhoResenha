@@ -25,7 +25,8 @@ export function useGameChannel(gameId: string | undefined) {
     let disposed = false
     const refresh = () => queryClient.invalidateQueries({ queryKey: roomKeys.view(gameId) })
 
-    const channel = supabase.channel(`game:${gameId}`, {
+    // O banco publica no tópico com o UUID em minúsculas.
+    const channel = supabase.channel(`game:${gameId.toLowerCase()}`, {
       config: { private: true, presence: { key: userId } },
     })
 

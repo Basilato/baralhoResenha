@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Seed de DESENVOLVIMENTO LOCAL — nunca rodar em produção.
 -- =============================================================================
--- Nove contas de teste (teste1..teste9; a 9ª serve para testar sala cheia).
+-- Dez contas de teste: teste1..teste9 (a 9ª testa sala cheia) e teste10.
 -- Senha de todas: resenha123
 -- O domínio do e-mail técnico precisa bater com VITE_AUTH_EMAIL_DOMAIN.
 
@@ -21,7 +21,9 @@ begin
       ('00000000-0000-4000-8000-000000000006'::uuid, 'teste6', 'Teste Seis'),
       ('00000000-0000-4000-8000-000000000007'::uuid, 'teste7', 'Teste Sete'),
       ('00000000-0000-4000-8000-000000000008'::uuid, 'teste8', 'Teste Oito'),
-      ('00000000-0000-4000-8000-000000000009'::uuid, 'teste9', 'Teste Nove')
+      ('00000000-0000-4000-8000-000000000009'::uuid, 'teste9', 'Teste Nove'),
+      -- Reservada ao teste de conta desativada (e2e), para não colidir com as salas.
+      ('00000000-0000-4000-8000-000000000010'::uuid, 'teste10', 'Teste Dez')
     ) as t (id, username, display_name)
   loop
     insert into auth.users (

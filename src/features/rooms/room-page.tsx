@@ -116,8 +116,9 @@ function Lobby({
   const leave = useMutation({
     mutationFn: () => leaveRoom(room.id),
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: roomKeys.view(room.id) })
       navigate('/lobby', { replace: true })
+      queryClient.removeQueries({ queryKey: roomKeys.view(room.id) })
+      void queryClient.invalidateQueries({ queryKey: roomKeys.mine() })
     },
     onError,
   })
@@ -126,6 +127,7 @@ function Lobby({
     onSuccess: () => {
       toast.success('Sala encerrada.')
       navigate('/lobby', { replace: true })
+      void queryClient.invalidateQueries({ queryKey: roomKeys.mine() })
     },
     onError,
   })

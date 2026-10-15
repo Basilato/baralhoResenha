@@ -139,7 +139,8 @@ export function LobbyPage() {
 }
 
 function MyRooms() {
-  const rooms = useQuery({ queryKey: roomKeys.mine(), queryFn: listMyRooms })
+  // Sempre fresco ao abrir o lobby: a lista muda fora desta tela.
+  const rooms = useQuery({ queryKey: roomKeys.mine(), queryFn: listMyRooms, staleTime: 0 })
 
   if (rooms.isPending) return <Skeleton className="h-24 w-full" />
   if (rooms.isError) {

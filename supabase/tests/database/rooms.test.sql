@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(47);
+select plan(50);
 
 -- Contas do seed: teste1..teste9 = ...0001..0009
 -- Troca de usuário: reset role (como postgres) e depois pg_temp.login().
@@ -283,6 +283,28 @@ select throws_ok(
   'P0001', 'TOO_MANY_ROOMS', 'limite de 5 salas abertas por pessoa');
 
 select is(jsonb_array_length(public.list_my_rooms()), 5, 'list_my_rooms mostra as salas abertas');
+
+-- Partidas em andamento não contam no limite (ninguém fica preso).
+reset role;
+update app_private.games
+set status = 'playing', started_at = now()
+where host_user_id = pg_temp.uid('6') and status = 'lobby';
+select pg_temp.login('6');
+select lives_ok(
+  $$ select public.create_room() $$,
+  'partidas em andamento não contam no limite de salas');
+
+select ok(
+  app_private.can_use_game_topic('game:' || upper(public.list_my_rooms() -> 0 ->> 'id')),
+  'tópico com UUID em maiúsculas é aceito para membro');
+
+-- teste9 não é host de nada: só a FK de game_players pode barrar.
+reset role;
+select throws_ok(
+  format('delete from auth.users where id = %L', pg_temp.uid('9')),
+  '23503',
+  null,
+  'apagar conta que está em partidas é bloqueado (desative em vez de apagar)');
 
 reset role;
 update public.profiles set is_active = false where id = pg_temp.uid('7');

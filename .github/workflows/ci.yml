@@ -30,3 +30,40 @@ jobs:
           version: latest
       - run: supabase db start
       - run: supabase test db
+
+  e2e:
+    name: Ponta a ponta (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Subir Supabase local (só o necessário)
+        run: pnpm exec supabase start -x storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Gerar .env.local e .env.admin a partir do Supabase local
+        run: |
+          pnpm exec supabase status -o json > /tmp/status.json
+          API_URL=$(jq -r .API_URL /tmp/status.json)
+          {
+            echo "VITE_SUPABASE_URL=$API_URL"
+            echo "VITE_SUPABASE_PUBLISHABLE_KEY=$(jq -r .PUBLISHABLE_KEY /tmp/status.json)"
+            echo "VITE_AUTH_EMAIL_DOMAIN=contas.baralhoresenha.test"
+          } > .env.local
+          {
+            echo "SUPABASE_URL=$API_URL"
+            echo "SUPABASE_SECRET_KEY=$(jq -r .SECRET_KEY /tmp/status.json)"
+            echo "AUTH_EMAIL_DOMAIN=contas.baralhoresenha.test"
+          } > .env.admin
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

@@ -57,7 +57,7 @@ cp .env.example .env.local   # cole a "Publishable key" impressa pelo db:start
 pnpm dev                     # http://localhost:5173
 ```
 
-O seed cria nove contas de teste, de **teste1** a **teste9**. A senha de todas é `resenha123`. Para testar uma sala, abra janelas anônimas diferentes, uma para cada conta.
+O seed cria dez contas de teste, de **teste1** a **teste10** (a teste10 é reservada a um teste automático). A senha de todas é `resenha123`. Para testar uma sala, abra janelas anônimas diferentes, uma para cada conta.
 
 O painel do banco local fica em http://127.0.0.1:54323.
 

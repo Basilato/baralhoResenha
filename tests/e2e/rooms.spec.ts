@@ -91,3 +91,44 @@ test('código errado mostra erro no lobby', async ({ page }) => {
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
   await expect(page.getByText('Código não encontrado')).toBeVisible()
 })
+
+test('mesa cheia: oito pessoas veem tudo ao vivo e a nona é recusada', async ({
+  browser,
+  contextOptions,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'pesado: roda só no desktop')
+  test.setTimeout(90_000)
+  const options = { ...contextOptions, ...testInfo.project.use }
+
+  const host = await playerPage(browser, 'teste1', options)
+  await host.getByRole('button', { name: 'Criar resenha' }).click()
+  const code = (await host.getByTestId('room-code').textContent())!.trim()
+
+  const guests = await Promise.all(
+    ['teste2', 'teste3', 'teste4', 'teste5', 'teste6', 'teste7', 'teste8'].map(async (name) => {
+      const page = await playerPage(browser, name, options)
+      await page.goto(`/entrar/${code}`)
+      await expect(page).toHaveURL(/\/sala\//)
+      return page
+    }),
+  )
+
+  await expect(host.getByTestId('seat')).toHaveCount(8)
+  await expect(guests[0]!.getByTestId('seat')).toHaveCount(8)
+  await expect(host.getByText('8 de 8 lugares ocupados.')).toBeVisible()
+
+  const ninth = await playerPage(browser, 'teste9', options)
+  await ninth.goto(`/entrar/${code}`)
+  await expect(ninth.getByText('A sala já está cheia (8 pessoas).')).toBeVisible()
+  await expect(host.getByTestId('seat')).toHaveCount(8)
+
+  await host.getByRole('button', { name: /Começar \(8\/8\)/ }).click()
+  for (const page of [host, ...guests]) {
+    await expect(page).toHaveURL(/\/jogo\//)
+    await expect(page.getByTestId('table-player')).toHaveCount(8)
+  }
+
+  await host.getByRole('button', { name: 'Encerrar partida' }).click()
+  await host.getByRole('button', { name: 'Encerrar', exact: true }).click()
+  await expect(guests[6]!.getByText('Essa resenha acabou')).toBeVisible()
+})
