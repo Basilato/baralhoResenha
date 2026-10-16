@@ -85,12 +85,17 @@ await check('site aponta para este Supabase', async () => {
 // --- Supabase: o que precisa estar fechado -------------------------------------
 
 await check('cadastro público desligado', async () => {
-  const { error } = await anon.auth.signUp({
-    email: `verificacao-${Date.now()}@${AUTH_EMAIL_DOMAIN}`,
-    password: crypto.randomUUID(),
+  // Lê a configuração pública do Auth. (Tentar um cadastro criaria uma conta
+  // de verdade justamente quando o cadastro estiver aberto.)
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/settings`, {
+    headers: { apikey: SUPABASE_PUBLISHABLE_KEY },
   })
-  assert(error, 'qualquer pessoa consegue criar conta (desligue "Allow new users to sign up")')
-  return error.message
+  assert(response.ok, `settings respondeu ${response.status}`)
+  const settings = await response.json()
+  assert(
+    settings.disable_signup === true,
+    'qualquer pessoa consegue criar conta (desligue "Allow new users to sign up")',
+  )
 })
 
 await check('sem login, nenhuma RPC do jogo responde', async () => {

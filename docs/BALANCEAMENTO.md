@@ -7,15 +7,15 @@ Gerado por `pnpm sim` em 2026-10-16: 60 partidas com o motor de regras real (as 
 **Integridade:** depois de cada jogada, `admin_check_game_integrity` confere as 180 cartas, mãos, vida, fichas, fase e jogada pendente.
 
 | Jogadores | Partidas | Rodadas (média) | Turnos | Jogadas | Cartas jogadas | Reações | Mortes | Mortes por Ressaca | Ressurreições | Fim por PV (rodada 10) | Último vivo | Todos caíram | Duração |
-| --------- | -------- | --------------- | ------ | ------- | -------------- | ------- | ------ | ------------------ | ------------- | ---------------------- | ----------- | ------------ | ------- |
-| 3         | 10       | 9.8             | 29     | 105     | 38             | 8.0     | 3.6    | 1.8                | 1.7           | 60%                    | 40%         | 0%           | 3.7s    |
-| 4         | 10       | 9.8             | 39     | 160     | 54             | 12.6    | 3.4    | 1.8                | 0.9           | 50%                    | 40%         | 10%          | 6.0s    |
-| 5         | 10       | 9.7             | 49     | 195     | 66             | 15.0    | 4.6    | 3.2                | 0.8           | 70%                    | 30%         | 0%           | 8.4s    |
-| 6         | 10       | 9.9             | 58     | 234     | 78             | 15.3    | 6.8    | 3.2                | 2.4           | 60%                    | 40%         | 0%           | 10.5s   |
-| 7         | 10       | 10.0            | 70     | 281     | 91             | 17.7    | 8.6    | 4.8                | 3.2           | 80%                    | 20%         | 0%           | 11.9s   |
-| 8         | 10       | 10.0            | 80     | 338     | 106            | 21.0    | 8.1    | 4.3                | 2.4           | 100%                   | 0%          | 0%           | 12.9s   |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 3 | 10 | 9.7 | 29 | 104 | 38 | 7.6 | 2.8 | 1.3 | 1.2 | 70% | 20% | 10% | 5.1s |
+| 4 | 10 | 9.9 | 39 | 149 | 53 | 12.3 | 4.1 | 2.2 | 1.6 | 80% | 20% | 0% | 7.1s |
+| 5 | 10 | 9.9 | 50 | 196 | 67 | 16.3 | 5.2 | 3.0 | 1.8 | 90% | 10% | 0% | 9.5s |
+| 6 | 10 | 10.0 | 60 | 241 | 80 | 16.8 | 6.8 | 3.8 | 2.3 | 90% | 10% | 0% | 11.8s |
+| 7 | 10 | 10.0 | 70 | 281 | 92 | 20.2 | 7.9 | 3.7 | 3.0 | 100% | 0% | 0% | 14.0s |
+| 8 | 10 | 10.0 | 78 | 318 | 103 | 19.8 | 9.9 | 4.3 | 3.6 | 50% | 50% | 0% | 15.8s |
 
 Partidas com problema: 0 de 60.
-Jogadas recusadas pelo servidor: NO_VALID_TARGET ×18.
+Jogadas recusadas pelo servidor: nenhuma.
 
 **Abandono:** os robôs não abandonam; remoção por ausência é coberta pelos testes e2e (endgame.spec.ts).
