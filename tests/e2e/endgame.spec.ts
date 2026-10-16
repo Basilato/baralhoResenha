@@ -89,6 +89,8 @@ test('fantasma ressuscita, ausente é removido e o último vivo vence com revanc
   setHp(gameId, victimUser, 3)
   setRevivalUsed(gameId, victimUser)
   giveCard(gameId, attackerUser, 'ATK-01')
+  // Com uma defesa na mão, a vítima decide (não aceita sozinha).
+  giveCard(gameId, victimUser, 'DEF-01')
   resetActions(gameId)
   for (const page of [attackerPage, victim]) await page.reload()
 

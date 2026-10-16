@@ -122,6 +122,17 @@ export type GameView = {
   presence: Presence[]
   /** Revelações que só eu vi (ex.: Fantasma Fofoqueiro). */
   myPrivateEvents: PrivateEvent[]
+  /** Relógio do servidor no momento da leitura. */
+  serverNow: string
+  /** Servidor menos aparelho, em ms (calculado na chegada da leitura). */
+  clockSkewMs: number
+  /** Prazo do turno (vale quando não há jogada pendente). */
+  turnDeadlineAt: string | null
+  /** Prazo da jogada pendente (responder ou escolher). */
+  responseDeadlineAt: string | null
+  turnLimitSeconds: number
+  responseLimitSeconds: number
+  choiceLimitSeconds: number
 }
 
 export type GameCommand =
@@ -144,11 +155,16 @@ export type GameCommand =
   | { type: 'GHOST_STAY' }
   | { type: 'REMOVE_ABSENT'; playerId: string }
   | { type: 'CLAIM_HOST' }
+  /** Cobra o prazo vencido: qualquer participante pode enviar. */
+  | { type: 'TIMEOUT' }
 
 export async function getGameView(gameId: string): Promise<GameView> {
   const { data, error } = await supabase.rpc('get_game_view', { p_game_id: gameId })
   if (error) throw fromRpcError(error)
-  return data as unknown as GameView
+  const view = data as unknown as Omit<GameView, 'clockSkewMs'>
+  // Medido na chegada: os prazos são do relógio do servidor.
+  const server = Date.parse(view.serverNow)
+  return { ...view, clockSkewMs: Number.isNaN(server) ? 0 : server - Date.now() }
 }
 
 export async function submitGameCommand(

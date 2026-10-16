@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CheckIcon, Loader2Icon, ShieldOffIcon } from 'lucide-react'
 import {
@@ -14,6 +14,8 @@ import type { CardCatalog } from '@/features/cards/catalog'
 import { GameCard } from '@/features/cards/game-card'
 import { toFriendlyMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
+import { Countdown } from './countdown'
+import { useSecondsLeft } from './use-deadline'
 import {
   CHOICE_ROLES,
   newRequestId,
@@ -51,7 +53,13 @@ export function ReactionDialog({
             catalog={catalog}
           />
         ) : (
-          <ReactionForm game={game} decision={decision} players={players} catalog={catalog} />
+          <ReactionForm
+            key={decision.pendingActionId + decision.role}
+            game={game}
+            decision={decision}
+            players={players}
+            catalog={catalog}
+          />
         )}
       </AlertDialogContent>
     </AlertDialog>
@@ -65,9 +73,23 @@ type FormProps = {
   catalog: CardCatalog
 }
 
-/** Reagir ou aceitar. "Aceitar" sempre existe, para ninguém deduzir quem tem defesa. */
+/** Sem defesa: aceita sozinho depois de um tempo ao acaso, como alguém pensando. */
+const AUTO_ACCEPT_MIN_MS = 2000
+const AUTO_ACCEPT_SPREAD_MS = 3000
+
+/**
+ * Reagir ou aceitar. "Aceitar" sempre existe, para ninguém deduzir quem tem
+ * defesa: por isso, sem carta que sirva, a resposta automática também espera
+ * um tempo ao acaso em vez de sair na hora.
+ */
 function ReactionForm({ game, decision, players, catalog }: FormProps) {
   const command = useGameCommand(game)
+  const sent = useRef(false)
+  const [auto] = useState(() => {
+    const delay = AUTO_ACCEPT_MIN_MS + Math.random() * AUTO_ACCEPT_SPREAD_MS
+    return { at: new Date(Date.now() + delay).toISOString(), delay }
+  })
+  const autoSeconds = useSecondsLeft(auto.at, 0)
   const actor = players.get(decision.actorPlayerId)?.displayName ?? 'Alguém'
   const card = catalog.get(decision.cardCode)?.name ?? 'uma carta'
   const me = game.myPlayerId ? players.get(game.myPlayerId) : undefined
@@ -102,7 +124,8 @@ function ReactionForm({ game, decision, players, catalog }: FormProps) {
     },
   }[decision.role as 'target' | 'counter' | 'self' | 'sabotage_target' | 'chaos_target']
 
-  const respond = (cardInstanceId?: string) =>
+  const respond = (cardInstanceId?: string) => {
+    sent.current = true
     command.mutate(
       {
         requestId: newRequestId(),
@@ -113,18 +136,51 @@ function ReactionForm({ game, decision, players, catalog }: FormProps) {
           cardInstanceId,
         },
       },
-      { onError: (error) => toast.error(toFriendlyMessage(error)) },
+      {
+        onError: (error) => {
+          sent.current = false
+          toast.error(toFriendlyMessage(error))
+        },
+      },
     )
+  }
+
+  const noDefense = options.length === 0
+  const { mutate } = command
+  useEffect(() => {
+    if (!noDefense) return
+    const timer = setTimeout(() => {
+      if (sent.current) return
+      sent.current = true
+      mutate(
+        {
+          requestId: newRequestId(),
+          command: { type: 'RESPOND', pendingActionId: decision.pendingActionId, response: 'PASS' },
+        },
+        { onError: () => (sent.current = false) },
+      )
+    }, auto.delay)
+    return () => clearTimeout(timer)
+  }, [noDefense, auto.delay, decision.pendingActionId, mutate])
 
   return (
     <>
       <AlertDialogHeader>
-        <AlertDialogTitle className="text-2xl">{title}</AlertDialogTitle>
+        <AlertDialogTitle className="flex items-center justify-between gap-3 text-2xl">
+          {title}
+          <Countdown deadline={game.responseDeadlineAt} skewMs={game.clockSkewMs} />
+        </AlertDialogTitle>
         <AlertDialogDescription>
           {description}
           {fatal && ' Esse golpe é fatal.'}
         </AlertDialogDescription>
       </AlertDialogHeader>
+
+      {noDefense && (
+        <p className="text-sm text-muted-foreground" data-testid="auto-accept">
+          Nenhuma carta sua serve contra isso. Aceitando sozinho em {autoSeconds ?? 0}s…
+        </p>
+      )}
 
       {options.length > 0 && (
         <div className="flex flex-col gap-2">
@@ -225,8 +281,13 @@ function ChoiceForm({ game, decision, players, catalog }: FormProps) {
   return (
     <>
       <AlertDialogHeader>
-        <AlertDialogTitle className="text-2xl">{title}</AlertDialogTitle>
-        <AlertDialogDescription>{description}</AlertDialogDescription>
+        <AlertDialogTitle className="flex items-center justify-between gap-3 text-2xl">
+          {title}
+          <Countdown deadline={game.responseDeadlineAt} skewMs={game.clockSkewMs} />
+        </AlertDialogTitle>
+        <AlertDialogDescription>
+          {description} Sem escolha a tempo, o sorteio escolhe por você.
+        </AlertDialogDescription>
       </AlertDialogHeader>
 
       <ul className="flex flex-wrap justify-center gap-3" data-testid="choice-options">

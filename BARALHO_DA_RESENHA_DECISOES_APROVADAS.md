@@ -180,6 +180,21 @@
 
 **Importante:** a retirada do cronômetro automático **revoga a recomendação anterior de incluí-lo no MVP**. A regra E2 permite ao host tratar jogadores comprovadamente desconectados por mais de dois minutos, mas **não resolve um jogador conectado e inativo**. No MVP, o grupo deverá solicitar que ele jogue ou encerrar a partida se a situação impedir a continuidade. Essa é uma limitação aceita, não uma funcionalidade implementada.
 
+**Revisão (2026-10-16, decisão do administrador): cronômetro implementado.** A limitação acima deixou de valer; ver a seção G.
+
+---
+
+## 7.1 G — Partidas dinâmicas **[APROVADO EM 2026-10-16]**
+
+| ID     | Decisão aprovada                                                       | Regra definitiva                                                                                                                                                                                                                                                                   |
+| ------ | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **G1** | **O turno encerra sozinho quando não há mais o que fazer.**            | Vivo com as 2 ações gastas (ou mão vazia) e mão dentro do limite; fantasma depois da carta do Além (ou sem cartas do Além). Acima do limite, a tela já abre o descarte. Com ações sobrando e nenhuma carta jogável, **não** encerra sozinho (revelaria a mão): só destaca o botão. |
+| **G2** | **Resposta automática só quando não revela nada.**                     | O banco passa/escolhe na hora se o jogador está sem cartas, se a regra não admite reação, ou se a escolha é forçada (tantas cartas quanto pedidas).                                                                                                                                |
+| **G3** | **Sem defesa que sirva: a tela aceita sozinha, com atraso.**           | O banco continua esperando (preserva o sigilo de quem tem defesa). A tela do alvo aceita depois de 2 a 5 s ao acaso, avisando a contagem.                                                                                                                                          |
+| **G4** | **Cronômetros: 60 s por turno, 20 s para reagir, 30 s para escolher.** | O prazo do turno renova depois de cada jogada resolvida. Vencido o prazo, qualquer participante cobra (`TIMEOUT`) e o banco confere a hora: passa a resposta, sorteia a escolha, encerra o turno descartando o excesso ao acaso, ou mantém o fantasma no Além. Sem cron.           |
+
+Implementação: migração `20261018100000_dynamic_turns`; testes em `supabase/tests/database/dynamic_turns.test.sql`. Os testes de regra antigos desligam `games.auto_flow` para montar mãos vazias; nas partidas reais ele está sempre ligado.
+
 ---
 
 ## 8. Ordem de aplicação por fase

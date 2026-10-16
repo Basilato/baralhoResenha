@@ -41,7 +41,13 @@ export function describeEvent(
     case 'turn_ended': {
       if (p.reason === 'died') return `${actor} caiu no próprio turno e perdeu a vez.`
       if (p.reason === 'removed') return `O turno de ${actor} foi pulado (ausente).`
+      if (p.reason === 'auto') return `${actor} não tinha mais jogadas: a vez passou.`
       const discarded = Array.isArray(p.discarded) ? (p.discarded as string[]) : []
+      if (p.reason === 'timeout') {
+        const lost =
+          discarded.length > 0 ? ` e descartou ${discarded.map(cardName).join(', ')}` : ''
+        return `O tempo de ${actor} acabou: a vez passou${lost}.`
+      }
       if (discarded.length === 0) return `${actor} encerrou o turno.`
       return `${actor} encerrou o turno e descartou ${discarded.map(cardName).join(', ')}.`
     }
@@ -79,7 +85,8 @@ export function describeEvent(
     case 'chaos_no_effect':
       return `${cardName(p.cardCode)} não teve efeito: faltou gente com cartas.`
     case 'choice_made':
-      return `${actor} escolheu.`
+      if (p.timedOut) return `O tempo de ${actor} acabou: a escolha foi sorteada.`
+      return p.auto ? `${actor} não tinha o que escolher.` : `${actor} escolheu.`
     case 'healed': {
       const drew = Number(p.drew ?? 0)
       const draw = drew > 0 ? ` e comprou ${drew === 1 ? '1 carta' : `${drew} cartas`}` : ''
@@ -92,7 +99,10 @@ export function describeEvent(
         ? `${actor} se defendeu do ataque devolvido com ${cardName(p.cardCode)}.`
         : `${actor} reagiu com ${cardName(p.cardCode)}.`
     case 'response_passed':
-      return `${actor} aceitou.`
+      if (p.timedOut) return `O tempo de ${actor} acabou: aceitou.`
+      return p.auto ? `${actor} não tinha como reagir: aceitou.` : `${actor} aceitou.`
+    case 'turn_timed_out':
+      return `O tempo de ${actor} acabou: continua fantasma.`
     case 'damage_dealt': {
       const results = Array.isArray(p.results) ? (p.results as DamageResult[]) : []
       return results

@@ -74,7 +74,8 @@ declare
 begin
   update app_private.pending_actions set status = 'resolved' where game_id = v_game and status = 'open';
   update app_private.games
-  set phase = 'turn_main', actions_used = 0, active_seat = 1, leader_player_id = null, pending_action_id = null
+  set phase = 'turn_main', actions_used = 0, active_seat = 1, leader_player_id = null, pending_action_id = null,
+      auto_flow = false
   where id = pg_temp.g();
   update app_private.game_players
   set life_status = 'alive', hp = 16, max_hp = 16, knockouts = 0

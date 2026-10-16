@@ -54,6 +54,8 @@ import { PlayCardDialog, type PlayableCard } from './play-card-dialog'
 import { whyNotPlayable } from './play-rules'
 import { useTableEffects, type PlayerEffect, type Spotlight } from './use-table-effects'
 import { useTableSounds } from './use-table-sounds'
+import { useDeadlineEnforcer } from './use-deadline'
+import { Countdown } from './countdown'
 import { ReactionDialog } from './reaction-dialog'
 import {
   newRequestId,
@@ -112,6 +114,9 @@ function Table({
   const isMyTurn = game.status === 'playing' && !!me && me.id === game.activePlayerId
   const discardTop = game.mainDiscardTop ? catalog.get(game.mainDiscardTop) : undefined
   const fx = useTableEffects(game, catalog)
+  const iQuit = !!me && !!game.presence.find((item) => item.playerId === me.id)?.quit
+  // Prazo vencido: qualquer participante cobra (o banco confere a hora).
+  useDeadlineEnforcer(game, !!me && !iQuit)
   // A partir de mim, na ordem dos lugares: é a ordem em que a vez passa.
   const bySeat = [...game.participants].sort((a, b) => a.seat - b.seat)
   const myIndex = Math.max(
@@ -186,6 +191,9 @@ function Table({
               <span data-testid="turn-status">
                 {isMyTurn ? 'Sua vez!' : `Vez de ${active?.displayName ?? '…'}`}
               </span>
+              {!game.pendingAction && (
+                <Countdown deadline={game.turnDeadlineAt} skewMs={game.clockSkewMs} />
+              )}
             </span>
           )}
         </div>
@@ -369,8 +377,22 @@ function MyArea({
   const hand = ghost ? game.myGhostHand : game.myHand
   const limit = ghost ? game.ghostHandLimit : game.handLimit
   const excess = Math.max(0, hand.length - limit)
-  const mustDiscard = isMyTurn && excess > 0 && endingTurn
+  // Sem ações e acima do limite: o descarte já abre (o banco encerra sozinho
+  // quem não tem o que descartar).
+  const inTurn = game.phase === 'turn_main' || game.phase === 'turn_ghost'
+  const outOfActions =
+    inTurn && game.actionsUsed >= (ghost ? game.maxGhostActions : game.maxActions)
+  const mustDiscard = isMyTurn && excess > 0 && (endingTurn || outOfActions)
   const ready = discarding.size === excess
+  // Nada jogável com ações sobrando: só resta encerrar (a tela destaca o botão).
+  const nothingToPlay =
+    isMyTurn &&
+    inTurn &&
+    !mustDiscard &&
+    hand.every((item) => {
+      const card = catalog.get(item.code)
+      return !card || whyNotPlayable(card, game, true) !== null
+    })
 
   const cancelEnding = () => {
     setEndingTurn(false)
@@ -423,14 +445,19 @@ function MyArea({
                 ? `Carta do Além: ${game.actionsUsed}/${game.maxGhostActions}`
                 : `Ações: ${game.actionsUsed}/${game.maxActions}`}
             </span>
-            {mustDiscard && (
+            {nothingToPlay && (
+              <span className="text-sm text-gold" data-testid="nothing-to-play">
+                Nada para jogar agora
+              </span>
+            )}
+            {mustDiscard && !outOfActions && (
               <Button variant="ghost" className="h-11" onClick={cancelEnding}>
                 Cancelar
               </Button>
             )}
             <Button
               size="lg"
-              className="h-11"
+              className={cn('h-11', nothingToPlay && 'glow-gold animate-pulse')}
               disabled={
                 command.isPending ||
                 game.phase === 'awaiting_reactions' ||
@@ -1031,7 +1058,8 @@ function PendingBanner({
       {waiting.length > 0 && (
         <p className="text-muted-foreground">
           {choosing ? 'Aguardando escolha de ' : 'Aguardando resposta de '}
-          {waiting.map((response) => name(response.playerId)).join(', ')}…
+          {waiting.map((response) => name(response.playerId)).join(', ')}…{' '}
+          <Countdown deadline={game.responseDeadlineAt} skewMs={game.clockSkewMs} />
         </p>
       )}
     </div>

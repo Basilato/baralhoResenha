@@ -39,6 +39,8 @@ test('sabotagem com escolha privada, caos simultâneo e recuperação', async ({
 
   // 1. Terapia de Boteco: só quem jogou vê a mão do alvo.
   giveCard(gameId, actorUser, 'SAB-02')
+  // Com Evento Raro na mão, o alvo decide (não aceita sozinho).
+  giveCard(gameId, targetUser, 'DEF-05')
   for (const page of pages) await page.reload()
   const targetHand = await handCount(target)
 

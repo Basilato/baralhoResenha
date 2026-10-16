@@ -68,4 +68,26 @@ describe('describeEvent', () => {
       describeEvent(event('player_died', { byPlayerId: 'p1' }, 'p2'), players, catalog, null),
     ).toBe('Beto foi eliminado por Ana e virou fantasma.')
   })
+
+  it('explica o fim de turno automático e o tempo esgotado', () => {
+    expect(
+      describeEvent(event('turn_ended', { reason: 'auto' }, 'p2'), players, catalog, 'p1'),
+    ).toBe('Beto não tinha mais jogadas: a vez passou.')
+    expect(
+      describeEvent(
+        event('turn_ended', { reason: 'timeout', discarded: ['ATK-01'] }, 'p2'),
+        players,
+        catalog,
+        'p1',
+      ),
+    ).toBe('O tempo de Beto acabou: a vez passou e descartou Falou Merda.')
+  })
+
+  it('distingue resposta automática, por tempo e manual', () => {
+    const passed = (payload: Record<string, unknown>) =>
+      describeEvent(event('response_passed', payload, 'p2'), players, catalog, 'p1')
+    expect(passed({ auto: true })).toBe('Beto não tinha como reagir: aceitou.')
+    expect(passed({ timedOut: true })).toBe('O tempo de Beto acabou: aceitou.')
+    expect(passed({})).toBe('Beto aceitou.')
+  })
 })

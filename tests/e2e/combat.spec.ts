@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 import {
   activePage,
+  dropReactions,
   expectNoHorizontalOverflow,
   gameIdFrom,
   giveCard,
@@ -69,8 +70,10 @@ test('ataque, defesa e golpe fatal entre três navegadores', async ({
   ).toContainText('16/16 PV')
   await expect(attacker.getByTestId('actions-left')).toHaveText('Ações: 1/2')
 
-  // Golpe fatal: o alvo aceita e vira fantasma para todos.
+  // Golpe fatal sem nenhuma defesa na mão: a tela do alvo aceita sozinha,
+  // depois de alguns segundos (para ninguém deduzir que ele não tinha defesa).
   setHp(gameId, targetUser, 3)
+  dropReactions(gameId, targetUser)
   giveCard(gameId, attackerUser, 'ATK-02')
   for (const page of pages) await page.reload()
 
@@ -79,7 +82,8 @@ test('ataque, defesa e golpe fatal entre três navegadores', async ({
   await attacker.getByRole('button', { name: 'Jogar Não Vou Levar Numa Boa' }).click()
 
   await expect(dialog).toContainText('Esse golpe é fatal.')
-  await dialog.getByRole('button', { name: 'Aceitar 3 de dano' }).click()
+  await expect(dialog.getByTestId('auto-accept')).toContainText('Aceitando sozinho')
+  await expect(dialog).toHaveCount(0, { timeout: 10_000 })
 
   for (const page of pages) {
     await expect(
@@ -91,13 +95,11 @@ test('ataque, defesa e golpe fatal entre três navegadores', async ({
   )
   await expect(target.getByRole('heading', { name: /Suas cartas do Além/ })).toBeVisible()
 
-  // Sem ações sobrando, a carta explica por que não dá para jogar.
-  giveCard(gameId, attackerUser, 'ATK-01')
-  await attacker.reload()
-  await expect(attacker.getByTestId('actions-left')).toHaveText('Ações: 2/2')
-  await attacker.getByRole('button', { name: 'Ver Falou Merda' }).first().click()
-  await expect(attacker.getByRole('dialog')).toContainText('Você já usou as 2 ações deste turno.')
-  await attacker.keyboard.press('Escape')
+  // Sem ações sobrando, o turno passa sozinho.
+  await expect(attacker.getByTestId('turn-status')).not.toHaveText('Sua vez!')
+  await expect(bystander.getByTestId('event-log')).toContainText(
+    `${USERS[attackerUser]} não tinha mais jogadas: a vez passou.`,
+  )
 
   await host.getByRole('button', { name: 'Encerrar partida' }).click()
   await host.getByRole('button', { name: 'Encerrar', exact: true }).click()

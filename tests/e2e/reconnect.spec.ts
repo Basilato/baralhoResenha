@@ -53,6 +53,8 @@ test('recarregar no meio de uma reação e voltar da queda de conexão', async (
   const [, bystander] = others[1]!
 
   giveCard(gameId, attackerUser, 'ATK-01')
+  // Com uma defesa na mão, o alvo decide (não aceita sozinho).
+  giveCard(gameId, targetUser, 'DEF-01')
   for (const page of table.pages) await page.reload()
 
   await attacker.getByRole('button', { name: 'Ver Falou Merda' }).first().click()

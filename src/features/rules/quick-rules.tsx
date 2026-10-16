@@ -18,8 +18,9 @@ const BASICS = [
   ['Vida inicial', '16 com 3 jogadores · 18 com 4–5 · 16 com 6–8'],
   ['Mão inicial', '5 cartas'],
   ['Início do turno', 'compra 2 cartas'],
-  ['Ações', 'até 2 por turno — reações não gastam ação'],
+  ['Ações', 'até 2 por turno — reações não gastam ação; sem ações, a vez passa sozinha'],
   ['Limite de mão', '7 cartas ao encerrar o seu turno'],
+  ['Tempo', '60 s por turno (renova após cada jogada) · 20 s para reagir · 30 s para escolher'],
   ['Fantasma', 'quem cai junta fichas de ressaca; com 3, pode voltar uma vez com 6 PV'],
   ['Duração', 'até 10 rodadas completas'],
 ] as const

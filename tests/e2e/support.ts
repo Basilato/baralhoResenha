@@ -106,6 +106,24 @@ export function giveCard(gameId: string, username: string, code: string) {
     );`)
 }
 
+/** Tira as reações (defesas e reviravoltas) da mão: nada serve contra um ataque. */
+export function dropReactions(gameId: string, username: string) {
+  sql(`
+    update app_private.game_cards c
+    set zone = 'main_discard', owner_player_id = null, pile_position = top.n + s.ord
+    from (
+      select x.id, row_number() over (order by x.pile_position) as ord
+      from app_private.game_cards x
+      join app_private.card_definitions d on d.code = x.card_code and d.set_version = x.set_version
+      where x.owner_player_id = ${playerOf(gameId, username)} and x.zone = 'player_hand' and d.is_reaction
+    ) s,
+    (
+      select coalesce(max(pile_position), 0) as n from app_private.game_cards
+      where game_id = '${gameId}' and zone = 'main_discard'
+    ) top
+    where c.id = s.id;`)
+}
+
 export function setHp(gameId: string, username: string, hp: number) {
   sql(`update app_private.game_players set hp = ${hp} where id = ${playerOf(gameId, username)};`)
 }
