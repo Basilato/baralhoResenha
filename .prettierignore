@@ -7,3 +7,6 @@ src/types/database.generated.ts
 src/components/ui
 supabase/.temp
 BARALHO_DA_RESENHA_PLANO_TECNICO.md
+
+# Gerado por pnpm art:build
+art/cards/*/manifest.json

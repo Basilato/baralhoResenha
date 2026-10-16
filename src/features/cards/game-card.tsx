@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { GhostIcon, ZapIcon } from 'lucide-react'
 import { CATEGORY_LABEL } from '@/lib/constants'
 import { initials } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { useCardArtUrl } from './card-art-context'
 import type { CardDefinition } from './catalog'
 import { CATEGORY_ICON } from './category-icons'
 
@@ -14,20 +16,22 @@ const SIZE: Record<CardSize, string> = {
 }
 
 /**
- * Face de uma carta. Sem arte (imageUrl), desenha um placeholder com o ícone
- * da categoria e as iniciais do personagem.
+ * Face de uma carta. Usa a arte do Storage (miniatura na carta pequena); sem arte,
+ * ou se a imagem não carregar, desenha um placeholder com as iniciais do personagem.
  */
 export function GameCard({
   card,
   size = 'md',
-  imageUrl,
   className,
 }: {
   card: CardDefinition
   size?: CardSize
-  imageUrl?: string
   className?: string
 }) {
+  const artUrl = useCardArtUrl(card.imagePath, size === 'sm' ? 'thumb' : 'full')
+  // Guarda a URL que falhou: uma URL nova (renovada) tenta de novo.
+  const [failedUrl, setFailedUrl] = useState<string>()
+  const imageUrl = artUrl !== failedUrl ? artUrl : undefined
   const Icon = CATEGORY_ICON[card.category]
   const color = `var(--cat-${card.category})`
   const showText = size !== 'sm'
@@ -59,6 +63,10 @@ export function GameCard({
             src={imageUrl}
             alt={card.characterName ?? card.name}
             className="size-full object-cover"
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            onError={() => setFailedUrl(imageUrl)}
           />
         ) : (
           <span

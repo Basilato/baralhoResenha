@@ -47,7 +47,7 @@ Na carta, a arte fica entre o cabeçalho colorido (nome da carta) e a caixa de t
 
 Entregue **só o PNG**, com o código da carta como nome (`ATK-01.png`), na pasta `art/cards/7.1/source/` do repositório. O WebP e a miniatura são gerados por `pnpm art:build`. O passo a passo e a lista do que já está pronto estão em [art/README.md](../art/README.md).
 
-Depois, as artes vão para o Storage do Supabase, no bucket privado `card-art`, no caminho `7.1/<CÓDIGO>.webp`. O campo `image_path` de cada carta é preenchido com esse caminho. Trocar uma arte **não muda o efeito** da carta.
+Depois, `pnpm art:upload` envia as artes para o Storage do Supabase, no bucket privado `card-art`, no caminho `7.1/<CÓDIGO>.webp` (e `7.1/<CÓDIGO>_thumb.webp`), e preenche o campo `image_path` de cada carta com esse caminho. Trocar uma arte **não muda o efeito** da carta.
 
 ---
 

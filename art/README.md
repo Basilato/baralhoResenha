@@ -31,6 +31,9 @@ art/cards/7.1/
    - atualiza a folha de contato (`web/contact-sheet.webp`), para revisar tudo de uma vez;
    - lista o que ainda falta.
 3. Confira a folha de contato: sem texto na imagem, personagem certo, foco no centro.
+4. Rode `pnpm art:upload` para enviar as artes ao Storage (bucket privado `card-art`) e ligar cada carta à sua arte. O script lê `.env.admin` (`SUPABASE_URL` e `SUPABASE_SECRET_KEY`): use o arquivo do ambiente local para testar e o de produção para publicar. Pode rodar de novo quantas vezes quiser.
+
+O app mostra a arte sozinho quando ela existe no Storage. Sem arte, a carta continua com o placeholder. Depois de `pnpm db:reset`, rode `pnpm art:upload` de novo: o reset apaga a ligação entre carta e arte.
 
 ## Andamento (catálogo 7.1)
 

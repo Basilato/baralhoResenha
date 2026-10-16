@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { signOut } from '@/features/auth/auth-service'
+import { CardArtProvider } from '@/features/cards/card-art-provider'
 import { useMyProfile } from '@/features/profile/use-profile'
 import { toFriendlyMessage } from '@/lib/errors'
 import { initials } from '@/lib/format'
@@ -44,48 +45,52 @@ export function AppLayout() {
   const displayName = profile.data?.display_name ?? 'Jogador'
 
   return (
-    <div className="flex min-h-svh flex-col">
-      <header className="sticky top-0 z-10 border-b bg-background/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4">
-          <Link to="/lobby" className="flex items-center gap-2">
-            <BrandMark className="size-8 text-base" />
-            <BrandName className="hidden text-lg sm:inline" />
-          </Link>
+    <CardArtProvider>
+      <div className="flex min-h-svh flex-col">
+        <header className="sticky top-0 z-10 border-b bg-background/90 backdrop-blur">
+          <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4">
+            <Link to="/lobby" className="flex items-center gap-2">
+              <BrandMark className="size-8 text-base" />
+              <BrandName className="hidden text-lg sm:inline" />
+            </Link>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-10 gap-2 px-2">
-                <Avatar className="size-7">
-                  <AvatarFallback>{initials(displayName)}</AvatarFallback>
-                </Avatar>
-                <span className="max-w-32 truncate">{displayName}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel className="truncate">@{profile.data?.username}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/regras">
-                  <BookOpenIcon />
-                  Regras
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem variant="destructive" onSelect={() => void handleSignOut()}>
-                <LogOutIcon />
-                Sair
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-10 gap-2 px-2">
+                  <Avatar className="size-7">
+                    <AvatarFallback>{initials(displayName)}</AvatarFallback>
+                  </Avatar>
+                  <span className="max-w-32 truncate">{displayName}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuLabel className="truncate">
+                  @{profile.data?.username}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/regras">
+                    <BookOpenIcon />
+                    Regras
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" onSelect={() => void handleSignOut()}>
+                  <LogOutIcon />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
 
-      <main className="mx-auto w-full max-w-5xl min-w-0 flex-1 px-4 py-6">
-        {profile.isError ? (
-          <p className="text-destructive">{toFriendlyMessage(profile.error)}</p>
-        ) : (
-          <Outlet />
-        )}
-      </main>
-    </div>
+        <main className="mx-auto w-full max-w-5xl min-w-0 flex-1 px-4 py-6">
+          {profile.isError ? (
+            <p className="text-destructive">{toFriendlyMessage(profile.error)}</p>
+          ) : (
+            <Outlet />
+          )}
+        </main>
+      </div>
+    </CardArtProvider>
   )
 }
