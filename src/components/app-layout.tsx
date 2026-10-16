@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -18,6 +19,7 @@ import { signOut } from '@/features/auth/auth-service'
 import { CardArtProvider } from '@/features/cards/card-art-provider'
 import { useMyProfile } from '@/features/profile/use-profile'
 import { toFriendlyMessage } from '@/lib/errors'
+import { setPreferences, usePreferences } from '@/lib/preferences'
 import { initials } from '@/lib/format'
 
 async function handleSignOut() {
@@ -30,6 +32,7 @@ async function handleSignOut() {
 
 export function AppLayout() {
   const profile = useMyProfile()
+  const preferences = usePreferences()
   // null = conta do Auth sem perfil (provisionada sem username).
   const isInactive = profile.data === null || profile.data?.is_active === false
 
@@ -74,6 +77,22 @@ export function AppLayout() {
                     Regras
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuCheckboxItem
+                  checked={preferences.sound}
+                  onCheckedChange={(checked) => setPreferences({ sound: checked })}
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  Sons
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={preferences.reduceMotion}
+                  onCheckedChange={(checked) => setPreferences({ reduceMotion: checked })}
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  Reduzir animações
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem variant="destructive" onSelect={() => void handleSignOut()}>
                   <LogOutIcon />
                   Sair

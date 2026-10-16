@@ -23,6 +23,8 @@ import {
   TargetIcon,
   TrophyIcon,
   UserMinusIcon,
+  Volume2Icon,
+  VolumeXIcon,
   WifiOffIcon,
   XCircleIcon,
 } from 'lucide-react'
@@ -43,12 +45,14 @@ import { RoomUnavailable } from '@/features/rooms/room-unavailable'
 import { useGameChannel } from '@/features/rooms/use-room'
 import type { CardCategoryId } from '@/lib/constants'
 import { isAppError, toFriendlyMessage } from '@/lib/errors'
+import { setPreferences, usePreferences } from '@/lib/preferences'
 import { cn } from '@/lib/utils'
 import { describeEvent, describePrivateEvent } from './event-messages'
 import { eventQuip } from './event-quips'
 import { PlayCardDialog, type PlayableCard } from './play-card-dialog'
 import { whyNotPlayable } from './play-rules'
 import { useTableEffects, type PlayerEffect, type Spotlight } from './use-table-effects'
+import { useTableSounds } from './use-table-sounds'
 import { ReactionDialog } from './reaction-dialog'
 import {
   newRequestId,
@@ -107,6 +111,7 @@ function Table({
   const isMyTurn = game.status === 'playing' && !!me && me.id === game.activePlayerId
   const discardTop = game.mainDiscardTop ? catalog.get(game.mainDiscardTop) : undefined
   const fx = useTableEffects(game, catalog)
+  useTableSounds(fx, isMyTurn, game.status === 'finished')
   const targetedIds = new Set(
     game.pendingAction?.responses
       .filter((response) => TARGET_ROLES.includes(response.role))
@@ -141,6 +146,7 @@ function Table({
           )}
         </div>
         <div className="flex items-center gap-2">
+          <SoundToggle />
           {game.curseActive && game.status === 'playing' && (
             <Badge variant="outline" className="border-cat-ghost text-cat-ghost">
               Maldição da Ressaca ativa
@@ -636,6 +642,23 @@ function PlayerPanel({
 }
 
 const NO_EFFECTS: readonly PlayerEffect[] = []
+
+/** Modo silencioso a um toque, sem sair da mesa. */
+function SoundToggle() {
+  const { sound } = usePreferences()
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setPreferences({ sound: !sound })}
+      aria-label={sound ? 'Silenciar sons' : 'Ativar sons'}
+      aria-pressed={!sound}
+      title={sound ? 'Silenciar sons' : 'Ativar sons'}
+    >
+      {sound ? <Volume2Icon /> : <VolumeXIcon className="text-muted-foreground" />}
+    </Button>
+  )
+}
 
 const FLASH: Record<PlayerEffect['kind'], string> = {
   damage: 'bg-cat-attack/30',
