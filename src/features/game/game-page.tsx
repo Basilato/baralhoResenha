@@ -111,6 +111,15 @@ function Table({
   const isMyTurn = game.status === 'playing' && !!me && me.id === game.activePlayerId
   const discardTop = game.mainDiscardTop ? catalog.get(game.mainDiscardTop) : undefined
   const fx = useTableEffects(game, catalog)
+  // A partir de mim, na ordem dos lugares: é a ordem em que a vez passa.
+  const bySeat = [...game.participants].sort((a, b) => a.seat - b.seat)
+  const myIndex = Math.max(
+    0,
+    bySeat.findIndex((player) => player.id === game.myPlayerId),
+  )
+  const seated = [...bySeat.slice(myIndex), ...bySeat.slice(0, myIndex)]
+  // Mesa cheia: painéis menores para caber todo mundo sem empurrar a mão.
+  const compact = game.participants.length > 5
   useTableSounds(fx, isMyTurn, game.status === 'finished')
   const targetedIds = new Set(
     game.pendingAction?.responses
@@ -136,7 +145,7 @@ function Table({
     <div className={cn('flex min-w-0 flex-col gap-6', isMyTurn && 'max-sm:pb-20')}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-heading text-2xl font-black tracking-tight">
+          <h1 className="font-heading text-xl font-black tracking-tight sm:text-2xl">
             Rodada {game.round} de {game.maxRounds}
           </h1>
           {game.status === 'playing' && (
@@ -182,83 +191,105 @@ function Table({
 
       {game.pendingAction && <PendingBanner game={game} players={players} catalog={catalog} />}
 
-      <section aria-label="Jogadores" className="min-w-0">
-        <ul className="relative -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4">
-          {game.participants.map((player) => (
-            <PlayerPanel
-              key={player.id}
-              player={player}
-              isMe={player.id === game.myPlayerId}
-              isActive={game.status === 'playing' && player.id === game.activePlayerId}
-              isLeader={player.id === game.leaderPlayerId}
-              isMarked={game.markedPlayerIds.includes(player.id)}
-              isTargeted={targetedIds.has(player.id)}
-              isAwaiting={awaitingIds.has(player.id)}
-              effects={fx.byPlayer.get(player.id) ?? NO_EFFECTS}
-              online={onlineUserIds.has(player.userId)}
-              presence={game.presence.find((item) => item.playerId === player.id)}
-              absenceLimit={game.absenceLimitSeconds}
-              canRemove={isHost && game.status === 'playing' && player.id !== game.myPlayerId}
-              game={game}
-            />
-          ))}
-        </ul>
-      </section>
-
-      <section
-        aria-label="Mesa"
-        className={cn(
-          'flex items-end justify-center gap-6 rounded-2xl border bg-muted/40 p-4 transition-colors sm:gap-10',
-          // Maldição da Ressaca: a mesa fica tomada pela névoa do Além.
-          game.curseActive &&
-            game.status === 'playing' &&
-            'border-cat-ghost/40 bg-linear-to-t from-cat-ghost/25 to-cat-ghost/5',
-        )}
-      >
-        <Pile label="Baralho" count={game.mainDeckCount} testId="main-deck-count">
-          {/* A key nova reinicia o "pulo" do monte a cada compra. */}
-          <div key={fx.deckDrawKey} className={cn(fx.deckDrawKey > 0 && 'animate-deck-bump')}>
-            <CardBack deckType="main" size="sm" />
-          </div>
-        </Pile>
-        <Pile label="Descarte" count={game.mainDiscardCount} testId="main-discard-count">
-          {discardTop ? (
-            <button
-              type="button"
-              onClick={() => setSelected(discardTop)}
-              aria-label={`Ver ${discardTop.name}`}
+      {/* Desktop: jogadores e mesa à esquerda, histórico ao lado; mão embaixo, larga.
+          Celular: uma coluna, com o histórico por último. */}
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="flex min-w-0 flex-col gap-4">
+          <section aria-label="Jogadores" className="min-w-0">
+            <ul
+              className={cn(
+                'relative -mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:gap-3 sm:overflow-visible sm:px-0',
+                compact
+                  ? 'sm:grid-cols-[repeat(auto-fill,minmax(11rem,1fr))]'
+                  : 'sm:grid-cols-[repeat(auto-fill,minmax(14rem,1fr))]',
+              )}
             >
-              <GameCard card={discardTop} size="sm" />
-            </button>
-          ) : (
-            <div className="flex aspect-card w-24 items-center justify-center rounded-lg border-2 border-dashed text-xs text-muted-foreground">
-              vazio
-            </div>
-          )}
-        </Pile>
-        <Pile label="Além" count={game.ghostDeckCount} testId="ghost-deck-count">
-          <CardBack deckType="ghost" size="sm" />
-        </Pile>
-      </section>
+              {seated.map((player) => (
+                <PlayerPanel
+                  key={player.id}
+                  player={player}
+                  compact={compact}
+                  isMe={player.id === game.myPlayerId}
+                  isActive={game.status === 'playing' && player.id === game.activePlayerId}
+                  isLeader={player.id === game.leaderPlayerId}
+                  isMarked={game.markedPlayerIds.includes(player.id)}
+                  isTargeted={targetedIds.has(player.id)}
+                  isAwaiting={awaitingIds.has(player.id)}
+                  effects={fx.byPlayer.get(player.id) ?? NO_EFFECTS}
+                  online={onlineUserIds.has(player.userId)}
+                  presence={game.presence.find((item) => item.playerId === player.id)}
+                  absenceLimit={game.absenceLimitSeconds}
+                  canRemove={isHost && game.status === 'playing' && player.id !== game.myPlayerId}
+                  game={game}
+                />
+              ))}
+            </ul>
+          </section>
 
-      {me && (
-        <MyArea
-          // Recomeça a seleção de descarte a cada turno.
-          key={`${game.round}-${game.activePlayerId}`}
-          game={game}
-          me={me}
-          isMyTurn={isMyTurn}
-          catalog={catalog}
-          drawnIds={fx.drawnIds}
-          onOpenCard={(handCard, card) => setPlaying({ handCard, card })}
-        />
-      )}
+          <section
+            aria-label="Mesa"
+            className={cn(
+              'flex items-end justify-center gap-6 rounded-2xl border bg-muted/40 p-3 transition-colors sm:gap-10 sm:p-4',
+              // Maldição da Ressaca: a mesa fica tomada pela névoa do Além.
+              game.curseActive &&
+                game.status === 'playing' &&
+                'border-cat-ghost/40 bg-linear-to-t from-cat-ghost/25 to-cat-ghost/5',
+            )}
+          >
+            <Pile label="Baralho" count={game.mainDeckCount} testId="main-deck-count">
+              {/* A key nova reinicia o "pulo" do monte a cada compra. */}
+              <div key={fx.deckDrawKey} className={cn(fx.deckDrawKey > 0 && 'animate-deck-bump')}>
+                <CardBack deckType="main" size="sm" className={PILE_CARD} />
+              </div>
+            </Pile>
+            <Pile label="Descarte" count={game.mainDiscardCount} testId="main-discard-count">
+              {discardTop ? (
+                <button
+                  type="button"
+                  onClick={() => setSelected(discardTop)}
+                  aria-label={`Ver ${discardTop.name}`}
+                >
+                  <GameCard card={discardTop} size="sm" className={PILE_CARD} />
+                </button>
+              ) : (
+                <div className="flex aspect-card w-16 items-center justify-center rounded-lg border-2 border-dashed text-xs text-muted-foreground sm:w-24">
+                  vazio
+                </div>
+              )}
+            </Pile>
+            <Pile label="Além" count={game.ghostDeckCount} testId="ghost-deck-count">
+              <CardBack deckType="ghost" size="sm" className={PILE_CARD} />
+            </Pile>
+          </section>
+        </div>
+
+        <div className="min-w-0 max-lg:order-last lg:relative">
+          <EventLog
+            game={game}
+            players={players}
+            catalog={catalog}
+            className="lg:absolute lg:inset-0"
+          />
+        </div>
+
+        {me && (
+          <MyArea
+            // Recomeça a seleção de descarte a cada turno.
+            key={`${game.round}-${game.activePlayerId}`}
+            game={game}
+            me={me}
+            isMyTurn={isMyTurn}
+            catalog={catalog}
+            drawnIds={fx.drawnIds}
+            className="lg:col-span-2"
+            onOpenCard={(handCard, card) => setPlaying({ handCard, card })}
+          />
+        )}
+      </div>
 
       {fx.spotlight && (
         <CardSpotlight key={fx.spotlight.id} spotlight={fx.spotlight} catalog={catalog} />
       )}
-
-      <EventLog game={game} players={players} catalog={catalog} />
 
       <PlayCardDialog
         playable={playing}
@@ -281,6 +312,7 @@ function MyArea({
   isMyTurn,
   catalog,
   drawnIds,
+  className,
   onOpenCard,
 }: {
   game: GameView
@@ -289,6 +321,7 @@ function MyArea({
   catalog: CardCatalog
   /** Cartas recém-compradas: entram na mão com animação. */
   drawnIds: ReadonlySet<string>
+  className?: string
   onOpenCard: (handCard: HandCard, card: CardDefinition) => void
 }) {
   const command = useGameCommand(game)
@@ -331,7 +364,10 @@ function MyArea({
     )
 
   return (
-    <section aria-labelledby="my-hand-title" className="flex min-w-0 flex-col gap-3">
+    <section
+      aria-labelledby="my-hand-title"
+      className={cn('flex min-w-0 flex-col gap-3', className)}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="my-hand-title" className="flex items-center gap-2 font-heading text-lg font-bold">
           {ghost ? 'Suas cartas do Além' : 'Sua mão'}
@@ -478,6 +514,7 @@ function HandItem({
 
 function PlayerPanel({
   player,
+  compact,
   isMe,
   isActive,
   isLeader,
@@ -492,6 +529,8 @@ function PlayerPanel({
   game,
 }: {
   player: Participant
+  /** Mesa cheia ou tela pequena: painel enxuto. */
+  compact: boolean
   isMe: boolean
   isActive: boolean
   isLeader: boolean
@@ -522,7 +561,8 @@ function PlayerPanel({
   return (
     <li
       className={cn(
-        'relative flex min-w-56 snap-start flex-col gap-2 overflow-hidden rounded-xl border bg-card p-3 transition-shadow',
+        'relative flex min-w-38 snap-start flex-col gap-2 overflow-hidden rounded-xl border bg-card p-2.5 transition-shadow sm:min-w-0 sm:p-3',
+        compact && 'gap-1.5 sm:p-2.5',
         isMe && 'border-primary/50',
         isLeader && player.alive && 'bg-linear-to-br from-cat-attack/12 to-card to-60%',
         !player.alive && 'border-cat-ghost/40 bg-linear-to-br from-cat-ghost/20 to-card to-70%',
@@ -544,13 +584,20 @@ function PlayerPanel({
         <EffectOverlay key={effect.id} effect={effect} />
       ))}
       <div className="flex items-center gap-2">
-        <PlayerAvatar name={player.displayName} online={online} className="size-8" />
+        <PlayerAvatar
+          name={player.displayName}
+          online={online}
+          className={compact ? 'size-7 text-xs' : 'size-8'}
+        />
         <p className="flex min-w-0 flex-1 items-center gap-1 font-medium">
           {player.isHost && (
             <CrownIcon className="size-4 shrink-0 text-amber-500" aria-label="Host" />
           )}
-          <span className="truncate">{player.displayName}</span>
-          {isMe && <span className="shrink-0 text-xs text-muted-foreground">(você)</span>}
+          <span className={cn('truncate', compact && 'text-sm')}>{player.displayName}</span>
+          {isMe && (
+            // No celular a borda já destaca o próprio painel.
+            <span className="shrink-0 text-xs text-muted-foreground max-sm:sr-only">(você)</span>
+          )}
         </p>
         <span
           className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground"
@@ -642,6 +689,9 @@ function PlayerPanel({
 }
 
 const NO_EFFECTS: readonly PlayerEffect[] = []
+
+/** Pilhas da mesa menores no celular, para sobrar tela para a mão. */
+const PILE_CARD = 'max-sm:w-16 max-sm:text-[0.45rem]'
 
 /** Modo silencioso a um toque, sem sair da mesa. */
 function SoundToggle() {
@@ -742,10 +792,12 @@ function EventLog({
   game,
   players,
   catalog,
+  className,
 }: {
   game: GameView
   players: ReadonlyMap<string, Participant>
   catalog: CardCatalog
+  className?: string
 }) {
   const recent = [...game.events].reverse().slice(0, 15)
   const secrets = game.myPrivateEvents.slice(0, 3)
@@ -753,12 +805,12 @@ function EventLog({
   const nameOf = (id: unknown) =>
     (typeof id === 'string' && players.get(id)?.displayName) || 'Alguém'
   return (
-    <section aria-labelledby="log-title" className="flex flex-col gap-2">
+    <section aria-labelledby="log-title" className={cn('flex flex-col gap-2', className)}>
       <h2 id="log-title" className="font-heading text-lg font-bold">
         Histórico
       </h2>
       <ol
-        className="flex flex-col divide-y rounded-xl border bg-card text-sm"
+        className="flex flex-col divide-y rounded-xl border bg-card text-sm lg:min-h-0 lg:flex-1 lg:overflow-y-auto"
         data-testid="event-log"
       >
         {secrets.map((event, index) => (

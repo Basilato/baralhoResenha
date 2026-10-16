@@ -888,7 +888,7 @@ export const supabase = createClient<Database>(
 - [x] Animar compra, ataque, dano, cura, fantasma e ressurreição.
 - [x] Histórico público com mensagens engraçadas e não reveladoras.
 - [x] Sons opcionais, opção de reduzir animações e modo silencioso.
-- [ ] Melhorar mesas com 3/5/8 pessoas e layout mobile.
+- [x] Melhorar mesas com 3/5/8 pessoas e layout mobile.
 - [ ] Tutorial inicial de 3 passos e regras rápidas sempre acessíveis.
 
 **Entrega:** experiência reconhecível e apresentável ao grupo.

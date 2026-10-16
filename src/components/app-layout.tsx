@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, Outlet } from 'react-router'
+import { Link, Outlet, useMatch } from 'react-router'
 import { toast } from 'sonner'
 import { BookOpenIcon, LogOutIcon } from 'lucide-react'
 import { BrandMark, BrandName } from '@/components/brand'
@@ -21,6 +21,7 @@ import { useMyProfile } from '@/features/profile/use-profile'
 import { toFriendlyMessage } from '@/lib/errors'
 import { setPreferences, usePreferences } from '@/lib/preferences'
 import { initials } from '@/lib/format'
+import { cn } from '@/lib/utils'
 
 async function handleSignOut() {
   try {
@@ -33,6 +34,9 @@ async function handleSignOut() {
 export function AppLayout() {
   const profile = useMyProfile()
   const preferences = usePreferences()
+  // A mesa usa a tela inteira: jogadores, histórico ao lado e a mão larga.
+  const wide = useMatch('/jogo/:gameId') !== null
+  const width = wide ? 'max-w-7xl' : 'max-w-5xl'
   // null = conta do Auth sem perfil (provisionada sem username).
   const isInactive = profile.data === null || profile.data?.is_active === false
 
@@ -51,7 +55,7 @@ export function AppLayout() {
     <CardArtProvider>
       <div className="flex min-h-svh flex-col">
         <header className="sticky top-0 z-10 border-b bg-background/90 backdrop-blur">
-          <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4">
+          <div className={cn('mx-auto flex h-14 items-center justify-between gap-3 px-4', width)}>
             <Link to="/lobby" className="flex items-center gap-2">
               <BrandMark className="size-8 text-base" />
               <BrandName className="hidden text-lg sm:inline" />
@@ -102,7 +106,7 @@ export function AppLayout() {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-5xl min-w-0 flex-1 px-4 py-6">
+        <main className={cn('mx-auto w-full min-w-0 flex-1 px-4 py-6', width)}>
           {profile.isError ? (
             <p className="text-destructive">{toFriendlyMessage(profile.error)}</p>
           ) : (
