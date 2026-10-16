@@ -1,0 +1,199 @@
+{
+  "setVersion": "7.1",
+  "ready": [
+    {
+      "code": "ATK-01",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/ATK-01.webp"
+    },
+    {
+      "code": "ATK-02",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/ATK-02.webp"
+    },
+    {
+      "code": "ATK-03",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/ATK-03.webp"
+    },
+    {
+      "code": "ATK-04",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/ATK-04.webp"
+    },
+    {
+      "code": "ATK-05",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/ATK-05.webp"
+    },
+    {
+      "code": "ATK-06",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/ATK-06.webp"
+    },
+    {
+      "code": "ATK-07",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/ATK-07.webp"
+    },
+    {
+      "code": "CAO-01",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/CAO-01.webp"
+    },
+    {
+      "code": "CAO-02",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/CAO-02.webp"
+    },
+    {
+      "code": "CAO-04",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/CAO-04.webp"
+    },
+    {
+      "code": "DEF-01",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/DEF-01.webp"
+    },
+    {
+      "code": "DEF-02",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/DEF-02.webp"
+    },
+    {
+      "code": "DEF-03",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/DEF-03.webp"
+    },
+    {
+      "code": "DEF-04",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/DEF-04.webp"
+    },
+    {
+      "code": "DEF-05",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/DEF-05.webp"
+    },
+    {
+      "code": "DEF-06",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/DEF-06.webp"
+    },
+    {
+      "code": "GHO-01",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/GHO-01.webp"
+    },
+    {
+      "code": "GHO-02",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/GHO-02.webp"
+    },
+    {
+      "code": "GHO-03",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/GHO-03.webp"
+    },
+    {
+      "code": "GHO-04",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/GHO-04.webp"
+    },
+    {
+      "code": "GHO-05",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/GHO-05.webp"
+    },
+    {
+      "code": "REC-01",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/REC-01.webp"
+    },
+    {
+      "code": "REC-03",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/REC-03.webp"
+    },
+    {
+      "code": "REV-01",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/REV-01.webp"
+    },
+    {
+      "code": "REV-02",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/REV-02.webp"
+    },
+    {
+      "code": "REV-03",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/REV-03.webp"
+    },
+    {
+      "code": "SAB-01",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/SAB-01.webp"
+    },
+    {
+      "code": "SAB-02",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/SAB-02.webp"
+    },
+    {
+      "code": "SAB-03",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/SAB-03.webp"
+    },
+    {
+      "code": "SAB-04",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/SAB-04.webp"
+    },
+    {
+      "code": "SAB-05",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/SAB-05.webp"
+    }
+  ],
+  "missing": [
+    "CAO-03",
+    "REC-02",
+    "REC-04",
+    "REC-05",
+    "BACK-MAIN",
+    "BACK-GHOST"
+  ]
+}

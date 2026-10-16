@@ -35,3 +35,6 @@ Thumbs.db
 
 # Vercel
 .vercel/
+
+# Artes geradas a partir de art/cards/*/source (pnpm art:build)
+art/cards/*/web/

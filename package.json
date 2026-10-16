@@ -20,7 +20,8 @@
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types typescript --local > src/types/database.generated.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
-    "users": "node --env-file=.env.admin scripts/admin-users.mjs"
+    "users": "node --env-file=.env.admin scripts/admin-users.mjs",
+    "art:build": "node scripts/build-card-art.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
@@ -54,6 +55,7 @@
     "prettier": "^3.9.10",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "shadcn": "^4.21.5",
+    "sharp": "^0.35.5",
     "supabase": "^2.121.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
