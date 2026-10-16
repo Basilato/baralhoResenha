@@ -38,8 +38,10 @@ const admin = createClient(SUPABASE_URL, SUPABASE_SECRET_KEY, {
 })
 
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
-// Versos ainda não têm carta no catálogo: o app os desenha sozinho por enquanto.
+// Faces ficam ligadas às cartas do catálogo; versos (BACK-*) só vão para o
+// Storage, e o app os encontra pelo caminho fixo (card-art-context.ts).
 const faces = manifest.ready.filter((item) => !item.code.startsWith('BACK-'))
+const backs = manifest.ready.filter((item) => item.code.startsWith('BACK-'))
 
 async function upload(fileName) {
   const path = join(base, 'web', fileName)
@@ -55,7 +57,7 @@ async function upload(fileName) {
 }
 
 try {
-  for (const { code } of faces) {
+  for (const { code } of [...faces, ...backs]) {
     await upload(`${code}.webp`)
     await upload(`${code}_thumb.webp`)
     console.log(`Enviada: ${code}`)

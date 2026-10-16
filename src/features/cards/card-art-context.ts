@@ -8,6 +8,12 @@ export type CardArtUrls = ReadonlyMap<string, string>
 // Fora do provider (testes, telas sem login) não há arte: as cartas mostram o placeholder.
 export const CardArtContext = createContext<CardArtUrls>(new Map())
 
+/** Versos: arte fixa por baralho, no mesmo bucket (enviada por pnpm art:upload). */
+export const CARD_BACK_PATH = {
+  main: '7.1/BACK-MAIN.webp',
+  ghost: '7.1/BACK-GHOST.webp',
+} as const
+
 /** Caminho da miniatura: `7.1/ATK-01.webp` → `7.1/ATK-01_thumb.webp`. */
 export function thumbPath(imagePath: string): string {
   return imagePath.replace(/\.webp$/, '_thumb.webp')

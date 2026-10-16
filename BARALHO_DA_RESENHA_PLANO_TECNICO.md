@@ -883,7 +883,7 @@ export const supabase = createClient<Database>(
 
 ## Fase 9 — Visual premium e experiência (P1)
 
-- [ ] Substituir placeholders pelas artes autorizadas. *(Storage, `pnpm art:upload` e exibição prontos; 31 de 37 artes. Faltam CAO-03, REC-02, REC-04, REC-05 e os 2 versos.)*
+- [x] Substituir placeholders pelas artes autorizadas. *(37 de 37: 35 faces e os 2 versos.)*
 - [x] Estilizar cartas por categoria e overlays de efeitos.
 - [x] Animar compra, ataque, dano, cura, fantasma e ressurreição.
 - [x] Histórico público com mensagens engraçadas e não reveladoras.

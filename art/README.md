@@ -37,7 +37,7 @@ O app mostra a arte sozinho quando ela existe no Storage. Sem arte, a carta cont
 
 ## Andamento (catálogo 7.1)
 
-**31 de 37 prontas.**
+**37 de 37 prontas.**
 
 | Código     | Carta                      | Status    |
 | ---------- | -------------------------- | --------- |
@@ -61,13 +61,13 @@ O app mostra a arte sozinho quando ela existe no Storage. Sem arte, a carta cont
 | SAB-05     | Plano Dental Negado        | ✅ pronta |
 | CAO-01     | Tio Paulo                  | ✅ pronta |
 | CAO-02     | Bucetada                   | ✅ pronta |
-| CAO-03     | Família Basilato           | ⬜ falta  |
+| CAO-03     | Família Basilato           | ✅ pronta |
 | CAO-04     | O Acre Existe!             | ✅ pronta |
 | REC-01     | After do After             | ✅ pronta |
-| REC-02     | Inimiga do Fim             | ⬜ falta  |
+| REC-02     | Inimiga do Fim             | ✅ pronta |
 | REC-03     | Consultório Lucboy         | ✅ pronta |
-| REC-04     | Anestesia Alcoólica        | ⬜ falta  |
-| REC-05     | English Mode               | ⬜ falta  |
+| REC-04     | Anestesia Alcoólica        | ✅ pronta |
+| REC-05     | English Mode               | ✅ pronta |
 | REV-01     | Ressuscitou o Tio Paulo    | ✅ pronta |
 | REV-02     | Lucboy & Laragirl          | ✅ pronta |
 | REV-03     | Última Palavra             | ✅ pronta |
@@ -76,9 +76,9 @@ O app mostra a arte sozinho quando ela existe no Storage. Sem arte, a carta cont
 | GHO-03     | Mão de Defunto             | ✅ pronta |
 | GHO-04     | Maldição da Ressaca        | ✅ pronta |
 | GHO-05     | Eu Sei o Que Você Fez      | ✅ pronta |
-| BACK-MAIN  | Verso do baralho principal | ⬜ falta  |
-| BACK-GHOST | Verso do Baralho do Além   | ⬜ falta  |
+| BACK-MAIN  | Verso do baralho principal | ✅ pronta |
+| BACK-GHOST | Verso do Baralho do Além   | ✅ pronta |
 
-As 31 prontas têm 1448 × 1086 px, a proporção certa (4:3) e dentro da tolerância do script. Para as próximas, prefira 1536 × 1152.
+As 35 faces têm 1448 × 1086 px (4:3). Os versos têm 1061 × 1482 (proporção certa de carta; o app mostra no máximo ~290 px de largura). Para trocas futuras, prefira 1536 × 1152 nas faces e 1575 × 2200 nos versos.
 
 A lista sempre atualizada fica em `manifest.json`, depois de rodar `pnpm art:build`.

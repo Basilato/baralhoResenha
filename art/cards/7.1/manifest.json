@@ -44,6 +44,18 @@
       "storagePath": "7.1/ATK-07.webp"
     },
     {
+      "code": "BACK-GHOST",
+      "width": 1061,
+      "height": 1482,
+      "storagePath": "7.1/BACK-GHOST.webp"
+    },
+    {
+      "code": "BACK-MAIN",
+      "width": 1061,
+      "height": 1482,
+      "storagePath": "7.1/BACK-MAIN.webp"
+    },
+    {
       "code": "CAO-01",
       "width": 1448,
       "height": 1086,
@@ -54,6 +66,12 @@
       "width": 1448,
       "height": 1086,
       "storagePath": "7.1/CAO-02.webp"
+    },
+    {
+      "code": "CAO-03",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/CAO-03.webp"
     },
     {
       "code": "CAO-04",
@@ -134,10 +152,28 @@
       "storagePath": "7.1/REC-01.webp"
     },
     {
+      "code": "REC-02",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/REC-02.webp"
+    },
+    {
       "code": "REC-03",
       "width": 1448,
       "height": 1086,
       "storagePath": "7.1/REC-03.webp"
+    },
+    {
+      "code": "REC-04",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/REC-04.webp"
+    },
+    {
+      "code": "REC-05",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/REC-05.webp"
     },
     {
       "code": "REV-01",
@@ -188,12 +224,5 @@
       "storagePath": "7.1/SAB-05.webp"
     }
   ],
-  "missing": [
-    "CAO-03",
-    "REC-02",
-    "REC-04",
-    "REC-05",
-    "BACK-MAIN",
-    "BACK-GHOST"
-  ]
+  "missing": []
 }

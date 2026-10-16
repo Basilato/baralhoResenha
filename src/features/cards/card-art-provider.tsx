@@ -2,7 +2,7 @@ import { useMemo, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useCardCatalog } from './catalog'
-import { CardArtContext, thumbPath, type CardArtUrls } from './card-art-context'
+import { CARD_BACK_PATH, CardArtContext, thumbPath, type CardArtUrls } from './card-art-context'
 
 const BUCKET = 'card-art'
 // O bucket é privado (plano, 9.3): URLs assinadas de curta duração, renovadas antes de vencer.
@@ -30,8 +30,11 @@ export function CardArtProvider({ children }: { children: ReactNode }) {
 
   const paths = useMemo(
     () =>
-      (catalog.data?.list ?? [])
-        .flatMap((card) => (card.imagePath ? [card.imagePath, thumbPath(card.imagePath)] : []))
+      [
+        ...(catalog.data?.list ?? []).map((card) => card.imagePath),
+        ...Object.values(CARD_BACK_PATH),
+      ]
+        .flatMap((path) => (path ? [path, thumbPath(path)] : []))
         .sort(),
     [catalog.data],
   )
