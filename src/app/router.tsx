@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/app-layout'
 import { RouteError } from '@/components/route-error'
 import { RedirectIfAuthenticated, RequireAuth } from '@/features/auth/guards'
 import { LoginPage } from '@/features/auth/login-page'
+import { SignupPage } from '@/features/auth/signup-page'
 import { GamePage } from '@/features/game/game-page'
 import { LobbyPage } from '@/features/lobby/lobby-page'
 import { JoinLinkPage } from '@/features/rooms/join-link-page'
@@ -16,7 +17,10 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/lobby" replace /> },
       {
         element: <RedirectIfAuthenticated />,
-        children: [{ path: 'login', element: <LoginPage /> }],
+        children: [
+          { path: 'login', element: <LoginPage /> },
+          { path: 'cadastro', element: <SignupPage /> },
+        ],
       },
       {
         element: <RequireAuth />,

@@ -40,7 +40,9 @@ test('regras rápidas abrem na mesa sem sair da partida', async ({ browser }, te
   test.setTimeout(60_000)
   const options = testInfo.project.use
   const pages = await Promise.all(
-    ['teste4', 'teste5', 'teste6'].map(async (username) => {
+    // Contas exclusivas por projeto (specs em paralelo não dividem conta).
+    (testInfo.project.name === 'celular' ? [26, 27, 28] : [23, 24, 25]).map(async (n) => {
+      const username = `teste${n}`
       const context = await browser.newContext(options)
       const page = await context.newPage()
       await login(page, username)

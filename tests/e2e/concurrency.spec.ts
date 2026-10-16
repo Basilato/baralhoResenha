@@ -5,7 +5,7 @@ import { giveCard, PASSWORD, sql } from './support.ts'
 
 // Duas abas (ou dois cliques) disparando ao mesmo tempo, direto na API: o banco
 // tem de aplicar cada jogada uma vez só e recusar a que chegou atrasada.
-// Não usa navegador; roda só no projeto desktop.
+// Não usa navegador; roda só no projeto desktop. Contas exclusivas: teste29–37.
 
 const env = Object.fromEntries(
   readFileSync('.env.local', 'utf8')
@@ -95,7 +95,7 @@ test.describe('concorrência', () => {
   })
 
   test('duas abas encerram o turno ao mesmo tempo: uma passa, a outra é recusada', async () => {
-    const game = await startGame(['teste1', 'teste2', 'teste3'])
+    const game = await startGame(['teste29', 'teste30', 'teste31'])
     const active = game.clients[game.activeIndex]!
     const before = game.views[game.activeIndex]!
 
@@ -116,7 +116,7 @@ test.describe('concorrência', () => {
   })
 
   test('o mesmo pedido enviado duas vezes ao mesmo tempo vale uma vez só', async () => {
-    const game = await startGame(['teste4', 'teste5', 'teste6'])
+    const game = await startGame(['teste32', 'teste33', 'teste34'])
     const active = game.clients[game.activeIndex]!
     const before = game.views[game.activeIndex]!
     const requestId = crypto.randomUUID()
@@ -137,7 +137,7 @@ test.describe('concorrência', () => {
   })
 
   test('dois alvos respondem ao mesmo tempo: o dano sai uma vez para cada', async () => {
-    const usernames = ['teste7', 'teste8', 'teste9']
+    const usernames = ['teste35', 'teste36', 'teste37']
     const game = await startGame(usernames)
     const attackerName = usernames[game.activeIndex]!
     const attacker = game.clients[game.activeIndex]!

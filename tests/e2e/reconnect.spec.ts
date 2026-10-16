@@ -1,23 +1,30 @@
 import { expect, test, type Page } from '@playwright/test'
 import { activePage, gameIdFrom, giveCard, playerPage } from './support.ts'
 
-const USERS = { teste4: 'Teste Quatro', teste5: 'Teste Cinco', teste6: 'Teste Seis' } as const
-type Username = keyof typeof USERS
+// Contas exclusivas deste arquivo (por teste e por projeto): specs em paralelo
+// não podem dividir conta, senão alguém passa do limite de 5 salas abertas.
+const SEATS = {
+  reaction: { desktop: [11, 12, 13], celular: [14, 15, 16] },
+  swap: { desktop: [17, 18, 19], celular: [20, 21, 22] },
+} as const
+
+const nameOf = (username: string) => `Teste ${username.replace('teste', '')}`
 
 async function startTable(
   browser: Parameters<typeof playerPage>[0],
   options: Parameters<typeof playerPage>[2],
+  numbers: readonly number[],
 ) {
-  const byUser = new Map<Username, Page>()
-  for (const username of Object.keys(USERS) as Username[]) {
+  const usernames = numbers.map((n) => `teste${n}`)
+  const byUser = new Map<string, Page>()
+  for (const username of usernames) {
     byUser.set(username, await playerPage(browser, username, options))
   }
   const pages = [...byUser.values()]
-  const host = byUser.get('teste4')!
+  const host = byUser.get(usernames[0]!)!
   await host.getByRole('button', { name: 'Criar resenha' }).click()
   const code = (await host.getByTestId('room-code').getAttribute('data-code'))!
-  await byUser.get('teste5')!.goto(`/entrar/${code}`)
-  await byUser.get('teste6')!.goto(`/entrar/${code}`)
+  for (const username of usernames.slice(1)) await byUser.get(username)!.goto(`/entrar/${code}`)
   await expect(host.getByTestId('seat')).toHaveCount(3)
   await host.getByRole('button', { name: /Começar/ }).click()
   for (const page of pages) await expect(page).toHaveURL(/\/jogo\//)
@@ -29,12 +36,18 @@ async function startTable(
   return { byUser, pages, host, gameId, attacker, attackerUser, others }
 }
 
+const project = (name: string) => (name === 'celular' ? 'celular' : 'desktop')
+
 test('recarregar no meio de uma reação e voltar da queda de conexão', async ({
   browser,
   contextOptions,
 }, testInfo) => {
   test.setTimeout(90_000)
-  const table = await startTable(browser, { ...contextOptions, ...testInfo.project.use })
+  const table = await startTable(
+    browser,
+    { ...contextOptions, ...testInfo.project.use },
+    SEATS.reaction[project(testInfo.project.name)],
+  )
   const { attacker, attackerUser, gameId, others } = table
   const [targetUser, target] = others[0]!
   const [, bystander] = others[1]!
@@ -43,14 +56,14 @@ test('recarregar no meio de uma reação e voltar da queda de conexão', async (
   for (const page of table.pages) await page.reload()
 
   await attacker.getByRole('button', { name: 'Ver Falou Merda' }).first().click()
-  await attacker.getByRole('button', { name: new RegExp(USERS[targetUser]) }).click()
+  await attacker.getByRole('button', { name: new RegExp(nameOf(targetUser)) }).click()
   await attacker.getByRole('button', { name: 'Jogar Falou Merda' }).click()
   await expect(target.getByTestId('reaction-dialog')).toBeVisible()
 
   // O alvo recarrega: a decisão continua esperando por ele.
   await target.reload()
   await expect(target.getByTestId('reaction-dialog')).toContainText('3 de dano em você')
-  await expect(bystander.getByTestId('pending-banner')).toContainText(USERS[targetUser])
+  await expect(bystander.getByTestId('pending-banner')).toContainText(nameOf(targetUser))
 
   // Quem atacou cai da rede enquanto o alvo responde…
   await attacker.context().setOffline(true)
@@ -64,7 +77,7 @@ test('recarregar no meio de uma reação e voltar da queda de conexão', async (
   await attacker.context().setOffline(false)
   await expect(attacker.getByTestId('pending-banner')).toHaveCount(0, { timeout: 20_000 })
   await expect(
-    attacker.getByTestId('table-player').filter({ hasText: USERS[targetUser] }),
+    attacker.getByTestId('table-player').filter({ hasText: nameOf(targetUser) }),
   ).toContainText(/13\/16 PV/, { timeout: 20_000 })
   await expect(attacker.getByTestId('actions-left')).toHaveText('Ações: 1/2')
 
@@ -77,7 +90,11 @@ test('troca de mão inteira sobrevive a recarregar', async ({
   contextOptions,
 }, testInfo) => {
   test.setTimeout(90_000)
-  const table = await startTable(browser, { ...contextOptions, ...testInfo.project.use })
+  const table = await startTable(
+    browser,
+    { ...contextOptions, ...testInfo.project.use },
+    SEATS.swap[project(testInfo.project.name)],
+  )
   const { attacker, attackerUser, gameId, others } = table
   const [targetUser, target] = others[0]!
 
@@ -96,7 +113,7 @@ test('troca de mão inteira sobrevive a recarregar', async ({
   const targetBefore = await handIds(target)
 
   await attacker.getByRole('button', { name: 'Ver Lucboy & Laragirl' }).first().click()
-  await attacker.getByRole('button', { name: new RegExp(USERS[targetUser]) }).click()
+  await attacker.getByRole('button', { name: new RegExp(nameOf(targetUser)) }).click()
   await attacker.getByRole('button', { name: 'Jogar Lucboy & Laragirl' }).click()
   await expect(attacker.getByTestId('event-log')).toContainText('trocou a mão inteira')
 

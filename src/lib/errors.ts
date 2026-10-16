@@ -51,6 +51,13 @@ export function toFriendlyMessage(error: unknown): string {
         return 'Esta conta está bloqueada. Fale com o administrador.'
       case 'email_not_confirmed':
         return 'Esta conta ainda não foi ativada. Fale com o administrador.'
+      case 'user_already_exists':
+      case 'email_exists':
+        return 'Esse usuário já existe. Escolha outro.'
+      case 'weak_password':
+        return 'Senha fraca: use pelo menos 8 caracteres.'
+      case 'signup_disabled':
+        return 'O cadastro está fechado. Fale com o administrador.'
     }
     if (error.status === 0 || error.name === 'AuthRetryableFetchError') {
       return 'Sem conexão com o servidor. Verifique sua internet.'

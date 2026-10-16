@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(21);
+select plan(26);
 
 -- Estrutura -------------------------------------------------------------------
 
@@ -180,6 +180,61 @@ select throws_ok(
 );
 
 reset role;
+
+-- Autocadastro (tela /cadastro): usuário e nome vêm do user_metadata ---------
+
+insert into auth.users (id, email, raw_app_meta_data, raw_user_meta_data)
+values (
+  'a5a5a5a5-0000-4000-8000-00000000a001',
+  'novato@contas.baralhoresenha.test',
+  '{"provider": "email", "providers": ["email"]}',
+  '{"username": "novato", "display_name": "  Novato da Silva  "}'
+);
+select results_eq(
+  $$ select username, display_name, is_admin, is_active from public.profiles
+     where id = 'a5a5a5a5-0000-4000-8000-00000000a001' $$,
+  $$ values ('novato'::text, 'Novato da Silva'::text, false, true) $$,
+  'autocadastro cria o perfil com usuário e nome (sem virar admin)'
+);
+
+select throws_ok(
+  $$ insert into auth.users (id, email, raw_user_meta_data)
+     values ('a5a5a5a5-0000-4000-8000-00000000a002', 'outro@contas.baralhoresenha.test',
+             '{"username": "leo"}') $$,
+  '23514', null,
+  'autocadastro não pega um usuário diferente do e-mail (não rouba nomes)'
+);
+
+select throws_ok(
+  $$ insert into auth.users (id, email, raw_user_meta_data)
+     values ('a5a5a5a5-0000-4000-8000-00000000a003', 'a b@contas.baralhoresenha.test',
+             '{"username": "a b"}') $$,
+  '23514', null,
+  'autocadastro com usuário inválido é recusado'
+);
+
+insert into auth.users (id, email, raw_app_meta_data, raw_user_meta_data)
+values (
+  'a5a5a5a5-0000-4000-8000-00000000a004',
+  'oficial@contas.baralhoresenha.test',
+  '{"username": "oficial", "display_name": "Do Admin"}',
+  '{"username": "oficial", "display_name": "Do Usuário"}'
+);
+select is(
+  (select display_name from public.profiles where id = 'a5a5a5a5-0000-4000-8000-00000000a004'),
+  'Do Admin',
+  'app_metadata do administrador tem prioridade sobre o user_metadata'
+);
+
+update auth.users set raw_user_meta_data = '{"username": "hacker", "display_name": "Hacker"}'
+where id = 'a5a5a5a5-0000-4000-8000-00000000a001';
+update auth.users set raw_app_meta_data = raw_app_meta_data || '{"x": 1}'
+where id = 'a5a5a5a5-0000-4000-8000-00000000a001';
+select is(
+  (select username from public.profiles where id = 'a5a5a5a5-0000-4000-8000-00000000a001'),
+  'novato',
+  'mudar o user_metadata depois não troca o usuário'
+);
 
 select * from finish();
 rollback;

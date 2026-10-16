@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
@@ -52,9 +53,7 @@ export function LoginPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Entrar na resenha</CardTitle>
-            <CardDescription>
-              Use o usuário e a senha que o administrador te passou.
-            </CardDescription>
+            <CardDescription>Use seu usuário e senha.</CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -132,7 +131,10 @@ export function LoginPage() {
         </Card>
 
         <p className="mt-4 text-center text-sm text-white/70">
-          Não tem conta? Peça ao administrador do grupo.
+          Não tem conta?{' '}
+          <Link to="/cadastro" className="font-medium text-white underline underline-offset-4">
+            Criar conta
+          </Link>
         </p>
       </div>
     </main>

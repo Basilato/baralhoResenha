@@ -1,8 +1,9 @@
 -- =============================================================================
 -- Seed de DESENVOLVIMENTO LOCAL — nunca rodar em produção.
 -- =============================================================================
--- Dez contas de teste: teste1..teste9 (a 9ª testa sala cheia) e teste10.
--- Senha de todas: resenha123
+-- Contas de teste: teste1..teste9 (a 9ª testa sala cheia), teste10 e
+-- teste11..teste40 (exclusivas de specs e2e que rodam em paralelo, para nenhuma
+-- conta passar do limite de 5 salas abertas). Senha de todas: resenha123
 -- O domínio do e-mail técnico precisa bater com VITE_AUTH_EMAIL_DOMAIN.
 
 do $$
@@ -25,6 +26,9 @@ begin
       -- Reservada ao teste de conta desativada (e2e), para não colidir com as salas.
       ('00000000-0000-4000-8000-000000000010'::uuid, 'teste10', 'Teste Dez')
     ) as t (id, username, display_name)
+    union all
+    select ('00000000-0000-4000-8000-0000000000' || n)::uuid, 'teste' || n, 'Teste ' || n
+    from generate_series(11, 40) as n
   loop
     insert into auth.users (
       instance_id, id, aud, role, email, encrypted_password,
