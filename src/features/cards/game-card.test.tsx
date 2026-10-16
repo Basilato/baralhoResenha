@@ -70,6 +70,17 @@ describe('GameCard', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 
+  it('mostra o selo de custo e a cor da categoria', () => {
+    render(
+      <GameCard card={{ ...card, category: 'attack', isReaction: false, discardCost: true }} />,
+    )
+    const article = screen.getByRole('article')
+    expect(screen.getByText('Custo')).toBeInTheDocument()
+    expect(screen.queryByText('Reação')).not.toBeInTheDocument()
+    expect(article).toHaveAttribute('data-category', 'attack')
+    expect(article.style.getPropertyValue('--cat')).toBe('var(--cat-attack)')
+  })
+
   it('no tamanho pequeno esconde o texto da regra', () => {
     render(<GameCard card={card} size="sm" />)
     expect(screen.queryByText(card.rulesText)).not.toBeInTheDocument()

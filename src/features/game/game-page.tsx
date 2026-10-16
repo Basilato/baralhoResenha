@@ -4,14 +4,17 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
   CheckIcon,
+  CrosshairIcon,
   CrownIcon,
   FlameIcon,
   GhostIcon,
+  HourglassIcon,
   LayersIcon,
   Loader2Icon,
   RotateCcwIcon,
   TrophyIcon,
   UserMinusIcon,
+  TargetIcon,
   WifiOffIcon,
   XCircleIcon,
 } from 'lucide-react'
@@ -33,6 +36,7 @@ import { isAppError, toFriendlyMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import { describeEvent, describePrivateEvent } from './event-messages'
 import { PlayCardDialog, type PlayableCard } from './play-card-dialog'
+import { whyNotPlayable } from './play-rules'
 import { ReactionDialog } from './reaction-dialog'
 import {
   newRequestId,
@@ -42,6 +46,7 @@ import {
   type HandCard,
   type Participant,
   type Presence,
+  type ResponseRole,
 } from './game-service'
 
 export function GamePage() {
@@ -88,6 +93,16 @@ function Table({
   const isHost = game.hostUserId === user?.id
   const isMyTurn = game.status === 'playing' && !!me && me.id === game.activePlayerId
   const discardTop = game.mainDiscardTop ? catalog.get(game.mainDiscardTop) : undefined
+  const targetedIds = new Set(
+    game.pendingAction?.responses
+      .filter((response) => TARGET_ROLES.includes(response.role))
+      .map((response) => response.playerId),
+  )
+  const awaitingIds = new Set(
+    game.pendingAction?.responses
+      .filter((response) => !response.responded)
+      .map((response) => response.playerId),
+  )
 
   const close = useMutation({
     mutationFn: () => closeRoom(game.gameId),
@@ -157,6 +172,8 @@ function Table({
               isActive={game.status === 'playing' && player.id === game.activePlayerId}
               isLeader={player.id === game.leaderPlayerId}
               isMarked={game.markedPlayerIds.includes(player.id)}
+              isTargeted={targetedIds.has(player.id)}
+              isAwaiting={awaitingIds.has(player.id)}
               online={onlineUserIds.has(player.userId)}
               presence={game.presence.find((item) => item.playerId === player.id)}
               absenceLimit={game.absenceLimitSeconds}
@@ -169,7 +186,13 @@ function Table({
 
       <section
         aria-label="Mesa"
-        className="flex items-end justify-center gap-6 rounded-2xl border bg-muted/40 p-4 sm:gap-10"
+        className={cn(
+          'flex items-end justify-center gap-6 rounded-2xl border bg-muted/40 p-4 transition-colors sm:gap-10',
+          // Maldição da Ressaca: a mesa fica tomada pela névoa do Além.
+          game.curseActive &&
+            game.status === 'playing' &&
+            'border-cat-ghost/40 bg-linear-to-t from-cat-ghost/25 to-cat-ghost/5',
+        )}
       >
         <Pile label="Baralho" count={game.mainDeckCount} testId="main-deck-count">
           <CardBack deckType="main" size="sm" />
@@ -333,17 +356,25 @@ function MyArea({
           className="relative -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pt-2 pb-3"
           data-testid="my-hand"
         >
-          {hand.map((handCard) => (
-            <HandItem
-              key={handCard.instanceId}
-              handCard={handCard}
-              card={catalog.get(handCard.code)}
-              selectable={mustDiscard}
-              selected={discarding.has(handCard.instanceId)}
-              onSelect={() => toggle(handCard.instanceId)}
-              onOpen={onOpenCard}
-            />
-          ))}
+          {hand.map((handCard) => {
+            const card = catalog.get(handCard.code)
+            // Na sua vez, destaca o que dá para jogar agora e apaga o resto.
+            const blockedReason =
+              card && isMyTurn && !mustDiscard ? whyNotPlayable(card, game, true) : undefined
+            return (
+              <HandItem
+                key={handCard.instanceId}
+                handCard={handCard}
+                card={card}
+                playable={blockedReason === null}
+                blockedReason={blockedReason ?? undefined}
+                selectable={mustDiscard}
+                selected={discarding.has(handCard.instanceId)}
+                onSelect={() => toggle(handCard.instanceId)}
+                onOpen={onOpenCard}
+              />
+            )
+          })}
         </ul>
       )}
     </section>
@@ -353,6 +384,8 @@ function MyArea({
 function HandItem({
   handCard,
   card,
+  playable,
+  blockedReason,
   selectable,
   selected,
   onSelect,
@@ -360,6 +393,10 @@ function HandItem({
 }: {
   handCard: HandCard
   card: CardDefinition | undefined
+  /** Pode ser jogada agora (só na sua vez). */
+  playable: boolean
+  /** Por que não pode ser jogada agora (só na sua vez). */
+  blockedReason?: string
   selectable: boolean
   selected: boolean
   onSelect: () => void
@@ -373,8 +410,13 @@ function HandItem({
         className={cn(
           'relative rounded-xl transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none',
           !selectable && 'hover:-translate-y-1 focus-visible:-translate-y-1',
+          playable && 'shadow-[0_0_0.9em_var(--cat)] ring-2 ring-(--cat)',
+          blockedReason && 'opacity-60 saturate-[0.35] hover:opacity-90 hover:saturate-100',
           selected && '-translate-y-2 opacity-60 ring-3 ring-destructive',
         )}
+        style={{ '--cat': `var(--cat-${card.category})` } as React.CSSProperties}
+        title={blockedReason}
+        data-playable={playable || undefined}
         onClick={() => (selectable ? onSelect() : onOpen(handCard, card))}
         aria-label={selectable ? `Descartar ${card.name}` : `Ver ${card.name}`}
         aria-pressed={selectable ? selected : undefined}
@@ -397,6 +439,8 @@ function PlayerPanel({
   isActive,
   isLeader,
   isMarked,
+  isTargeted,
+  isAwaiting,
   online,
   presence,
   absenceLimit,
@@ -408,6 +452,10 @@ function PlayerPanel({
   isActive: boolean
   isLeader: boolean
   isMarked: boolean
+  /** Alvo da jogada que está esperando resposta. */
+  isTargeted: boolean
+  /** A jogada pendente espera uma resposta desta pessoa. */
+  isAwaiting: boolean
   online: boolean
   presence: Presence | undefined
   absenceLimit: number
@@ -418,6 +466,7 @@ function PlayerPanel({
   const quit = presence?.quit ?? false
   const away = presence && !quit ? presence.secondsAway : 0
   const removable = canRemove && !quit && away > absenceLimit
+  const hpRatio = player.hp / Math.max(player.maxHp, 1)
   const remove = () =>
     command.mutate(
       { requestId: newRequestId(), command: { type: 'REMOVE_ABSENT', playerId: player.id } },
@@ -427,14 +476,23 @@ function PlayerPanel({
   return (
     <li
       className={cn(
-        'flex min-w-56 snap-start flex-col gap-2 rounded-xl border bg-card p-3 transition-shadow',
+        'relative flex min-w-56 snap-start flex-col gap-2 overflow-hidden rounded-xl border bg-card p-3 transition-shadow',
         isMe && 'border-primary/50',
-        isActive && 'shadow-md ring-2 ring-primary',
-        !player.alive && 'opacity-70',
+        isLeader && player.alive && 'bg-linear-to-br from-cat-attack/12 to-card to-60%',
+        !player.alive && 'border-cat-ghost/40 bg-linear-to-br from-cat-ghost/20 to-card to-70%',
+        isActive && 'bg-primary/5 shadow-md ring-2 ring-primary',
+        isTargeted && 'animate-target-pulse border-cat-attack',
       )}
       data-testid="table-player"
       data-active={isActive || undefined}
+      data-targeted={isTargeted || undefined}
     >
+      {!player.alive && !quit && (
+        <GhostIcon
+          className="pointer-events-none absolute -right-3 -bottom-3 size-20 text-cat-ghost opacity-15"
+          aria-hidden
+        />
+      )}
       <div className="flex items-center gap-2">
         <PlayerAvatar name={player.displayName} online={online} className="size-8" />
         <p className="flex min-w-0 flex-1 items-center gap-1 font-medium">
@@ -454,9 +512,21 @@ function PlayerPanel({
           <span className="sr-only">cartas na mão</span>
         </span>
       </div>
-      {(isActive || isLeader || isMarked) && (
+      {(isActive || isLeader || isMarked || isTargeted || isAwaiting) && (
         <div className="flex flex-wrap gap-1">
           {isActive && <Badge className="h-5">Jogando</Badge>}
+          {isTargeted && (
+            <Badge className="h-5 gap-1 bg-cat-attack text-white">
+              <CrosshairIcon className="size-3" aria-hidden />
+              Na mira
+            </Badge>
+          )}
+          {isAwaiting && (
+            <Badge variant="outline" className="h-5 gap-1">
+              <HourglassIcon className="size-3" aria-hidden />
+              Respondendo
+            </Badge>
+          )}
           {isLeader && (
             <Badge variant="outline" className="h-5 gap-1 border-cat-attack text-cat-attack">
               <FlameIcon className="size-3" aria-hidden />
@@ -464,7 +534,8 @@ function PlayerPanel({
             </Badge>
           )}
           {isMarked && (
-            <Badge variant="outline" className="h-5 border-cat-sabotage text-cat-sabotage">
+            <Badge variant="outline" className="h-5 gap-1 border-cat-sabotage text-cat-sabotage">
+              <TargetIcon className="size-3" aria-hidden />
               Marcado +2
             </Badge>
           )}
@@ -475,8 +546,15 @@ function PlayerPanel({
       ) : player.alive ? (
         <div className="flex items-center gap-2">
           <Progress
-            value={(player.hp / Math.max(player.maxHp, 1)) * 100}
-            className="h-2 flex-1"
+            value={hpRatio * 100}
+            className={cn(
+              'h-2 flex-1',
+              hpRatio > 0.5
+                ? '*:data-[slot=progress-indicator]:bg-cat-recovery'
+                : hpRatio > 0.25
+                  ? '*:data-[slot=progress-indicator]:bg-cat-chaos'
+                  : '*:data-[slot=progress-indicator]:bg-cat-attack',
+            )}
             aria-label={`Vida de ${player.displayName}`}
           />
           <span className="w-14 text-right text-xs font-semibold tabular-nums">
@@ -648,9 +726,8 @@ function PendingBanner({
     id === game.myPlayerId ? 'você' : (players.get(id)?.displayName ?? 'alguém')
   const waiting = pending.responses.filter((response) => !response.responded)
   const card = catalog.get(pending.cardCode)?.name ?? pending.cardCode
-  const targetRoles = ['target', 'sabotage_target', 'chaos_target']
   const targets = pending.responses
-    .filter((response) => targetRoles.includes(response.role))
+    .filter((response) => TARGET_ROLES.includes(response.role))
     .map((response) =>
       response.role === 'sabotage_target'
         ? name(response.playerId)
@@ -731,6 +808,9 @@ function ClaimHostBanner({ game }: { game: GameView }) {
     </div>
   )
 }
+
+/** Papéis de quem sofre a jogada (o resto são contra-ataques e escolhas). */
+const TARGET_ROLES: readonly ResponseRole[] = ['target', 'sabotage_target', 'chaos_target']
 
 function hostAway(game: GameView) {
   const host = game.participants.find((player) => player.userId === game.hostUserId)

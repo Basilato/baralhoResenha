@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { GhostIcon, ZapIcon } from 'lucide-react'
+import { useState, type CSSProperties } from 'react'
+import { GhostIcon, Trash2Icon, ZapIcon } from 'lucide-react'
 import { CATEGORY_LABEL } from '@/lib/constants'
 import { initials } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -16,8 +16,9 @@ const SIZE: Record<CardSize, string> = {
 }
 
 /**
- * Face de uma carta. Usa a arte do Storage (miniatura na carta pequena); sem arte,
- * ou se a imagem não carregar, desenha um placeholder com as iniciais do personagem.
+ * Face de uma carta, com a moldura da categoria. Usa a arte do Storage (miniatura
+ * na carta pequena); sem arte, ou se a imagem não carregar, desenha um placeholder
+ * com o ícone da categoria e as iniciais do personagem.
  */
 export function GameCard({
   card,
@@ -33,31 +34,31 @@ export function GameCard({
   const [failedUrl, setFailedUrl] = useState<string>()
   const imageUrl = artUrl !== failedUrl ? artUrl : undefined
   const Icon = CATEGORY_ICON[card.category]
-  const color = `var(--cat-${card.category})`
+  const ghost = card.deckType === 'ghost'
   const showText = size !== 'sm'
 
   return (
     <article
       className={cn(
-        'relative flex aspect-card shrink-0 flex-col overflow-hidden border-2 bg-card text-card-foreground shadow-md select-none',
+        'relative flex aspect-card shrink-0 flex-col overflow-hidden border-2 border-(--cat) bg-card text-card-foreground select-none',
+        ghost ? 'card-ghostly' : 'shadow-md',
         SIZE[size],
         className,
       )}
-      style={{ borderColor: color }}
+      style={{ '--cat': `var(--cat-${card.category})` } as CSSProperties}
+      data-category={card.category}
       aria-label={`${card.name}, ${CATEGORY_LABEL[card.category]}`}
     >
-      <header
-        className="flex items-center gap-1 px-1.5 py-1 font-bold text-white"
-        style={{ background: color }}
-      >
-        <Icon className="size-[1.2em] shrink-0" aria-hidden />
-        <span className="truncate leading-tight">{card.name}</span>
+      <header className="flex items-center gap-1 px-1 py-1 font-bold text-white card-header-fill">
+        <span className="flex size-[1.55em] shrink-0 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/40">
+          <Icon className="size-[0.95em]" aria-hidden />
+        </span>
+        <span className="truncate leading-tight [text-shadow:0_1px_2px_rgb(0_0_0/0.4)]">
+          {card.name}
+        </span>
       </header>
 
-      <div
-        className="relative flex flex-1 items-center justify-center overflow-hidden"
-        style={{ background: `color-mix(in oklch, ${color} 18%, var(--card))` }}
-      >
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden card-art-fill">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -69,26 +70,50 @@ export function GameCard({
             onError={() => setFailedUrl(imageUrl)}
           />
         ) : (
-          <span
-            className="font-heading text-[2.6em] font-black opacity-40"
-            style={{ color }}
-            aria-hidden
-          >
-            {initials(card.characterName ?? card.name)}
-          </span>
+          <>
+            <Icon
+              className="absolute size-3/4 text-(--cat) opacity-15"
+              strokeWidth={1.25}
+              aria-hidden
+            />
+            <span
+              className="relative font-heading text-[2.6em] font-black text-(--cat) opacity-70"
+              aria-hidden
+            >
+              {initials(card.characterName ?? card.name)}
+            </span>
+          </>
         )}
-        {card.isReaction && (
-          <span
-            className="absolute top-1 right-1 flex items-center gap-0.5 rounded-full bg-black/60 px-1.5 py-0.5 font-semibold text-white"
-            title="Reação: usada fora do seu turno"
-          >
-            <ZapIcon className="size-[1em]" aria-hidden />
-            {showText && 'Reação'}
-          </span>
-        )}
+        {ghost && <div className="pointer-events-none absolute inset-0 card-mist" aria-hidden />}
+        <div
+          className="pointer-events-none absolute inset-0 shadow-[inset_0_0_0.7em_rgb(0_0_0/0.35)]"
+          aria-hidden
+        />
+        <div className="absolute top-1 right-1 flex flex-col items-end gap-0.5">
+          {card.isReaction && (
+            <span
+              className="flex items-center gap-0.5 rounded-full bg-black/65 px-1.5 py-0.5 font-semibold text-white"
+              title="Reação: usada fora do seu turno"
+            >
+              <ZapIcon className="size-[1em] text-amber-300" aria-hidden />
+              {showText && 'Reação'}
+            </span>
+          )}
+          {card.discardCost && (
+            <span
+              className="flex items-center gap-0.5 rounded-full bg-black/65 px-1.5 py-0.5 font-semibold text-white"
+              title="Custo: descarte outra carta da mão para jogar esta"
+            >
+              <Trash2Icon className="size-[1em] text-red-300" aria-hidden />
+              {showText && 'Custo'}
+            </span>
+          )}
+        </div>
       </div>
 
-      {showText && <p className="min-h-[4.5em] px-2 py-1.5 leading-snug">{card.rulesText}</p>}
+      {showText && (
+        <p className="min-h-[4.5em] px-2 py-1.5 leading-snug card-rules-fill">{card.rulesText}</p>
+      )}
 
       <footer className="flex items-center justify-between gap-1 border-t px-1.5 py-0.5 text-muted-foreground">
         <span className="truncate">{card.characterName}</span>
@@ -112,18 +137,24 @@ export function CardBack({
   return (
     <div
       className={cn(
-        'flex aspect-card shrink-0 items-center justify-center border-2 border-white/20 shadow-md',
+        'relative flex aspect-card shrink-0 items-center justify-center overflow-hidden border-2 border-white/20 shadow-md',
         SIZE[size],
-        ghost ? 'bg-cat-ghost' : 'bg-resenha',
+        ghost ? 'bg-cat-ghost card-ghostly' : 'bg-resenha',
         className,
       )}
+      style={ghost ? ({ '--cat': 'var(--cat-ghost)' } as CSSProperties) : undefined}
       aria-hidden
     >
-      {ghost ? (
-        <GhostIcon className="size-1/3 text-white/70" />
-      ) : (
-        <span className="-rotate-6 font-heading text-[3em] font-black text-white/80">R</span>
-      )}
+      {/* Moldura interna e medalhão: o logo definitivo entra aqui (C3). */}
+      <span className="absolute inset-[6%] rounded-[inherit] border border-white/25" />
+      {ghost && <span className="absolute inset-0 card-mist" />}
+      <span className="relative flex aspect-square w-1/2 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/30">
+        {ghost ? (
+          <GhostIcon className="size-1/2 text-white/80" />
+        ) : (
+          <span className="-rotate-6 font-heading text-[2.4em] font-black text-white/85">R</span>
+        )}
+      </span>
     </div>
   )
 }

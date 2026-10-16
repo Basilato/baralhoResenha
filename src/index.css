@@ -18,6 +18,9 @@
   /* Proporção da carta (63 x 88 mm, padrão pôquer) */
   --aspect-card: 63 / 88;
 
+  /* Jogador na mira de uma jogada que espera resposta */
+  --animate-target-pulse: target-pulse 1.6s ease-out infinite;
+
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -160,6 +163,55 @@
     radial-gradient(circle at 15% 20%, oklch(0.55 0.22 330 / 0.55), transparent 45%),
     radial-gradient(circle at 85% 80%, oklch(0.7 0.17 60 / 0.4), transparent 45%),
     oklch(0.22 0.08 290);
+}
+
+/*
+ * Moldura das cartas. A cor vem de --cat, definida na própria carta
+ * (var(--cat-attack), var(--cat-defense)...).
+ */
+@utility card-header-fill {
+  background: linear-gradient(
+    135deg,
+    var(--cat) 0%,
+    color-mix(in oklch, var(--cat) 72%, black) 100%
+  );
+}
+
+@utility card-art-fill {
+  background: radial-gradient(
+    circle at 50% 38%,
+    color-mix(in oklch, var(--cat) 38%, var(--card)) 0%,
+    color-mix(in oklch, var(--cat) 14%, var(--card)) 72%
+  );
+}
+
+@utility card-rules-fill {
+  background: color-mix(in oklch, var(--cat) 7%, var(--card));
+  border-top: 2px solid color-mix(in oklch, var(--cat) 45%, transparent);
+}
+
+/* Cartas do Além: brilho frio e névoa sobre a arte. */
+@utility card-ghostly {
+  box-shadow:
+    0 0 0.9em color-mix(in oklch, var(--cat) 55%, transparent),
+    0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+@utility card-mist {
+  background: linear-gradient(
+    to top,
+    color-mix(in oklch, var(--cat) 45%, transparent) 0%,
+    transparent 45%
+  );
+}
+
+@keyframes target-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--cat-attack) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
