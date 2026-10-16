@@ -29,6 +29,18 @@ begin
     union all
     select ('00000000-0000-4000-8000-0000000000' || n)::uuid, 'teste' || n, 'Teste ' || n
     from generate_series(11, 40) as n
+    union all
+    -- Cópias de teste1..teste10 por spec e projeto do e2e (tests/e2e/support.ts,
+    -- account()): "teste7_cbd" = teste7 no combat.spec do desktop, mesmo nome.
+    select gen_random_uuid(), b.username || '_' || s.code || p.proj, b.display_name
+    from (values
+      ('teste1', 'Teste Um'), ('teste2', 'Teste Dois'), ('teste3', 'Teste Três'),
+      ('teste4', 'Teste Quatro'), ('teste5', 'Teste Cinco'), ('teste6', 'Teste Seis'),
+      ('teste7', 'Teste Sete'), ('teste8', 'Teste Oito'), ('teste9', 'Teste Nove'),
+      ('teste10', 'Teste Dez')
+    ) as b (username, display_name)
+    cross join (values ('ca'), ('cb'), ('eg'), ('tu'), ('ro')) as s (code)
+    cross join (values ('d'), ('c')) as p (proj)
   loop
     insert into auth.users (
       instance_id, id, aud, role, email, encrypted_password,

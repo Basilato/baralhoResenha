@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test'
 import { expectNoHorizontalOverflow, playerPage } from './support.ts'
 
+// Vários navegadores por teste: 30 s fica no limite quando a suíte roda em paralelo.
+test.describe.configure({ timeout: 60_000 })
+
 test('três pessoas entram, veem tudo em tempo real e o host inicia', async ({
   browser,
   contextOptions,

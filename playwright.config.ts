@@ -6,6 +6,9 @@ export default defineConfig({
   globalSetup: './tests/e2e/global-setup.ts',
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
+  // Até 9 navegadores por teste em paralelo: atualizações em tempo real podem
+  // passar dos 5 s padrão quando a máquina está cheia.
+  expect: { timeout: 10_000 },
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',

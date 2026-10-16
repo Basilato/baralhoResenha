@@ -1,11 +1,37 @@
 import { execSync } from 'node:child_process'
-import { expect, type Browser, type Page } from '@playwright/test'
+import { basename } from 'node:path'
+import { expect, test, type Browser, type Page } from '@playwright/test'
 
 export const PASSWORD = 'resenha123'
 
+/*
+ * Specs de mesa rodam em paralelo (e em dois projetos). Se dividissem as contas
+ * teste1..teste10, alguém passaria do limite de 5 salas abertas. Cada spec e
+ * projeto usa então a sua cópia: "teste7" no combat.spec do desktop vira
+ * "teste7_cbd", com o mesmo nome de exibição ("Teste Sete"). Ver seed.sql.
+ */
+const SPEC_CODE: Record<string, string> = {
+  'cards.spec.ts': 'ca',
+  'combat.spec.ts': 'cb',
+  'endgame.spec.ts': 'eg',
+  'turns.spec.ts': 'tu',
+  'rooms.spec.ts': 'ro',
+}
+
+export function account(username: string): string {
+  if (!/^teste([1-9]|10)$/.test(username)) return username
+  const info = test.info()
+  const code = SPEC_CODE[basename(info.file)]
+  if (!code) return username
+  return `${username}_${code}${info.project.name === 'celular' ? 'c' : 'd'}`
+}
+
+/** Volta da conta do spec para o nome-base ("teste7_cbd" → "teste7"). */
+const baseAccount = (username: string) => username.replace(/_[a-z]+$/, '')
+
 export async function login(page: Page, username: string) {
   await page.goto('/login')
-  await page.getByLabel('Usuário').fill(username)
+  await page.getByLabel('Usuário').fill(account(username))
   await page.getByLabel('Senha', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Entrar' }).click()
   await expect(page).toHaveURL(/\/lobby$/)
@@ -63,7 +89,7 @@ export function sql(query: string): string {
 
 const playerOf = (gameId: string, username: string) =>
   `(select gp.id from app_private.game_players gp join public.profiles p on p.id = gp.user_id
-    where gp.game_id = '${gameId}' and p.username = '${username}')`
+    where gp.game_id = '${gameId}' and p.username = '${account(username)}')`
 
 /** Põe uma cópia da carta na mão do jogador. */
 export function giveCard(gameId: string, username: string, code: string) {
@@ -90,8 +116,10 @@ export function resetActions(gameId: string) {
 
 /** Usuário (username) sentado no lugar indicado. */
 export function userAtSeat(gameId: string, seat: number) {
-  return sql(`select p.username from app_private.game_players gp join public.profiles p on p.id = gp.user_id
-              where gp.game_id = '${gameId}' and gp.seat = ${seat};`)
+  return baseAccount(
+    sql(`select p.username from app_private.game_players gp join public.profiles p on p.id = gp.user_id
+         where gp.game_id = '${gameId}' and gp.seat = ${seat};`),
+  )
 }
 
 export function seatOf(gameId: string, username: string) {
