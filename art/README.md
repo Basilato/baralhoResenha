@@ -37,7 +37,7 @@ O app mostra a arte sozinho quando ela existe no Storage. Sem arte, a carta cont
 
 ## Andamento (catálogo 7.1)
 
-**37 de 37 prontas.**
+**42 de 42 prontas.**
 
 | Código     | Carta                      | Status    |
 | ---------- | -------------------------- | --------- |
@@ -54,20 +54,25 @@ O app mostra a arte sozinho quando ela existe no Storage. Sem arte, a carta cont
 | DEF-04     | Reverso do Reverso         | ✅ pronta |
 | DEF-05     | Evento Raro                | ✅ pronta |
 | DEF-06     | Último do After            | ✅ pronta |
+| DEF-07     | Nem Bateu                  | ✅ pronta |
 | SAB-01     | Anota na Conta da Tuca     | ✅ pronta |
 | SAB-02     | Terapia de Boteco          | ✅ pronta |
 | SAB-03     | Tem Alguém Seguindo        | ✅ pronta |
 | SAB-04     | Eu Amo Mentir              | ✅ pronta |
 | SAB-05     | Plano Dental Negado        | ✅ pronta |
+| SAB-06     | Vale Entrosa               | ✅ pronta |
+| SAB-07     | Bate e Joga                | ✅ pronta |
 | CAO-01     | Tio Paulo                  | ✅ pronta |
 | CAO-02     | Bucetada                   | ✅ pronta |
 | CAO-03     | Família Basilato           | ✅ pronta |
 | CAO-04     | O Acre Existe!             | ✅ pronta |
+| CAO-05     | Rolê no Sítio              | ✅ pronta |
 | REC-01     | After do After             | ✅ pronta |
 | REC-02     | Inimiga do Fim             | ✅ pronta |
 | REC-03     | Consultório Lucboy         | ✅ pronta |
 | REC-04     | Anestesia Alcoólica        | ✅ pronta |
 | REC-05     | English Mode               | ✅ pronta |
+| REC-06     | Só Mais Uma!               | ✅ pronta |
 | REV-01     | Ressuscitou o Tio Paulo    | ✅ pronta |
 | REV-02     | Lucboy & Laragirl          | ✅ pronta |
 | REV-03     | Última Palavra             | ✅ pronta |
@@ -79,6 +84,6 @@ O app mostra a arte sozinho quando ela existe no Storage. Sem arte, a carta cont
 | BACK-MAIN  | Verso do baralho principal | ✅ pronta |
 | BACK-GHOST | Verso do Baralho do Além   | ✅ pronta |
 
-As 35 faces têm 1448 × 1086 px (4:3). Os versos têm 1061 × 1482 (proporção certa de carta; o app mostra no máximo ~290 px de largura). Para trocas futuras, prefira 1536 × 1152 nas faces e 1575 × 2200 nos versos.
+As 40 faces têm 1448 × 1086 px (4:3). Os versos têm 1061 × 1482 (proporção certa de carta; o app mostra no máximo ~290 px de largura). Para trocas futuras, prefira 1536 × 1152 nas faces e 1575 × 2200 nos versos.
 
 A lista sempre atualizada fica em `manifest.json`, depois de rodar `pnpm art:build`.

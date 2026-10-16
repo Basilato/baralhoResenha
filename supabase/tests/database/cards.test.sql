@@ -53,19 +53,19 @@ $$;
 -- Catálogo -------------------------------------------------------------------
 
 select is((select count(*)::int from app_private.card_definitions where set_version = '7.1'),
-  35, '35 modelos de carta');
+  40, '40 modelos de carta');
 select is((select sum(copies)::int from app_private.card_definitions
-           where set_version = '7.1' and deck_type = 'main'), 160, 'baralho principal soma 160');
+           where set_version = '7.1' and deck_type = 'main'), 177, 'baralho principal soma 177');
 select is((select sum(copies)::int from app_private.card_definitions
            where set_version = '7.1' and deck_type = 'ghost'), 20, 'Além soma 20');
 select results_eq(
   $$ select category, sum(copies)::int from app_private.card_definitions
      where set_version = '7.1' and deck_type = 'main' group by category order by category $$,
-  $$ values ('attack', 50), ('chaos', 16), ('defense', 36), ('recovery', 18),
-            ('reversal', 12), ('sabotage', 28) $$,
+  $$ values ('attack', 50), ('chaos', 19), ('defense', 40), ('recovery', 21),
+            ('reversal', 12), ('sabotage', 35) $$,
   'proporções por categoria batem com o plano');
 select is((select count(*)::int from app_private.card_definitions
-           where set_version = '7.1' and is_reaction), 8, 'oito modelos de reação');
+           where set_version = '7.1' and is_reaction), 9, 'nove modelos de reação');
 select ok((select not is_provisional and effect_code = 'ghost_peek_discard' from app_private.card_definitions where code = 'GHO-05'),
   'GHO-05 aprovada com o efeito privado (B1)');
 
@@ -74,7 +74,7 @@ select ok((select not is_provisional and effect_code = 'ghost_peek_discard' from
 insert into t values ('g3', pg_temp.started_game(array['1', '2', '3'])::text);
 
 select is((select count(*)::int from app_private.game_cards where game_id = (select v::uuid from t where k = 'g3')),
-  180, '180 instâncias por partida');
+  197, '197 instâncias por partida');
 
 select results_eq(
   format($$ select d.code, d.copies::bigint
@@ -97,7 +97,7 @@ select ok(
   'cada um recebe 5; o lugar 1 já comprou as 2 do primeiro turno (A3)');
 select is((select count(*)::int from app_private.game_cards
            where game_id = (select v::uuid from t where k = 'g3') and zone = 'main_deck'),
-  143, 'sobram 143 no baralho principal');
+  160, 'sobram 160 no baralho principal');
 select is((select count(*)::int from app_private.game_cards
            where game_id = (select v::uuid from t where k = 'g3') and zone = 'ghost_deck'),
   20, 'Além intacto com 20');
@@ -112,8 +112,8 @@ select ok(
 select is(
   (select array_agg(pile_position order by pile_position) from app_private.game_cards
    where game_id = (select v::uuid from t where k = 'g3') and zone = 'main_deck'),
-  (select array_agg(n) from generate_series(1, 143) n),
-  'posições do baralho são 1..143, sem buracos nem repetição');
+  (select array_agg(n) from generate_series(1, 160) n),
+  'posições do baralho são 1..160, sem buracos nem repetição');
 
 -- PV por número de jogadores
 insert into t values ('g4', pg_temp.started_game(array['4', '5', '6', '7'])::text);
@@ -169,14 +169,14 @@ select ok(
   position('pile_position' in (select v from t where k = 'view1')) = 0
   and position('pilePosition' in (select v from t where k = 'view1')) = 0,
   'a ordem dos baralhos não sai do banco');
-select is(((select v::jsonb from t where k = 'view1') ->> 'mainDeckCount')::int, 143,
+select is(((select v::jsonb from t where k = 'view1') ->> 'mainDeckCount')::int, 160,
   'visão mostra só a contagem do baralho');
 
 select pg_temp.login('9');
 select throws_ok(
   format('select public.get_game_view(%L)', (select v from t where k = 'g3')),
   'P0001', 'ROOM_NOT_FOUND', 'quem não está na partida não vê a mesa');
-select is(jsonb_array_length(public.get_card_catalog()), 35, 'catálogo é legível por qualquer jogador');
+select is(jsonb_array_length(public.get_card_catalog()), 40, 'catálogo é legível por qualquer jogador');
 reset role;
 
 -- Compra e descarte ----------------------------------------------------------
@@ -246,7 +246,7 @@ select is(
    where game_id = (select v::uuid from t where k = 'g3') and zone = 'main_discard'),
   0, 'descarte foi todo para o baralho');
 select is((select count(*)::int from app_private.game_cards where game_id = (select v::uuid from t where k = 'g3')),
-  180, 'reciclagem não cria nem perde cartas');
+  197, 'reciclagem não cria nem perde cartas');
 
 -- Sem cartas sobrando: compra o que existe, nada é criado.
 update app_private.game_cards

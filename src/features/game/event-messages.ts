@@ -74,6 +74,21 @@ export function describeEvent(
         : `${name(p.fromPlayerId)} não tinha cartas para roubar.`
     case 'target_marked':
       return `${name(p.targetPlayerId)} foi marcado: o próximo ataque contra ele causa +2 (vale até a rodada ${p.untilRound}).`
+    case 'turn_steal_set': {
+      const turn =
+        p.targetPlayerId === myPlayerId
+          ? 'a sua próxima vez'
+          : `a próxima vez de ${name(p.targetPlayerId)}`
+      return `${actor} pegou o Vale Entrosa: ${turn} é ${mine ? 'sua' : `de ${actor}`}.`
+    }
+    case 'turn_stolen':
+      return p.fromPlayerId === myPlayerId
+        ? `${actor} roubou a sua vez!`
+        : `${actor} roubou a vez de ${name(p.fromPlayerId)}!`
+    case 'turn_steal_lapsed':
+      return p.reason === 'thief_down'
+        ? `O Vale Entrosa de ${actor} caducou: quem ia roubar a vez caiu antes.`
+        : `O Vale Entrosa de ${actor} caducou: ${name(p.targetPlayerId)} já não estava vivo.`
     case 'card_swapped':
       return `${actor} trocou 1 carta com ${name(p.targetPlayerId)}.`
     case 'cards_discarded': {
@@ -92,6 +107,13 @@ export function describeEvent(
       const draw = drew > 0 ? ` e comprou ${drew === 1 ? '1 carta' : `${drew} cartas`}` : ''
       return `${actor} recuperou PV (ficou com ${p.hp})${draw}.`
     }
+    case 'cards_drawn': {
+      const count = Number(p.count ?? 0)
+      if (count === 0) return `${actor} não tinha cartas para comprar.`
+      return `${actor} comprou ${count === 1 ? '1 carta' : `${count} cartas`}.`
+    }
+    case 'hands_shuffled':
+      return `Rolê no Sítio: ${p.count} cartas de ${p.players} jogadores foram embaralhadas e redistribuídas.`
     case 'hands_swapped':
       return `${actor} trocou a mão inteira com ${name(p.targetPlayerId)}.`
     case 'reaction_played':

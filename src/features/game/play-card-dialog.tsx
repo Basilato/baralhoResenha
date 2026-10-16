@@ -170,6 +170,16 @@ function PlayCardForm({
                         Marcado +2
                       </Badge>
                     )}
+                    {card.effectCode === 'steal_turn' &&
+                      game.turnSteals.some((steal) => steal.targetPlayerId === player.id) && (
+                        <Badge
+                          variant="outline"
+                          className="border-cat-sabotage text-cat-sabotage"
+                          title="O seu vale substitui o que já está nele"
+                        >
+                          Já tem vale
+                        </Badge>
+                      )}
                   </button>
                 )
               })}

@@ -39,6 +39,50 @@ describe('describeEvent', () => {
     ).toBe('Beto encerrou o turno e descartou Falou Merda.')
   })
 
+  it('conta o Vale Entrosa do ponto de vista de cada um', () => {
+    const set = event('turn_steal_set', { targetPlayerId: 'p2' }, 'p1')
+    expect(describeEvent(set, players, catalog, 'p1')).toBe(
+      'Você pegou o Vale Entrosa: a próxima vez de Beto é sua.',
+    )
+    expect(describeEvent(set, players, catalog, 'p2')).toBe(
+      'Ana pegou o Vale Entrosa: a sua próxima vez é de Ana.',
+    )
+    expect(
+      describeEvent(event('turn_stolen', { fromPlayerId: 'p2' }, 'p1'), players, catalog, null),
+    ).toBe('Ana roubou a vez de Beto!')
+    expect(
+      describeEvent(event('turn_stolen', { fromPlayerId: 'p2' }, 'p1'), players, catalog, 'p2'),
+    ).toBe('Ana roubou a sua vez!')
+    expect(
+      describeEvent(
+        event('turn_steal_lapsed', { targetPlayerId: 'p2', reason: 'thief_down' }, 'p1'),
+        players,
+        catalog,
+        null,
+      ),
+    ).toBe('O Vale Entrosa de Ana caducou: quem ia roubar a vez caiu antes.')
+  })
+
+  it('Só Mais Uma! conta a compra', () => {
+    expect(describeEvent(event('cards_drawn', { count: 2 }, 'p2'), players, catalog, 'p1')).toBe(
+      'Beto comprou 2 cartas.',
+    )
+    expect(describeEvent(event('cards_drawn', { count: 0 }, 'p1'), players, catalog, 'p1')).toBe(
+      'Você não tinha cartas para comprar.',
+    )
+  })
+
+  it('Rolê no Sítio mostra só quantidades', () => {
+    expect(
+      describeEvent(
+        event('hands_shuffled', { count: 9, players: 4 }, 'p1'),
+        players,
+        catalog,
+        'p2',
+      ),
+    ).toBe('Rolê no Sítio: 9 cartas de 4 jogadores foram embaralhadas e redistribuídas.')
+  })
+
   it('turno fantasma compra do Além', () => {
     expect(
       describeEvent(event('turn_started', { drew: 1, ghost: true }, 'p2'), players, catalog, 'p1'),

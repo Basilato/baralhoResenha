@@ -74,6 +74,8 @@ export type GameResult = {
 
 export type Presence = { playerId: string; secondsAway: number; quit: boolean }
 
+export type TurnSteal = { targetPlayerId: string; thiefPlayerId: string }
+
 export type PrivateEvent = { kind: string; payload: Record<string, unknown>; at: string }
 
 export type GameEvent = {
@@ -115,6 +117,10 @@ export type GameView = {
   pendingAction: PendingAction | null
   myDecision: MyDecision | null
   markedPlayerIds: string[]
+  /** Vale Entrosa em aberto: a próxima vez do alvo é de quem jogou (público). */
+  turnSteals: TurnSteal[]
+  /** Dono do lugar cuja vez está sendo jogada por quem a roubou. */
+  stolenFromPlayerId: string | null
   maxGhostActions: number
   absenceLimitSeconds: number
   rematchGameId: string | null

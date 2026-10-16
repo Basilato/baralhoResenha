@@ -80,6 +80,12 @@
       "storagePath": "7.1/CAO-04.webp"
     },
     {
+      "code": "CAO-05",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/CAO-05.webp"
+    },
+    {
       "code": "DEF-01",
       "width": 1448,
       "height": 1086,
@@ -114,6 +120,12 @@
       "width": 1448,
       "height": 1086,
       "storagePath": "7.1/DEF-06.webp"
+    },
+    {
+      "code": "DEF-07",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/DEF-07.webp"
     },
     {
       "code": "GHO-01",
@@ -176,6 +188,12 @@
       "storagePath": "7.1/REC-05.webp"
     },
     {
+      "code": "REC-06",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/REC-06.webp"
+    },
+    {
       "code": "REV-01",
       "width": 1448,
       "height": 1086,
@@ -222,6 +240,18 @@
       "width": 1448,
       "height": 1086,
       "storagePath": "7.1/SAB-05.webp"
+    },
+    {
+      "code": "SAB-06",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/SAB-06.webp"
+    },
+    {
+      "code": "SAB-07",
+      "width": 1448,
+      "height": 1086,
+      "storagePath": "7.1/SAB-07.webp"
     }
   ],
   "missing": []

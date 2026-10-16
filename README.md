@@ -11,7 +11,7 @@ A ideia é ser fácil de pegar: **comprar cartas, usar até duas ações por tur
 - Login privado com **usuário e senha** (sem cadastro aberto)
 - Lobby para criar uma sala ou entrar por código
 - Salas de **3 a 8 jogadores** com a mesa sincronizada em tempo real
-- Baralho principal com **160 cartas** (30 modelos) e Baralho do Além com **20 cartas** (5 modelos)
+- Baralho principal com **177 cartas** (35 modelos) e Baralho do Além com **20 cartas** (5 modelos)
 - Turnos, mãos privadas, dano, reações, cura, efeitos temporários, ressaca progressiva, fantasmas, ressurreição e vitória, tudo calculado automaticamente
 - Visual personalizado por personagem, painel de regras, histórico de jogadas e revanche
 - Interface web responsiva, que funciona no desktop e no celular
@@ -126,8 +126,9 @@ O Supabase Auth só aceita senha junto com e-mail ou telefone. Por isso, cada us
 ### Sabotagem, caos e escolhas
 
 - Sabotagens abrem uma janela em que só o Evento Raro serve. O sorteio de cartas acontece depois da defesa.
-- Escolhas de cartas (Terapia de Boteco, Plano Dental Negado, Tio Paulo, Bucetada, O Acre Existe!) são privadas e simultâneas: nada muda até todos escolherem. Na Terapia de Boteco, a mão do alvo aparece só para quem jogou.
+- Escolhas de cartas (Terapia de Boteco, Plano Dental Negado, Tio Paulo, Bucetada, O Acre Existe!, Só Mais Uma!) são privadas e simultâneas: nada muda até todos escolherem. Na Terapia de Boteco, a mão do alvo aparece só para quem jogou.
 - A marca do Tem Alguém Seguindo fica em `status_effects`: +2 no próximo ataque, consumida no anúncio e expirando no fim da rodada seguinte.
+- O Vale Entrosa também fica em `status_effects` (tipo `turn_steal`). Na vez do alvo, `start_turn` passa a vez para o autor e guarda o lugar roubado em `games.resume_seat`; `advance_turn` continua dali.
 
 ### Fantasmas e fim de partida
 

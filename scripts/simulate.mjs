@@ -393,7 +393,7 @@ Gerado por \`pnpm sim\` em ${new Date().toISOString().slice(0, 10)}: ${results.l
 
 **Como os robôs jogam:** em cada turno, 85% de chance de jogar uma carta jogável (alvos escolhidos como na tela); reagem com 70% de chance quando têm defesa; fantasmas com 3 fichas ressuscitam com 85% de chance; descartam ao acaso. É um jogador "médio e distraído", não um estrategista: serve para medir ritmo e achar travamentos, não para decidir se uma carta é forte.
 
-**Integridade:** depois de cada jogada, \`admin_check_game_integrity\` confere as 180 cartas, mãos, vida, fichas, fase e jogada pendente.
+**Integridade:** depois de cada jogada, \`admin_check_game_integrity\` confere as 197 cartas, mãos, vida, fichas, fase e jogada pendente.
 
 ${table}
 

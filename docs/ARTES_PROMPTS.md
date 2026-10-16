@@ -1,7 +1,7 @@
 # Baralho da Resenha — briefing de artes para IA de imagem
 
 **Para quem é este arquivo:** uma IA (ou designer) que vai criar as artes das cartas.
-**O que entregar:** 35 artes de face (uma por modelo de carta) e 2 versos. São **37 imagens**.
+**O que entregar:** 40 artes de face (uma por modelo de carta) e 2 versos. São **42 imagens**.
 **Jogo:** Resenha Simples v7.1 · catálogo `7.1` · idioma do jogo: português do Brasil.
 
 Leia as seções 1 a 5 antes de gerar qualquer imagem. Elas valem para **todas** as artes. Os blocos da seção 6 trazem o prompt pronto de cada carta.
@@ -20,7 +20,7 @@ Leia as seções 1 a 5 antes de gerar qualquer imagem. Elas valem para **todas**
 
 ## 2. Especificações técnicas
 
-### 2.1 Arte de face (35 imagens)
+### 2.1 Arte de face (40 imagens)
 
 | Item                      | Valor                                                                                                                                                                                           |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -51,7 +51,7 @@ Depois, `pnpm art:upload` envia as artes para o Storage do Supabase, no bucket p
 
 ---
 
-## 3. Guia de estilo (igual para as 37 artes)
+## 3. Guia de estilo (igual para as 42 artes)
 
 **Estilo:** ilustração 2D cartunesca e vibrante, de carta colecionável. Contorno limpo e marcado, cores chapadas com sombreamento suave em células (cel shading), expressões de quadrinho bem exageradas e energia de meme. Clima de **resenha entre amigos brasileiros**: festa em casa, bar, churrasco, after de madrugada.
 
@@ -105,27 +105,28 @@ Os personagens são pessoas reais do grupo. Pelas decisões **C1** e **C4** do p
 
 Nos prompts, cada personagem aparece como um **marcador** entre colchetes duplos, por exemplo `[[RYANE]]`. Substitua o marcador pela descrição aprovada ou pela descrição genérica.
 
-| Marcador               | Aparece em                     | Descrição aprovada (o grupo preenche)                        | Sem aprovação (usar no lugar)                                                                 |
-| ---------------------- | ------------------------------ | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| `[[RYANE]]`            | ATK-01, CAO-02                 | _cabelo, tom de pele, roupa típica, acessório marcante:_ ___ | young woman with bold curly hair, big hoop earrings, colorful party top                       |
-| `[[ANA_VI]]`           | ATK-02, DEF-03                 | ___                                                          | young woman with straight dark bob haircut, denim jacket                                      |
-| `[[ARTUR]]`            | ATK-03, GHO-04                 | ___                                                          | young man with short beard and backwards cap                                                  |
-| `[[LARA]]`             | ATK-04, SAB-02, REV-02, GHO-02 | ___                                                          | young woman with long wavy auburn hair and round glasses                                      |
-| `[[LEO]]`              | ATK-05, DEF-04, CAO-01, REV-01 | ___                                                          | young man with messy black hair and a hoodie                                                  |
-| `[[ADEIR]]`            | ATK-06                         | ___                                                          | young man with buzz cut and a loud printed shirt                                              |
-| `[[ESTEFANIA]]`        | ATK-07, REV-03                 | ___                                                          | young woman with high ponytail and leather jacket                                             |
-| `[[VICTOR]]`           | DEF-01, GHO-01                 | ___                                                          | young man with neat side-part hair and plain t-shirt, permanently unimpressed face            |
-| `[[MANU]]`             | DEF-02                         | ___                                                          | young woman with messy bun and oversized sweatshirt                                           |
-| `[[DAVI]]`             | DEF-05, GHO-03                 | ___                                                          | young man with curly hair and a star-print shirt                                              |
-| `[[CADU]]`             | DEF-06, SAB-01, REC-01         | ___                                                          | young man with sunglasses on his head and a tank top                                          |
-| `[[JU_AMORIM]]`        | SAB-03, GHO-05                 | ___                                                          | young woman with short pixie cut and a trench coat                                            |
-| `[[MIGUEL]]`           | SAB-04                         | ___                                                          | young man with charming smile and a blazer over a t-shirt                                     |
-| `[[LUCIANO]]`          | SAB-05, REC-03, REV-02         | ___                                                          | young man with slicked hair and a white coat                                                  |
-| `[[FAMILIA_BASILATO]]` | CAO-03                         | _quem aparece, quantas pessoas, traço de família:_ ___       | a big multigenerational family of six with a shared distinctive feature (same thick eyebrows) |
-| `[[LETICIA]]`          | CAO-04, REC-05                 | ___                                                          | young woman with braids and an adventurous vest                                               |
-| `[[ANNA]]`             | REC-02                         | ___                                                          | young woman with glitter makeup and a sequined jacket                                         |
-| `[[GIOVANNA]]`         | REC-04                         | ___                                                          | young woman with a long ponytail and a playful nurse-style party costume                      |
-| `[[TIO_PAULO]]`        | CAO-01, REV-01                 | _é o Léo caracterizado? outra pessoa? descrever:_ ___        | middle-aged uncle with mustache, polo shirt and a beer belly, very charismatic                |
+| Marcador               | Aparece em                     | Descrição aprovada (o grupo preenche)                                         | Sem aprovação (usar no lugar)                                                                 |
+| ---------------------- | ------------------------------ | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `[[RYANE]]`            | ATK-01, CAO-02                 | _cabelo, tom de pele, roupa típica, acessório marcante:_ ___                  | young woman with bold curly hair, big hoop earrings, colorful party top                       |
+| `[[ANA_VI]]`           | ATK-02, DEF-03                 | ___                                                                           | young woman with straight dark bob haircut, denim jacket                                      |
+| `[[ARTUR]]`            | ATK-03, GHO-04                 | ___                                                                           | young man with short beard and backwards cap                                                  |
+| `[[LARA]]`             | ATK-04, SAB-02, REV-02, GHO-02 | ___                                                                           | young woman with long wavy auburn hair and round glasses                                      |
+| `[[LEO]]`              | ATK-05, DEF-04, CAO-01, REV-01 | ___                                                                           | young man with messy black hair and a hoodie                                                  |
+| `[[ADEIR]]`            | ATK-06, SAB-07                 | ___                                                                           | young man with buzz cut and a loud printed shirt                                              |
+| `[[STEFANIA]]`         | ATK-07, REV-03                 | ___                                                                           | young woman with high ponytail and leather jacket                                             |
+| `[[VICTOR]]`           | DEF-01, SAB-07, GHO-01         | ___                                                                           | young man with neat side-part hair and plain t-shirt, permanently unimpressed face            |
+| `[[MANU]]`             | DEF-02                         | ___                                                                           | young woman with messy bun and oversized sweatshirt                                           |
+| `[[DAVI]]`             | DEF-05, GHO-03                 | ___                                                                           | young man with curly hair and a star-print shirt                                              |
+| `[[CADU]]`             | DEF-06, SAB-01, REC-01         | ___                                                                           | young man with sunglasses on his head and a tank top                                          |
+| `[[JU_AMORIM]]`        | SAB-03, GHO-05                 | ___                                                                           | young woman with short pixie cut and a trench coat                                            |
+| `[[MIGUEL]]`           | SAB-04                         | ___                                                                           | young man with charming smile and a blazer over a t-shirt                                     |
+| `[[LUCIANO]]`          | SAB-05, REC-03, REV-02         | ___                                                                           | young man with slicked hair and a white coat                                                  |
+| `[[FAMILIA_BASILATO]]` | CAO-03                         | _quem aparece, quantas pessoas, traço de família:_ ___                        | a big multigenerational family of six with a shared distinctive feature (same thick eyebrows) |
+| `[[A_TURMA]]`          | CAO-05                         | _quem aparece na mesa (todos com aprovação; use a folha de personagens):_ ___ | a lively group of six diverse young Brazilian friends in casual summer party clothes          |
+| `[[LETICIA]]`          | CAO-04, REC-05                 | ___                                                                           | young woman with braids and an adventurous vest                                               |
+| `[[ANNA]]`             | DEF-07, REC-02, REC-06         | ___                                                                           | young woman with glitter makeup and a sequined jacket                                         |
+| `[[GIOVANNA]]`         | REC-04                         | ___                                                                           | young woman with a long ponytail and a playful nurse-style party costume                      |
+| `[[TIO_PAULO]]`        | CAO-01, REV-01                 | _é o Léo caracterizado? outra pessoa? descrever:_ ___                         | middle-aged uncle with mustache, polo shirt and a beer belly, very charismatic                |
 
 **Primeiro passo recomendado:** gere uma **folha de personagens** (um personagem por quadro, de frente, corpo inteiro e fundo neutro) com o estilo da seção 3. Use essa folha como referência em todas as cartas, para manter os rostos iguais.
 
@@ -236,16 +237,16 @@ Antes de entregar, confira o checklist da seção 7.
 
 #### ATK-07 · A Braba
 
-- **Arquivo:** `ATK-07` · **Personagem:** Estefânia `[[ESTEFANIA]]` · **Cópias:** 6
+- **Arquivo:** `ATK-07` · **Personagem:** Stefânia `[[STEFANIA]]` · **Cópias:** 6
 - **O que a carta faz:** causa 4 de dano ao alvo e quem jogou sofre 1 de dano.
 - **Piada interna:** ___
-- **Cena:** Estefânia solta uma explosão poderosa contra o alvo. O coice chamusca a ponta do cabelo dela e solta um pouco de fumaça da jaqueta (o dano próprio), mas ela continua confiante.
+- **Cena:** Stefânia solta uma explosão poderosa contra o alvo. O coice chamusca a ponta do cabelo dela e solta um pouco de fumaça da jaqueta (o dano próprio), mas ela continua confiante.
 - **Composição:** pose de golpe com o punho para frente, explosão vermelha saindo do punho e fiapos de fumaça nela mesma.
 - **Elementos obrigatórios:** explosão grande, cabelo levemente chamuscado, expressão "valeu a pena".
 - **Prompt:**
 
 ```
-[[ESTEFANIA]] throwing a powerful punch that releases a huge red cartoon explosion toward an off-screen target, the recoil slightly singes the tips of her hair with small wisps of smoke rising from her jacket, she still has a confident "totally worth it" smirk, dynamic action pose, red accent lighting, centered, waist-up, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, warm night lighting, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
+[[STEFANIA]] throwing a powerful punch that releases a huge red cartoon explosion toward an off-screen target, the recoil slightly singes the tips of her hair with small wisps of smoke rising from her jacket, she still has a confident "totally worth it" smirk, dynamic action pose, red accent lighting, centered, waist-up, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, warm night lighting, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
 ```
 
 ### Defesa (cor: azul `#2F6FD0`)
@@ -334,6 +335,21 @@ Antes de entregar, confira o checklist da seção 7.
 [[CADU]] as the last person still standing at an after-party at dawn, sunglasses on, half-asleep, blocking an incoming attack with an open pizza box used as a shield while his other hand grabs a playing card, empty cups and party mess around, soft sunrise light through the window mixed with blue accent lighting, centered, waist-up, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
 ```
 
+#### DEF-07 · Nem Bateu
+
+- **Arquivo:** `DEF-07` · **Personagem:** Anna `[[ANNA]]` (a mesma da REC-02 e da REC-06) · **Cópias:** 4
+- **O que a carta faz:** reação: reduz em 2 o dano de um ataque contra ela. Se ainda sofrer dano, compra 2 cartas.
+- **Piada interna:** ___
+- **Cena:** um golpe vermelho cartunesco acerta Anna em cheio. Metade dele se desfaz num escudo azul improvisado, mas o resto pega: ela fica com um galo na cabeça e estrelinhas girando. Mesmo assim, faz joinha com um sorriso teimoso de "nem bateu". Do impacto saltam duas cartas, como moedas de videogame, direto para a mão dela.
+- **Composição:** Anna no centro, da cintura para cima, levemente inclinada pelo impacto; o golpe vindo de um lado, quebrando no escudo azul; as duas cartas voando em arco até a mão livre dela.
+- **Elementos obrigatórios:** golpe que **ainda acerta um pouco** (galo, estrelinhas), escudo azul que segurou parte do impacto, joinha e sorriso de "nem bateu", **duas** cartas saltando para a mão dela. Cartas sem nada escrito.
+- **Arte entregue:** Anna dança sob o globo espelhado enquanto o golpe vermelho se desfaz num escudo azul; aparece **uma** carta flutuando (o efeito compra 2) e sem o galo de "apanhou um pouco". Aprovada como está; se a arte for refeita, vale mostrar as duas cartas.
+- **Prompt:**
+
+```
+[[ANNA]] getting hit by a red cartoon punch-impact that half shatters against a makeshift glowing blue shield while the rest still lands, a small cartoon bump on her head with little dizzy stars circling, yet she gives a stubborn thumbs-up with a defiant "didn't even hurt" grin, two playing cards with blank faces and no text pop out of the impact like video-game coins and arc into her free hand, blue accent lighting with a red impact flash on one side, house party background softly blurred, Anna centered, waist-up, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, warm night lighting, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
+```
+
 ### Sabotagem (cor: magenta/roxo `#A63AA8`)
 
 #### SAB-01 · Anota na Conta da Tuca
@@ -406,6 +422,37 @@ Antes de entregar, confira o checklist da seção 7.
 [[LUCIANO]] dressed as a dentist slamming down a giant rubber stamp with a big red X symbol (no words) onto a patient chart, the patient in the dental chair comically dropping two playing cards out of their mouth like lost teeth, bright dental office lamp, purple accent lighting, Luciano centered, waist-up, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
 ```
 
+#### SAB-06 · Vale Entrosa
+
+- **Arquivo:** `SAB-06` · **Personagem:** Todo Mundo (a piada é do grupo inteiro; sem marcador) · **Cópias:** 3
+- **O que a carta faz:** rouba a próxima vez de um adversário. Quando chegar o turno dele, quem joga é quem usou o vale (compra 2 e faz 2 ações); o adversário pula a vez. Evento Raro cancela.
+- **Piada interna:** é de todo mundo. "Vale entrosa" é o que a gente fala quando quer entrar no meio da conversa sem ter entendido direito do que os outros estavam falando. O vale é o "passe" para se enfiar no assunto (e, no jogo, na vez) dos outros.
+- **Personagem:** como a piada é do grupo inteiro, o protagonista é um amigo **genérico**, sem semelhança com ninguém em especial. Quem quiser pode fazer dele uma mistura de traços do grupo (o boné de um, a jaqueta de outro), mas sem retratar uma pessoa só.
+- **Cena:** uma roda de amigos conversa animada na festa, com balões de fala cheios de símbolos (raios, estrelas, risadas). Um amigo enfia a cabeça e os ombros no meio da roda, erguendo um ingresso dourado brilhante (o "vale", sem nada escrito) como se fosse passe VIP. Ele está com a cara de quem não entendeu nada, mas está confiante: em volta da cabeça dele giram espirais de confusão. Os outros param no meio da frase e olham para ele.
+- **Composição:** o "entrosador" no centro, da cintura para cima, de frente, empurrando a roda com o ombro e erguendo o vale; os amigos em volta, em semicírculo, com expressões de "ué?", mais apagados. A luz de destaque magenta cai nele, como se a conversa (e a vez) tivesse mudado de dono.
+- **Elementos obrigatórios:** ingresso/vale brilhante **sem texto nem número**, roda de conversa interrompida, balões de fala **só com símbolos**, espirais de confusão na cabeça do protagonista, sorriso de "do que vocês tão falando? Tô dentro".
+- **Arte entregue:** em vez da roda de conversa, uma tampinha dourada brilhando sobre a mesa do bar (o "vale"), com um amigo rindo e outro tentando pegá-la, assustado. Aprovada como está.
+- **Prompt:**
+
+```
+a generic young friend (original character, not resembling any real person) squeezing head and shoulders into the middle of a lively circle of friends chatting at a house party, proudly holding up a glowing golden ticket like a VIP pass (blank ticket, no text, no numbers), his face clearly confused but confidently grinning as if saying "I have no idea what you're talking about but I'm in", cartoon confusion swirls spinning around his head, the friends around him in a semicircle frozen mid-sentence with puzzled looks, speech bubbles filled only with symbols (lightning bolts, stars, laughing squiggles), a magenta spotlight falling on him as if the conversation just changed owners, sneaky purple-magenta accent lighting, centered, waist-up, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, warm night lighting, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
+```
+
+#### SAB-07 · Bate e Joga
+
+- **Arquivo:** `SAB-07` · **Personagens:** Adeir `[[ADEIR]]` e Victor `[[VICTOR]]` · **Cópias:** 4
+- **O que a carta faz:** um adversário compra 1 carta e depois descarta 2, à escolha dele; quem jogou compra 1. Evento Raro cancela.
+- **Piada interna:** ___
+- **Cena:** dupla em ação na mesa do bar. Adeir dá um tapão na mesa (o "bate"): as cartas do amigo pulam da mão dele, e uma carta nova cai do alto no colo do coitado. Ao lado, Victor, com a cara de tédio de sempre, pega duas cartas no ar e joga por cima do ombro (o "joga"), enquanto passa discretamente uma carta para a mão de Adeir.
+- **Composição:** Adeir e Victor lado a lado no centro, da cintura para cima; o amigo atordoado em primeiro plano, de costas ou de perfil, com as cartas voando para cima; duas cartas saindo pela borda, jogadas fora.
+- **Elementos obrigatórios:** tapa na mesa com onda de impacto, cartas pulando da mão do alvo, **uma** carta caindo para o alvo (a compra dele), **duas** cartas jogadas fora (o descarte), uma carta passando para a dupla (a compra de quem jogou). Cartas sem nada escrito.
+- **Arte entregue:** Adeir e Victor batem as mãos no alto (o "bate") enquanto duas cartas são jogadas na mesa (o descarte de 2); ao fundo, o amigo assustado segura a carta que comprou. Aprovada como está.
+- **Prompt:**
+
+```
+[[ADEIR]] slamming his palm on a bar table with a magenta cartoon impact wave, making a friend's playing cards jump out of his hands while one new card drops from above into the friend's lap, next to him [[VICTOR]] with his usual unimpressed face catches two of the flying cards mid-air and tosses them over his shoulder, while sneakily slipping one card into Adeir's hand, the stunned friend in the foreground seen from the side, playing cards with blank faces and no text, sneaky purple-magenta accent lighting, both characters centered, waist-up, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, warm night lighting, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
+```
+
 ### Caos (cor: laranja `#E8892A`)
 
 #### CAO-01 · Tio Paulo
@@ -463,6 +510,21 @@ Antes de entregar, confira o checklist da seção 7.
 
 ```
 [[LETICIA]] dressed as a jungle explorer triumphantly planting a plain flag with no text on top of a giant glowing map shaped like the Brazilian state of Acre, lush rainforest around, a storm of playing cards raining from the sky while tiny friends try to catch one and toss one away, epic discovery mood, orange accent lighting, Leticia centered, waist-up, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
+```
+
+#### CAO-05 · Rolê no Sítio
+
+- **Arquivo:** `CAO-05` · **Personagem:** a turma reunida `[[A_TURMA]]` · **Cópias:** 3
+- **O que a carta faz:** junta as cartas das mãos de todos os vivos (inclusive de quem jogou), embaralha e redistribui. Cada um fica com a mesma quantidade de cartas que tinha.
+- **Piada interna:** ___
+- **Cena:** o rolê no sítio. A turma inteira está em volta de uma mesa de madeira comprida, ao ar livre, à noite, com varal de lampadinhas, churrasqueira e piscina ao fundo. Todo mundo jogou as cartas para o alto ao mesmo tempo, e elas giram num redemoinho laranja sobre a mesa, chovendo de volta nas mãos erradas. Cada um olha a mão nova com uma reação diferente: um comemora, outro se desespera, outro desconfia do vizinho.
+- **Composição:** vista frontal e levemente de cima da mesa; o redemoinho de cartas no centro, como foco principal; a turma em volta, da cintura para cima, com rostos grandes e expressões bem diferentes entre si.
+- **Elementos obrigatórios:** redemoinho de cartas no centro (a mistura), cartas caindo nas mãos de todos (a redistribuição), clima de sítio (varal de luzes, churrasqueira, piscina), reações variadas. Cartas sem nada escrito.
+- **Arte entregue:** a turma em volta da mesa do sítio ao pôr do sol, com piscina e churrasqueira, e as cartas girando num redemoinho dourado. Bate com o prompt.
+- **Prompt:**
+
+```
+[[A_TURMA]] gathered around a long rustic wooden table outdoors at a Brazilian country house party at night, string lights overhead, a barbecue grill and a pool in the background, everyone has just thrown their playing cards into the air at the same time and the cards spin in a big orange whirlwind above the center of the table, raining back down into the wrong hands, each friend reacting differently to their new hand: one celebrating, one despairing, one suspiciously eyeing the neighbor, playing cards with blank faces and no text, chaotic orange accent lighting with confetti, front view slightly from above, whirlwind as the central focal point, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, warm night lighting, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
 ```
 
 ### Recuperação (cor: verde `#2E9E5B`)
@@ -537,6 +599,21 @@ Antes de entregar, confira o checklist da seção 7.
 [[LETICIA]] switching into a posh "English mode", wearing a monocle and bowler hat, sipping tea from a fancy cup with pinky raised, elegant three-quarter pose, two playing cards floating gracefully into her free hand, soft green healing sparkles, refined background with a hint of rainy window, green accent lighting, Leticia centered, waist-up, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
 ```
 
+#### REC-06 · Só Mais Uma!
+
+- **Arquivo:** `REC-06` · **Personagem:** Anna `[[ANNA]]` (a mesma da REC-02) · **Cópias:** 3
+- **O que a carta faz:** compre 2 cartas e descarte 1 (pode ser uma das que acabou de comprar). Não recupera PV: está em Recuperação porque renova a mão.
+- **Piada interna:** ___
+- **Cena:** o fim da festa, continuação da REC-02. Os amigos já estão de casaco, bocejando na porta, mas Anna ergue o dedo indicador com cara de "só mais uma!". Na outra mão, ela abre em leque duas cartas novas e brilhantes, que acabou de puxar do monte, enquanto joga uma terceira carta por cima do ombro, sem nem olhar.
+- **Composição:** Anna no centro, da cintura para cima, de frente, com o dedo erguido e o leque de 2 cartas brilhando em verde; a carta descartada voando para trás; os amigos cansados ao fundo, desfocados, perto da porta.
+- **Elementos obrigatórios:** dedo indicador erguido ("só mais uma"), **duas** cartas novas brilhando (a compra), **uma** carta voando para trás (o descarte), amigos querendo ir embora, brilho verde de energia renovada. Cartas sem nada escrito.
+- **Arte entregue:** Anna no balcão do bar fechando, dedo erguido, duas cartas novas na mão e uma descartada na mesa; o barman baixa a porta ao fundo. Bate com o prompt.
+- **Prompt:**
+
+```
+[[ANNA]] at the very end of a house party raising her index finger with a mischievous "just one more!" expression, in her other hand she fans out two fresh glowing playing cards she just drew from a deck, while a third card flies over her shoulder behind her as she tosses it away without looking, tired friends in coats yawning by the door in the blurred background, sparkling green renewal glow around the two new cards, playing cards with blank faces and no text, green accent lighting, Anna centered, waist-up, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, warm night lighting, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
+```
+
 ### Reviravolta (cor: ciano/turquesa `#1F9AAE`)
 
 #### REV-01 · Ressuscitou o Tio Paulo
@@ -569,16 +646,16 @@ Antes de entregar, confira o checklist da seção 7.
 
 #### REV-03 · Última Palavra
 
-- **Arquivo:** `REV-03` · **Personagem:** Estefânia `[[ESTEFANIA]]` · **Cópias:** 4
+- **Arquivo:** `REV-03` · **Personagem:** Stefânia `[[STEFANIA]]` · **Cópias:** 4
 - **O que a carta faz:** reação; ao ser eliminada por alguém, causa 2 de dano nessa pessoa.
 - **Piada interna:** ___
-- **Cena:** Estefânia cai para trás em câmera lenta, mas ainda aponta o dedo e solta um último raio turquesa certeiro em quem a derrubou. Expressão de "isso não fica assim".
-- **Composição:** Estefânia na diagonal, caindo; o braço esticado; o raio atravessando a cena.
+- **Cena:** Stefânia cai para trás em câmera lenta, mas ainda aponta o dedo e solta um último raio turquesa certeiro em quem a derrubou. Expressão de "isso não fica assim".
+- **Composição:** Stefânia na diagonal, caindo; o braço esticado; o raio atravessando a cena.
 - **Elementos obrigatórios:** queda dramática, dedo apontado, raio de retaliação, ar de vingança.
 - **Prompt:**
 
 ```
-[[ESTEFANIA]] falling backward in dramatic slow motion, yet still pointing her finger and firing one last precise turquoise energy blast at the person who knocked her down, "this isn't over" vengeful smirk, motion lines, diagonal dynamic composition with her face near the center, turquoise accent lighting, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, warm night lighting, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
+[[STEFANIA]] falling backward in dramatic slow motion, yet still pointing her finger and firing one last precise turquoise energy blast at the person who knocked her down, "this isn't over" vengeful smirk, motion lines, diagonal dynamic composition with her face near the center, turquoise accent lighting, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, warm night lighting, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
 ```
 
 ### Baralho do Além (cor: índigo acinzentado `#5A5590`)
@@ -660,7 +737,7 @@ the ghost of [[JU_AMORIM]], translucent pale blue with a wispy smoke tail, holdi
 #### BACK-MAIN · Verso do baralho principal
 
 - **Arquivo:** `BACK-MAIN` · **Tamanho:** 1575 × 2200 px (retrato) · **Margem:** 80 px
-- **Uso:** costas de todas as 160 cartas do baralho principal.
+- **Uso:** costas de todas as 177 cartas do baralho principal.
 - **Ideia:** padrão simétrico de festa sobre um fundo roxo profundo, com um **medalhão vazio no centro** onde o logo será aplicado depois.
 - **Elementos obrigatórios:** simetria (a carta pode aparecer de cabeça para baixo), confete, copos, cartinhas e estrelas em padrão; brilhos laranja e magenta; nada de texto nem letra.
 - **Prompt:**
@@ -698,7 +775,7 @@ Antes de entregar cada imagem:
 - [ ] Arquivos com o nome do código: `PNG` mestre + `WebP` + miniatura `_thumb.webp`.
 - [ ] Os versos são simétricos e têm o medalhão central vazio.
 
-### Resumo das 37 imagens
+### Resumo das 42 imagens
 
 |   # | Arquivo    | Nome                       | Personagem       | Categoria   |
 | --: | ---------- | -------------------------- | ---------------- | ----------- |
@@ -708,34 +785,39 @@ Antes de entregar cada imagem:
 |   4 | ATK-04     | Fofoca Mortal              | Lara             | Ataque      |
 |   5 | ATK-05     | Print Comprometedor        | Léo              | Ataque      |
 |   6 | ATK-06     | Lor!                       | Adeir            | Ataque      |
-|   7 | ATK-07     | A Braba                    | Estefânia        | Ataque      |
+|   7 | ATK-07     | A Braba                    | Stefânia         | Ataque      |
 |   8 | DEF-01     | It's Not Amazing           | Victor           | Defesa      |
 |   9 | DEF-02     | Inimiga do Banho           | Manu             | Defesa      |
 |  10 | DEF-03     | Eu Tava Dormindo           | Ana Vi           | Defesa      |
 |  11 | DEF-04     | Reverso do Reverso         | Léo              | Defesa      |
 |  12 | DEF-05     | Evento Raro                | Davi             | Defesa      |
 |  13 | DEF-06     | Último do After            | Cadu             | Defesa      |
-|  14 | SAB-01     | Anota na Conta da Tuca     | Cadu             | Sabotagem   |
-|  15 | SAB-02     | Terapia de Boteco          | Lara             | Sabotagem   |
-|  16 | SAB-03     | Tem Alguém Seguindo        | Ju Amorim        | Sabotagem   |
-|  17 | SAB-04     | Eu Amo Mentir              | Miguel           | Sabotagem   |
-|  18 | SAB-05     | Plano Dental Negado        | Luciano          | Sabotagem   |
-|  19 | CAO-01     | Tio Paulo                  | Tio Paulo (Léo)  | Caos        |
-|  20 | CAO-02     | Bucetada                   | Ryane            | Caos        |
-|  21 | CAO-03     | Família Basilato           | Família Basilato | Caos        |
-|  22 | CAO-04     | O Acre Existe!             | Letícia          | Caos        |
-|  23 | REC-01     | After do After             | Cadu             | Recuperação |
-|  24 | REC-02     | Inimiga do Fim             | Anna             | Recuperação |
-|  25 | REC-03     | Consultório Lucboy         | Luciano          | Recuperação |
-|  26 | REC-04     | Anestesia Alcoólica        | Giovanna         | Recuperação |
-|  27 | REC-05     | English Mode               | Letícia          | Recuperação |
-|  28 | REV-01     | Ressuscitou o Tio Paulo    | Tio Paulo (Léo)  | Reviravolta |
-|  29 | REV-02     | Lucboy & Laragirl          | Luciano e Lara   | Reviravolta |
-|  30 | REV-03     | Última Palavra             | Estefânia        | Reviravolta |
-|  31 | GHO-01     | Victor Voltou Passando Mal | Victor           | Além        |
-|  32 | GHO-02     | Fantasma Fofoqueiro        | Lara             | Além        |
-|  33 | GHO-03     | Mão de Defunto             | Davi             | Além        |
-|  34 | GHO-04     | Maldição da Ressaca        | Artur            | Além        |
-|  35 | GHO-05     | Eu Sei o Que Você Fez      | Ju Amorim        | Além        |
-|  36 | BACK-MAIN  | Verso do baralho principal | —                | Verso       |
-|  37 | BACK-GHOST | Verso do Baralho do Além   | —                | Verso       |
+|  14 | DEF-07     | Nem Bateu                  | Anna             | Defesa      |
+|  15 | SAB-01     | Anota na Conta da Tuca     | Cadu             | Sabotagem   |
+|  16 | SAB-02     | Terapia de Boteco          | Lara             | Sabotagem   |
+|  17 | SAB-03     | Tem Alguém Seguindo        | Ju Amorim        | Sabotagem   |
+|  18 | SAB-04     | Eu Amo Mentir              | Miguel           | Sabotagem   |
+|  19 | SAB-05     | Plano Dental Negado        | Luciano          | Sabotagem   |
+|  20 | SAB-06     | Vale Entrosa               | Todo Mundo       | Sabotagem   |
+|  21 | SAB-07     | Bate e Joga                | Adeir e Victor   | Sabotagem   |
+|  22 | CAO-01     | Tio Paulo                  | Tio Paulo (Léo)  | Caos        |
+|  23 | CAO-02     | Bucetada                   | Ryane            | Caos        |
+|  24 | CAO-03     | Família Basilato           | Família Basilato | Caos        |
+|  25 | CAO-04     | O Acre Existe!             | Letícia          | Caos        |
+|  26 | CAO-05     | Rolê no Sítio              | A Turma          | Caos        |
+|  27 | REC-01     | After do After             | Cadu             | Recuperação |
+|  28 | REC-02     | Inimiga do Fim             | Anna             | Recuperação |
+|  29 | REC-03     | Consultório Lucboy         | Luciano          | Recuperação |
+|  30 | REC-04     | Anestesia Alcoólica        | Giovanna         | Recuperação |
+|  31 | REC-05     | English Mode               | Letícia          | Recuperação |
+|  32 | REC-06     | Só Mais Uma!               | Anna             | Recuperação |
+|  33 | REV-01     | Ressuscitou o Tio Paulo    | Tio Paulo (Léo)  | Reviravolta |
+|  34 | REV-02     | Lucboy & Laragirl          | Luciano e Lara   | Reviravolta |
+|  35 | REV-03     | Última Palavra             | Stefânia         | Reviravolta |
+|  36 | GHO-01     | Victor Voltou Passando Mal | Victor           | Além        |
+|  37 | GHO-02     | Fantasma Fofoqueiro        | Lara             | Além        |
+|  38 | GHO-03     | Mão de Defunto             | Davi             | Além        |
+|  39 | GHO-04     | Maldição da Ressaca        | Artur            | Além        |
+|  40 | GHO-05     | Eu Sei o Que Você Fez      | Ju Amorim        | Além        |
+|  41 | BACK-MAIN  | Verso do baralho principal | —                | Verso       |
+|  42 | BACK-GHOST | Verso do Baralho do Além   | —                | Verso       |

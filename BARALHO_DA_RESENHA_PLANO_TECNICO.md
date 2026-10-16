@@ -20,7 +20,7 @@ O MVP terá:
 1. Login privado por **usuário e senha**.
 2. Lobby com criação/entrada em sala por código.
 3. Mesa multiplayer sincronizada em tempo real.
-4. Baralho principal com **160 cartas físicas virtuais** divididas entre 30 modelos.
+4. Baralho principal com **177 cartas físicas virtuais** divididas entre 35 modelos.
 5. Baralho do Além com **20 cartas** e 5 modelos.
 6. Gestão automática de turnos, mãos privadas, danos, reações, curas, efeitos temporários, ressaca, fantasmas, ressurreições e vitória.
 7. Visual personalizado por personagem, painel de regras, registro das jogadas e opção de revanche.
@@ -234,6 +234,11 @@ Cartas de defesa só podem ser usadas no momento apropriado. Ao jogar carta que 
 - `O Acre Existe!`: todos os vivos compram 1 e escolhem 1 para descartar. As escolhas são privadas, a resolução da troca só termina após todos responderem.
 - `Família Basilato`: é dano de **caos**, e não recebe bônus de Mais Odiado. Alvo é o **oponente** vivo de maior PV; não exige existir líder único. **Não admite defesa comum**, mas, se o dano for fatal, a vítima pode usar **uma** reação de dano fatal: `Ressuscitou o Tio Paulo` (fica com 1 PV) **ou** `Última Palavra` (morre e causa 2 ao autor).
 - `Tem Alguém Seguindo`: marca o alvo; o **próximo ataque anunciado contra ele** recebe +2 e consome a marca, mesmo que depois seja defendido; expira **ao final da rodada seguinte à aplicação**. Marcas iguais não acumulam; nova marca apenas substitui/renova.
+- `Bate e Joga` (SAB-07): sabotagem direcionada (`Evento Raro` cancela tudo). Aceita, o alvo compra 1, o autor compra 1, e o alvo escolhe `min(2, tamanho da mão)` cartas para descartar. Pode mirar quem está sem cartas (ele compra 1 e descarta essa). Escolha privada, descarte público.
+- `Rolê no Sítio` (CAO-05): a carta jogada vai para o descarte; depois as mãos principais de todos os vivos (inclusive a do autor) são juntadas, embaralhadas no banco e redistribuídas em ordem de lugar, cada um com a mesma quantidade que tinha. Mão vazia continua vazia; fantasmas e cartas do Além ficam de fora. Sem reação (caos; `Evento Raro` não cancela). O histórico mostra só quantas cartas e jogadores entraram.
+- `Nem Bateu` (DEF-07): defesa comum contra ataque (alvo ou ataque devolvido). Reduz em 2; se o dano final ainda for maior que 0 e a pessoa continuar viva, compra 2. Reduzido a 0, não compra. Não vale contra a `Família Basilato` (B4). Diferente do `Último do After` (reduz 2 e compra 1 sempre), rende mais contra pancadas grandes.
+- `Só Mais Uma!` (REC-06): compra 2 e, depois, o autor escolhe 1 carta da mão para descartar (pode ser uma das recém-compradas; nunca a própria carta jogada, que está em resolução). Escolha privada, descarte público. Sem cartas para comprar nem descartar, não há escolha; com 1 carta só, o descarte é automático. Não recupera PV e não admite reação.
+- `Vale Entrosa` (SAB-06): rouba a **próxima vez** do alvo. Quando chega o turno dele, quem joga é o autor do vale: compra 2, tem 2 ações, prazo e limite de mão normais; o alvo pula a vez e não compra. Depois, a ordem segue a partir do lugar do alvo (o autor pode jogar duas vezes seguidas se o alvo for o próximo). É sabotagem direcionada: `Evento Raro` cancela. O vale é público, não acumula (um novo no mesmo alvo substitui o anterior) e caduca se, na hora, o autor ou o alvo não estiver vivo: a vez de fantasma não pode ser roubada.
 - `Maldição da Ressaca`: próxima tentativa de ataque contra o Mais Odiado atual recebe +1, consumindo o efeito ao anúncio válido do ataque. Se não houver Mais Odiado, o efeito fica pendente até surgir alvo, com validade **até o fim da rodada seguinte**; não acumula.
 - `Lucboy & Laragirl`: troca **mãos restantes** entre autor e adversário vivo; a própria carta jogada já saiu da mão. Pode ocorrer com uma mão vazia.
 - `Ressuscitou o Tio Paulo`: preserva 1 PV em vez de entrar em estado fantasma; **não gasta** a ressurreição do fantasma, não funciona contra Ressaca e não é cura acima de PV máximo.
@@ -307,32 +312,37 @@ MVP **sem eliminação automática por desconexão**; estado fica persistido. Fe
 | ATK-04 | ataque | Fofoca Mortal | Lara | 8 | 2 de dano a até 2 adversários distintos |
 | ATK-05 | ataque | Print Comprometedor | Léo | 6 | 4 de dano ao adversário com mais cartas |
 | ATK-06 | ataque | Lor! | Adeir | 6 | 2 de dano; comprar 1 carta |
-| ATK-07 | ataque | A Braba | Estefânia | 6 | 4 de dano ao alvo; 1 de dano próprio |
+| ATK-07 | ataque | A Braba | Stefânia | 6 | 4 de dano ao alvo; 1 de dano próprio |
 | DEF-01 | defesa | It's Not Amazing | Victor | 8 | Anula dano de 1 ataque recebido |
 | DEF-02 | defesa | Inimiga do Banho | Manu | 6 | Reduz em 3 o dano de 1 ataque |
 | DEF-03 | defesa | Eu Tava Dormindo | Ana Vi | 4 | Reduz em 3 o dano de 1 ataque |
 | DEF-04 | defesa | Reverso do Reverso | Léo | 4 | Redireciona ataque individual ao autor |
 | DEF-05 | defesa | Evento Raro | Davi | 8 | Anula sabotagem direcionada |
 | DEF-06 | defesa | Último do After | Cadu | 6 | Reduz 2 do ataque e compra 1 carta |
+| DEF-07 | defesa | Nem Bateu | Anna | 4 | Reduz 2 do ataque; se ainda sofrer dano, compra 2 |
 | SAB-01 | sabotagem | Anota na Conta da Tuca | Cadu | 8 | Rouba 1 carta aleatória |
 | SAB-02 | sabotagem | Terapia de Boteco | Lara | 4 | Vê mão adversária e escolhe 1 descarte |
 | SAB-03 | sabotagem | Tem Alguém Seguindo | Ju Amorim | 6 | Próximo ataque no alvo +2 |
 | SAB-04 | sabotagem | Eu Amo Mentir | Miguel | 6 | Troca 1 carta própria por 1 aleatória do alvo |
 | SAB-05 | sabotagem | Plano Dental Negado | Luciano | 4 | Alvo descarta até 2, à escolha dele |
+| SAB-06 | sabotagem | Vale Entrosa | Todo Mundo | 3 | Rouba a próxima vez do alvo: o autor joga o turno dele |
+| SAB-07 | sabotagem | Bate e Joga | Adeir e Victor | 4 | Alvo compra 1 e descarta 2 à escolha dele; autor compra 1 |
 | CAO-01 | caos | Tio Paulo | Léo | 4 | Vivos passam 1 carta para a direita |
 | CAO-02 | caos | Bucetada | Ryane | 4 | Vivos descartam 1 carta |
 | CAO-03 | caos | Família Basilato | Família Basilato | 4 | 3 de dano ao adversário com maior PV |
 | CAO-04 | caos | O Acre Existe! | Letícia | 4 | Vivos compram 1 e descartam 1 |
+| CAO-05 | caos | Rolê no Sítio | A Turma | 3 | Junta, embaralha e redistribui as mãos dos vivos (mesma quantidade) |
 | REC-01 | recuperação | After do After | Cadu | 4 | Cura 4 PV |
 | REC-02 | recuperação | Inimiga do Fim | Anna | 3 | Cura 4 PV |
 | REC-03 | recuperação | Consultório Lucboy | Luciano | 5 | Cura 3 e compra 1 |
 | REC-04 | recuperação | Anestesia Alcoólica | Giovanna | 3 | Cura 5; descartar outra carta como custo |
 | REC-05 | recuperação | English Mode | Letícia | 3 | Cura 2 e compra 2 |
+| REC-06 | recuperação | Só Mais Uma! | Anna | 3 | Compra 2 e descarta 1 (sem cura) |
 | REV-01 | reviravolta/reação | Ressuscitou o Tio Paulo | Léo | 4 | Sobrevive a dano fatal de ação com 1 PV |
 | REV-02 | reviravolta/ação | Lucboy & Laragirl | Luciano/Lara | 4 | Troca mão inteira com adversário vivo |
-| REV-03 | reviravolta/reação | Última Palavra | Estefânia | 4 | Ao ser eliminado por jogador, causa 2 nele |
+| REV-03 | reviravolta/reação | Última Palavra | Stefânia | 4 | Ao ser eliminado por jogador, causa 2 nele |
 
-**Contagem validável por seed:** ataque 50 + defesa 36 + sabotagem 28 + caos 16 + recuperação 18 + reviravolta 12 = **160**.
+**Contagem validável por seed:** ataque 50 + defesa 40 + sabotagem 35 + caos 19 + recuperação 21 + reviravolta 12 = **177**.
 
 ## 6.2 Além — 20 instâncias / 5 modelos
 
@@ -346,7 +356,7 @@ MVP **sem eliminação automática por desconexão**; estado fica persistido. Fe
 
 **Decisão aprovada (B1):** GHO-05 mantém informação privada, como GHO-02, mas acrescenta o descarte escolhido pelo fantasma. O ajuste altera apenas o **efeito** de 2 cópias, não o total de cartas.
 
-**TOTAL: 35 modelos e 180 instâncias.** As artes não são por cópia: 35 faces de carta + **2 versos** (principal/Além).
+**TOTAL: 40 modelos e 197 instâncias.** As artes não são por cópia: 40 faces de carta + **2 versos** (principal/Além). *(SAB-06, REC-06, DEF-07, CAO-05 e SAB-07 entraram depois, pelas decisões H1 a H5.)*
 
 ## 6.3 Estrutura de definição de cartas
 
@@ -883,7 +893,7 @@ export const supabase = createClient<Database>(
 
 ## Fase 9 — Visual premium e experiência (P1)
 
-- [x] Substituir placeholders pelas artes autorizadas. *(37 de 37: 35 faces e os 2 versos.)*
+- [x] Substituir placeholders pelas artes autorizadas. *(42 de 42: 40 faces e os 2 versos.)*
 - [x] Estilizar cartas por categoria e overlays de efeitos.
 - [x] Animar compra, ataque, dano, cura, fantasma e ressurreição.
 - [x] Histórico público com mensagens engraçadas e não reveladoras.
@@ -1038,7 +1048,7 @@ export const supabase = createClient<Database>(
 - **Sem backend separado**.
 - Login simples por username/senha, cadastro privado.
 - 3–8 pessoas no primeiro lançamento.
-- 180 cartas, 35 modelos, dois baralhos.
+- 197 cartas, 40 modelos, dois baralhos.
 - Sem objetivos secretos e sem Pontos de Resenha.
 - Sobrevivência com Ressaca Progressiva 7.1.
 - O host não vê dados secretos de ninguém.

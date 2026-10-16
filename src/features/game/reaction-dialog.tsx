@@ -233,6 +233,7 @@ function ChoiceForm({ game, decision, players, catalog }: FormProps) {
   const me = game.myPlayerId ? players.get(game.myPlayerId) : undefined
   const nextAlive = me ? nextAlivePlayer(game.participants, me.seat) : undefined
   const many = count === 1 ? '1 carta' : `${count} cartas`
+  const soloDiscard = catalog.get(decision.cardCode)?.effectCode === 'draw_discard'
 
   const { title, description, confirm } = {
     actor_pick: {
@@ -252,7 +253,10 @@ function ChoiceForm({ game, decision, players, catalog }: FormProps) {
     },
     discard_pick: {
       title: `${card}: descarte 1 carta`,
-      description: 'Escolha 1 carta da sua mão para descartar. Todos escolhem ao mesmo tempo.',
+      // Só Mais Uma!: só quem jogou escolhe, depois de comprar.
+      description: soloDiscard
+        ? 'Escolha 1 carta da sua mão para descartar. Pode ser uma das que você acabou de comprar.'
+        : 'Escolha 1 carta da sua mão para descartar. Todos escolhem ao mesmo tempo.',
       confirm: 'Descartar esta',
     },
   }[decision.role as 'actor_pick' | 'target_discard' | 'pass_pick' | 'discard_pick']

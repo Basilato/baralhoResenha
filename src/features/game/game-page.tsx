@@ -21,6 +21,7 @@ import {
   ShieldIcon,
   SparklesIcon,
   TargetIcon,
+  TicketIcon,
   TrophyIcon,
   UserMinusIcon,
   Volume2Icon,
@@ -110,6 +111,11 @@ function Table({
   const players = new Map(game.participants.map((player) => [player.id, player]))
   const me = game.myPlayerId ? players.get(game.myPlayerId) : undefined
   const active = game.activePlayerId ? players.get(game.activePlayerId) : undefined
+  // Vale Entrosa: quem está jogando agora pegou a vez de outra pessoa.
+  const stolenFrom = game.stolenFromPlayerId ? players.get(game.stolenFromPlayerId) : undefined
+  const thiefByTarget = new Map(
+    game.turnSteals.map((steal) => [steal.targetPlayerId, players.get(steal.thiefPlayerId)]),
+  )
   const isHost = game.hostUserId === user?.id
   const isMyTurn = game.status === 'playing' && !!me && me.id === game.activePlayerId
   const discardTop = game.mainDiscardTop ? catalog.get(game.mainDiscardTop) : undefined
@@ -191,6 +197,12 @@ function Table({
               <span data-testid="turn-status">
                 {isMyTurn ? 'Sua vez!' : `Vez de ${active?.displayName ?? '…'}`}
               </span>
+              {stolenFrom && (
+                <span className="flex items-center gap-1 text-sm opacity-80">
+                  <TicketIcon className="size-3.5" aria-hidden />
+                  roubada de {stolenFrom.id === me?.id ? 'você' : stolenFrom.displayName}
+                </span>
+              )}
               {!game.pendingAction && (
                 <Countdown deadline={game.turnDeadlineAt} skewMs={game.clockSkewMs} />
               )}
@@ -257,6 +269,7 @@ function Table({
                   isActive={game.status === 'playing' && player.id === game.activePlayerId}
                   isLeader={player.id === game.leaderPlayerId}
                   isMarked={game.markedPlayerIds.includes(player.id)}
+                  stealBy={thiefByTarget.get(player.id)}
                   isTargeted={targetedIds.has(player.id)}
                   isAwaiting={awaitingIds.has(player.id)}
                   effects={fx.byPlayer.get(player.id) ?? NO_EFFECTS}
@@ -319,7 +332,7 @@ function Table({
         {me && (
           <MyArea
             // Recomeça a seleção de descarte a cada turno.
-            key={`${game.round}-${game.activePlayerId}`}
+            key={`${game.round}-${game.activePlayerId}-${game.stolenFromPlayerId}`}
             game={game}
             me={me}
             isMyTurn={isMyTurn}
@@ -585,6 +598,7 @@ function PlayerPanel({
   isActive,
   isLeader,
   isMarked,
+  stealBy,
   isTargeted,
   isAwaiting,
   effects,
@@ -601,6 +615,8 @@ function PlayerPanel({
   isActive: boolean
   isLeader: boolean
   isMarked: boolean
+  /** Quem vai jogar a próxima vez desta pessoa (Vale Entrosa). */
+  stealBy: Participant | undefined
   /** Alvo da jogada que está esperando resposta. */
   isTargeted: boolean
   /** A jogada pendente espera uma resposta desta pessoa. */
@@ -673,7 +689,7 @@ function PlayerPanel({
           <span className="sr-only">cartas na mão</span>
         </span>
       </div>
-      {(isActive || isLeader || isMarked || isTargeted || isAwaiting) && (
+      {(isActive || isLeader || isMarked || stealBy || isTargeted || isAwaiting) && (
         <div className="flex flex-wrap gap-1">
           {isActive && <Badge className="h-5">Jogando</Badge>}
           {isTargeted && (
@@ -698,6 +714,16 @@ function PlayerPanel({
             <Badge variant="outline" className="h-5 gap-1 border-cat-sabotage text-cat-sabotage">
               <TargetIcon className="size-3" aria-hidden />
               Marcado +2
+            </Badge>
+          )}
+          {stealBy && (
+            <Badge
+              variant="outline"
+              className="h-5 gap-1 border-cat-sabotage text-cat-sabotage"
+              title={`Vale Entrosa: a próxima vez é de ${stealBy.displayName}`}
+            >
+              <TicketIcon className="size-3" aria-hidden />
+              Perde a vez
             </Badge>
           )}
         </div>
@@ -919,12 +945,17 @@ const EVENT_ICON: Record<string, EventIcon> = {
   last_word: { Icon: HeartCrackIcon, color: 'text-cat-attack' },
   hangover: { Icon: HeartCrackIcon, color: 'text-cat-ghost' },
   healed: { Icon: HeartPulseIcon, color: 'text-cat-recovery' },
+  cards_drawn: { Icon: LayersIcon, color: 'text-cat-recovery' },
   reaction_played: { Icon: ShieldIcon, color: 'text-cat-defense' },
   sabotage_blocked: { Icon: ShieldIcon, color: 'text-cat-defense' },
   card_stolen: { Icon: BombIcon, color: 'text-cat-sabotage' },
   card_swapped: { Icon: BombIcon, color: 'text-cat-sabotage' },
   target_marked: { Icon: TargetIcon, color: 'text-cat-sabotage' },
+  turn_steal_set: { Icon: TicketIcon, color: 'text-cat-sabotage' },
+  turn_stolen: { Icon: TicketIcon, color: 'text-cat-sabotage' },
+  turn_steal_lapsed: { Icon: TicketIcon, color: 'text-muted-foreground' },
   hands_swapped: { Icon: RotateCcwIcon, color: 'text-cat-reversal' },
+  hands_shuffled: { Icon: RotateCcwIcon, color: 'text-cat-chaos' },
   player_died: { Icon: GhostIcon, color: 'text-cat-ghost' },
   ghost_peeked: { Icon: GhostIcon, color: 'text-cat-ghost' },
   card_to_bottom: { Icon: GhostIcon, color: 'text-cat-ghost' },

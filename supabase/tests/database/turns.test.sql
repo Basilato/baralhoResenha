@@ -307,7 +307,7 @@ select is(
 select is(
   (select ghost_tokens::int from app_private.game_players where id = pg_temp.player_at(pg_temp.v('g')::uuid, 2)),
   3, 'fichas de fantasma param em 3');
-select is((select count(*)::int from app_private.game_cards where game_id = pg_temp.v('g')::uuid), 180,
+select is((select count(*)::int from app_private.game_cards where game_id = pg_temp.v('g')::uuid), 197,
   'nenhuma carta criada ou perdida em 10 rodadas');
 select ok(
   (select bool_and(n <= 7) from (
@@ -345,7 +345,7 @@ $$;
 
 select is((select status from app_private.games where id = pg_temp.v('g8')::uuid), 'finished',
   '8 jogadores atravessam as 10 rodadas (o baralho recicla no meio)');
-select is((select count(*)::int from app_private.game_cards where game_id = pg_temp.v('g8')::uuid), 180,
+select is((select count(*)::int from app_private.game_cards where game_id = pg_temp.v('g8')::uuid), 197,
   'reciclagem não cria nem perde cartas');
 select is(
   (select result_json from app_private.games where id = pg_temp.v('g8')::uuid),
