@@ -84,18 +84,17 @@ await check('site aponta para este Supabase', async () => {
 
 // --- Supabase: o que precisa estar fechado -------------------------------------
 
-await check('cadastro público desligado', async () => {
-  // Lê a configuração pública do Auth. (Tentar um cadastro criaria uma conta
-  // de verdade justamente quando o cadastro estiver aberto.)
+await check('autocadastro aberto e sem confirmação de e-mail', async () => {
+  // Lê a configuração pública do Auth (não cria conta). O autocadastro precisa
+  // do cadastro ligado e da confirmação desligada: o e-mail é técnico e nunca
+  // recebe mensagem, então a conta tem de nascer já ativa.
   const response = await fetch(`${SUPABASE_URL}/auth/v1/settings`, {
     headers: { apikey: SUPABASE_PUBLISHABLE_KEY },
   })
   assert(response.ok, `settings respondeu ${response.status}`)
   const settings = await response.json()
-  assert(
-    settings.disable_signup === true,
-    'qualquer pessoa consegue criar conta (desligue "Allow new users to sign up")',
-  )
+  assert(settings.disable_signup === false, 'cadastro fechado: ligue "Allow new users to sign up"')
+  assert(settings.mailer_autoconfirm === true, 'desligue "Confirm email" (o e-mail é técnico)')
 })
 
 await check('sem login, nenhuma RPC do jogo responde', async () => {

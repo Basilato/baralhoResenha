@@ -92,6 +92,11 @@
 | **D5** | **Apagar partidas encerradas há mais de 90 dias.**                         | Política documentada e rotina de limpeza confiável (por exemplo, Supabase Cron). Eliminar registros relacionados e dados de sessão; manter estatísticas agregadas não identificáveis apenas se necessário. |
 | **D6** | **Staging em projeto Supabase separado.**                                  | Preferencialmente segundo projeto gratuito **se houver capacidade/limites disponíveis**. Não replicar dados pessoais de produção; migrações e seeds separados.                                             |
 
+**Revisões na Fase 11 (2026-10-16, decisão do administrador):**
+
+- **D4 revista: autocadastro aberto.** Qualquer pessoa cria a própria conta em `/cadastro`, com usuário, nome na mesa e senha. O comando de admin continua existindo para criar contas, trocar senha e desativar. O perfil nasce do `user_metadata`, e o usuário precisa bater com o e-mail técnico (migração `20261017120000_self_signup`). No Supabase: cadastro **ligado** e **Confirm email** desligado.
+- **D1 aplicada:** o domínio das contas técnicas é o próprio site (`baralho-resenha.vercel.app`), controlado pelo projeto. Nenhum e-mail é enviado. Esse domínio **não pode mudar** depois que existirem contas.
+
 **Dependências de lançamento ainda não preenchidas:** domínio real, projeto Supabase de produção e suas credenciais configuradas, lista de contas e consentimento dos participantes. Essas dependências **não impedem** o desenvolvimento com ambiente de staging e dados de teste.
 
 ---

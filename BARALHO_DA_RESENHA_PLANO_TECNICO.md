@@ -120,7 +120,7 @@ MVP sem espectador. Membro da sala não pode ver a mão ou a ordem do baralho, m
 
 ## 4.2 Telas de produto
 
-**Login:** card central, fundo temático, inputs simples, estados de erro e loading. Sem link de registro público.
+**Login:** card central, fundo temático, inputs simples, estados de erro e loading. Link para **Criar conta** (`/cadastro`): autocadastro aberto desde a Fase 11 (revisão de D4).
 
 **Lobby:** botão destacado “Criar resenha”, campo “Código da sala”, lista de partidas que o usuário pode retomar.
 
@@ -909,10 +909,10 @@ export const supabase = createClient<Database>(
 
 ## Fase 11 — Publicação (P0)
 
-- [ ] Criar Supabase de produção separado do desenvolvimento.
-- [ ] Aplicar migrações revisadas e carregar catálogo + fotos.
-- [ ] Criar usuários reais e distribuir senhas individuais por canal privado.
-- [ ] Configurar Vercel, domínio, redirects e HTTPS.
+- [x] Criar Supabase de produção separado do desenvolvimento. *(`baralho-resenha`, Free, sa-east-1)*
+- [x] Aplicar migrações revisadas e carregar catálogo + fotos. *(13 migrações; 31 artes)*
+- [ ] Criar usuários reais e distribuir senhas individuais por canal privado. *(Revisto: autocadastro aberto em /cadastro; `pnpm users:prod` continua para casos manuais.)*
+- [x] Configurar Vercel, domínio, redirects e HTTPS. *(https://baralho-resenha.vercel.app, ligado ao GitHub)*
 - [ ] Habilitar backups/política de retenção conforme plano escolhido.
 - [ ] Monitorar erros e uso inicial do Realtime/DB/Storage.
 - [ ] Rodar teste final com pelo menos 3 contas reais.

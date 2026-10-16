@@ -20,12 +20,12 @@ No prompt do Claude Code:
 
 ## 2. Configurações do Supabase (você, no painel)
 
-| Onde                                         | O que                                                 |
-| -------------------------------------------- | ----------------------------------------------------- |
-| Authentication → Sign In / Providers         | Desligar **Allow new users to sign up**               |
-| Authentication → Sign In / Providers → Email | Desligar **Confirm email**                            |
-| Authentication → URL Configuration           | **Site URL** = endereço da Vercel (passo 3)           |
-| Realtime → Settings                          | Desligar **Allow public access** (só canais privados) |
+| Onde                                         | O que                                                                      |
+| -------------------------------------------- | -------------------------------------------------------------------------- |
+| Authentication → Sign In / Providers         | Deixar **ligado** "Allow new users to sign up" (autocadastro em /cadastro) |
+| Authentication → Sign In / Providers → Email | Desligar **Confirm email** (o e-mail é técnico e nunca recebe mensagem)    |
+| Authentication → URL Configuration           | **Site URL** = endereço da Vercel (passo 3)                                |
+| Realtime → Settings                          | Desligar **Allow public access** (só canais privados)                      |
 
 ## 3. Vercel (Claude, com sua confirmação)
 
@@ -41,7 +41,7 @@ Só as chaves públicas vão para a Vercel. A secret key nunca sai do `.env.prod
 ## 4. Conteúdo (Claude)
 
 - Artes: `pnpm art:upload:prod`.
-- Contas: `pnpm users:prod create <usuário> "<Nome>"` para cada pessoa. Cada senha aparece uma vez só no terminal: **você** manda no privado para a pessoa.
+- Contas: cada pessoa cria a própria em **https://baralho-resenha.vercel.app/cadastro**. Para criar uma conta manualmente, trocar uma senha esquecida ou desativar alguém: `pnpm users:prod create|reset-password|disable …`.
 
 ## 5. Verificação (Claude)
 
@@ -49,7 +49,7 @@ Só as chaves públicas vão para a Vercel. A secret key nunca sai do `.env.prod
 
 - o site em HTTPS, as rotas e os cabeçalhos de segurança;
 - se o site aponta para este Supabase e se a secret key ficou fora do bundle;
-- o cadastro fechado, nada respondendo sem login, as tabelas internas e as artes fora do acesso público;
+- o autocadastro aberto sem confirmação de e-mail, nada respondendo sem login, as tabelas internas e as artes fora do acesso público;
 - se as migrações e as artes estão no lugar e se não sobrou nenhuma conta de teste.
 
 ## 6. Teste final (vocês)
