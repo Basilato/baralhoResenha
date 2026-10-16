@@ -6,7 +6,7 @@ describe('preferências do aparelho', () => {
   afterEach(() => setPreferences({ sound: true, reduceMotion: false }))
 
   it('começa com som ligado e animações normais', () => {
-    expect(getPreferences()).toEqual({ sound: true, reduceMotion: false })
+    expect(getPreferences()).toEqual({ sound: true, reduceMotion: false, tutorialSeen: false })
   })
 
   it('salva no navegador e avisa quem está usando', () => {

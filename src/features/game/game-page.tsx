@@ -42,6 +42,7 @@ import { CardDetailsDialog } from '@/features/cards/card-details-dialog'
 import { CATEGORY_ICON } from '@/features/cards/category-icons'
 import { closeRoom, createRematch } from '@/features/rooms/rooms-service'
 import { RoomUnavailable } from '@/features/rooms/room-unavailable'
+import { QuickRulesButton } from '@/features/rules/quick-rules'
 import { useGameChannel } from '@/features/rooms/use-room'
 import type { CardCategoryId } from '@/lib/constants'
 import { isAppError, toFriendlyMessage } from '@/lib/errors'
@@ -155,6 +156,7 @@ function Table({
           )}
         </div>
         <div className="flex items-center gap-2">
+          <QuickRulesButton />
           <SoundToggle />
           {game.curseActive && game.status === 'playing' && (
             <Badge variant="outline" className="border-cat-ghost text-cat-ghost">

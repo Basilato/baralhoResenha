@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Link, Outlet, useMatch } from 'react-router'
 import { toast } from 'sonner'
-import { BookOpenIcon, LogOutIcon } from 'lucide-react'
+import { BookOpenIcon, GraduationCapIcon, LogOutIcon } from 'lucide-react'
 import { BrandMark, BrandName } from '@/components/brand'
 import { FullPageSpinner } from '@/components/full-page-spinner'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -18,6 +18,8 @@ import {
 import { signOut } from '@/features/auth/auth-service'
 import { CardArtProvider } from '@/features/cards/card-art-provider'
 import { useMyProfile } from '@/features/profile/use-profile'
+import { TutorialDialog } from '@/features/rules/tutorial'
+import { useTutorial } from '@/features/rules/use-tutorial'
 import { toFriendlyMessage } from '@/lib/errors'
 import { setPreferences, usePreferences } from '@/lib/preferences'
 import { initials } from '@/lib/format'
@@ -34,6 +36,7 @@ async function handleSignOut() {
 export function AppLayout() {
   const profile = useMyProfile()
   const preferences = usePreferences()
+  const tutorial = useTutorial()
   // A mesa usa a tela inteira: jogadores, histórico ao lado e a mão larga.
   const wide = useMatch('/jogo/:gameId') !== null
   const width = wide ? 'max-w-7xl' : 'max-w-5xl'
@@ -81,6 +84,10 @@ export function AppLayout() {
                     Regras
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => tutorial.setOpen(true)}>
+                  <GraduationCapIcon />
+                  Como jogar
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuCheckboxItem
                   checked={preferences.sound}
@@ -113,6 +120,7 @@ export function AppLayout() {
             <Outlet />
           )}
         </main>
+        <TutorialDialog open={tutorial.open} onOpenChange={tutorial.setOpen} />
       </div>
     </CardArtProvider>
   )

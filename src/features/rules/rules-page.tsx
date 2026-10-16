@@ -7,16 +7,7 @@ import { CATEGORY_ICON } from '@/features/cards/category-icons'
 import { GameCard } from '@/features/cards/game-card'
 import { CARD_CATEGORIES } from '@/lib/constants'
 import { toFriendlyMessage } from '@/lib/errors'
-
-const BASICS = [
-  ['Jogadores', '3 a 8, em ordem fixa no sentido horário'],
-  ['Vida inicial', '16 com 3 jogadores · 18 com 4–5 · 16 com 6–8'],
-  ['Mão inicial', '5 cartas'],
-  ['Início do turno', 'compra 2 cartas'],
-  ['Ações', 'até 2 por turno — reações não gastam ação'],
-  ['Limite de mão', '7 cartas ao encerrar o seu turno'],
-  ['Duração', 'até 10 rodadas completas'],
-] as const
+import { QuickRulesList } from './quick-rules'
 
 export function RulesPage() {
   return (
@@ -34,14 +25,7 @@ export function RulesPage() {
           <CardTitle>O básico</CardTitle>
         </CardHeader>
         <CardContent>
-          <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-[auto_1fr]">
-            {BASICS.map(([term, description]) => (
-              <div key={term} className="contents">
-                <dt className="font-medium">{term}</dt>
-                <dd className="text-muted-foreground">{description}</dd>
-              </div>
-            ))}
-          </dl>
+          <QuickRulesList />
         </CardContent>
       </Card>
 

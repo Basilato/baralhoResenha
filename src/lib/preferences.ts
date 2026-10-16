@@ -9,10 +9,12 @@ export type Preferences = {
   sound: boolean
   /** Reduz animações mesmo que o sistema não peça (o pedido do sistema sempre vale). */
   reduceMotion: boolean
+  /** Já viu o tutorial de 3 passos (não abre sozinho de novo). */
+  tutorialSeen: boolean
 }
 
 const KEY = 'resenha:preferences'
-const DEFAULTS: Preferences = { sound: true, reduceMotion: false }
+const DEFAULTS: Preferences = { sound: true, reduceMotion: false, tutorialSeen: false }
 
 let current: Preferences = load()
 const listeners = new Set<() => void>()

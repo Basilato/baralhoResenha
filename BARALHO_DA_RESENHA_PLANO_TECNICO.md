@@ -889,7 +889,7 @@ export const supabase = createClient<Database>(
 - [x] Histórico público com mensagens engraçadas e não reveladoras.
 - [x] Sons opcionais, opção de reduzir animações e modo silencioso.
 - [x] Melhorar mesas com 3/5/8 pessoas e layout mobile.
-- [ ] Tutorial inicial de 3 passos e regras rápidas sempre acessíveis.
+- [x] Tutorial inicial de 3 passos e regras rápidas sempre acessíveis.
 
 **Entrega:** experiência reconhecível e apresentável ao grupo.
 
