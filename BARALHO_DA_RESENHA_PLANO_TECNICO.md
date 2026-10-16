@@ -886,7 +886,7 @@ export const supabase = createClient<Database>(
 - [ ] Substituir placeholders pelas artes autorizadas. *(Storage, `pnpm art:upload` e exibição prontos; 31 de 37 artes. Faltam CAO-03, REC-02, REC-04, REC-05 e os 2 versos.)*
 - [x] Estilizar cartas por categoria e overlays de efeitos.
 - [x] Animar compra, ataque, dano, cura, fantasma e ressurreição.
-- [ ] Histórico público com mensagens engraçadas e não reveladoras.
+- [x] Histórico público com mensagens engraçadas e não reveladoras.
 - [ ] Sons opcionais, opção de reduzir animações e modo silencioso.
 - [ ] Melhorar mesas com 3/5/8 pessoas e layout mobile.
 - [ ] Tutorial inicial de 3 passos e regras rápidas sempre acessíveis.

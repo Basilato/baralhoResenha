@@ -3,18 +3,26 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
+  BombIcon,
   CheckIcon,
+  CircleIcon,
   CrosshairIcon,
   CrownIcon,
+  EyeOffIcon,
+  FlagIcon,
   FlameIcon,
   GhostIcon,
+  HeartCrackIcon,
+  HeartPulseIcon,
   HourglassIcon,
   LayersIcon,
   Loader2Icon,
   RotateCcwIcon,
+  ShieldIcon,
+  SparklesIcon,
+  TargetIcon,
   TrophyIcon,
   UserMinusIcon,
-  TargetIcon,
   WifiOffIcon,
   XCircleIcon,
 } from 'lucide-react'
@@ -29,12 +37,15 @@ import { useAuth } from '@/features/auth/auth-context'
 import { useCardCatalog, type CardCatalog, type CardDefinition } from '@/features/cards/catalog'
 import { CardBack, GameCard } from '@/features/cards/game-card'
 import { CardDetailsDialog } from '@/features/cards/card-details-dialog'
+import { CATEGORY_ICON } from '@/features/cards/category-icons'
 import { closeRoom, createRematch } from '@/features/rooms/rooms-service'
 import { RoomUnavailable } from '@/features/rooms/room-unavailable'
 import { useGameChannel } from '@/features/rooms/use-room'
+import type { CardCategoryId } from '@/lib/constants'
 import { isAppError, toFriendlyMessage } from '@/lib/errors'
 import { cn } from '@/lib/utils'
 import { describeEvent, describePrivateEvent } from './event-messages'
+import { eventQuip } from './event-quips'
 import { PlayCardDialog, type PlayableCard } from './play-card-dialog'
 import { whyNotPlayable } from './play-rules'
 import { useTableEffects, type PlayerEffect, type Spotlight } from './use-table-effects'
@@ -47,6 +58,7 @@ import {
   type HandCard,
   type Participant,
   type Presence,
+  type GameEvent,
   type ResponseRole,
 } from './game-service'
 
@@ -714,6 +726,9 @@ function EventLog({
 }) {
   const recent = [...game.events].reverse().slice(0, 15)
   const secrets = game.myPrivateEvents.slice(0, 3)
+  // A zoeira fala de todo mundo na terceira pessoa (sem "Você").
+  const nameOf = (id: unknown) =>
+    (typeof id === 'string' && players.get(id)?.displayName) || 'Alguém'
   return (
     <section aria-labelledby="log-title" className="flex flex-col gap-2">
       <h2 id="log-title" className="font-heading text-lg font-bold">
@@ -724,18 +739,82 @@ function EventLog({
         data-testid="event-log"
       >
         {secrets.map((event, index) => (
-          <li key={`secret-${index}`} className="bg-cat-ghost/5 px-3 py-2 italic">
-            {describePrivateEvent(event, players, catalog)}
+          <li
+            key={`secret-${index}`}
+            className="flex items-start gap-2 bg-cat-ghost/5 px-3 py-2 italic"
+          >
+            <EyeOffIcon className="mt-0.5 size-4 shrink-0 text-cat-ghost" aria-hidden />
+            <span>{describePrivateEvent(event, players, catalog)}</span>
           </li>
         ))}
-        {recent.map((event) => (
-          <li key={event.seq} className="px-3 py-2">
-            {describeEvent(event, players, catalog, game.myPlayerId)}
-          </li>
-        ))}
+        {recent.map((event) => {
+          const { Icon, color } = eventIcon(event, catalog)
+          const quip = eventQuip(event, nameOf)
+          return (
+            <li key={event.seq} className="flex items-start gap-2 px-3 py-2">
+              <Icon className={cn('mt-0.5 size-4 shrink-0', color)} aria-hidden />
+              <p>
+                {describeEvent(event, players, catalog, game.myPlayerId)}
+                {quip && (
+                  <span className="text-muted-foreground italic" data-testid="event-quip">
+                    {' '}
+                    {quip}
+                  </span>
+                )}
+              </p>
+            </li>
+          )
+        })}
       </ol>
     </section>
   )
+}
+
+type EventIcon = { Icon: React.ComponentType<{ className?: string }>; color: string }
+
+const EVENT_ICON: Record<string, EventIcon> = {
+  game_started: { Icon: FlagIcon, color: 'text-primary' },
+  round_started: { Icon: FlagIcon, color: 'text-primary' },
+  damage_dealt: { Icon: HeartCrackIcon, color: 'text-cat-attack' },
+  self_damage: { Icon: HeartCrackIcon, color: 'text-cat-attack' },
+  last_word: { Icon: HeartCrackIcon, color: 'text-cat-attack' },
+  hangover: { Icon: HeartCrackIcon, color: 'text-cat-ghost' },
+  healed: { Icon: HeartPulseIcon, color: 'text-cat-recovery' },
+  reaction_played: { Icon: ShieldIcon, color: 'text-cat-defense' },
+  sabotage_blocked: { Icon: ShieldIcon, color: 'text-cat-defense' },
+  card_stolen: { Icon: BombIcon, color: 'text-cat-sabotage' },
+  card_swapped: { Icon: BombIcon, color: 'text-cat-sabotage' },
+  target_marked: { Icon: TargetIcon, color: 'text-cat-sabotage' },
+  hands_swapped: { Icon: RotateCcwIcon, color: 'text-cat-reversal' },
+  player_died: { Icon: GhostIcon, color: 'text-cat-ghost' },
+  ghost_peeked: { Icon: GhostIcon, color: 'text-cat-ghost' },
+  card_to_bottom: { Icon: GhostIcon, color: 'text-cat-ghost' },
+  curse_cast: { Icon: GhostIcon, color: 'text-cat-ghost' },
+  revive_declined: { Icon: GhostIcon, color: 'text-cat-ghost' },
+  player_revived: { Icon: SparklesIcon, color: 'text-amber-500' },
+  game_finished: { Icon: TrophyIcon, color: 'text-amber-500' },
+  player_removed: { Icon: UserMinusIcon, color: 'text-muted-foreground' },
+}
+
+const DEFAULT_ICON: EventIcon = { Icon: CircleIcon, color: 'text-muted-foreground/50' }
+
+// Classes completas (o Tailwind só gera o que aparece escrito no código).
+const CATEGORY_TEXT: Record<CardCategoryId, string> = {
+  attack: 'text-cat-attack',
+  defense: 'text-cat-defense',
+  sabotage: 'text-cat-sabotage',
+  chaos: 'text-cat-chaos',
+  recovery: 'text-cat-recovery',
+  reversal: 'text-cat-reversal',
+  ghost: 'text-cat-ghost',
+}
+
+function eventIcon(event: GameEvent, catalog: CardCatalog): EventIcon {
+  if (event.kind === 'card_played' && typeof event.payload.cardCode === 'string') {
+    const card = catalog.get(event.payload.cardCode)
+    if (card) return { Icon: CATEGORY_ICON[card.category], color: CATEGORY_TEXT[card.category] }
+  }
+  return EVENT_ICON[event.kind] ?? DEFAULT_ICON
 }
 
 function ResultPanel({
