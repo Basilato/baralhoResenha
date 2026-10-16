@@ -11,6 +11,7 @@ dist-ssr/
 .env.*
 !.env.example
 !.env.admin.example
+!.env.production.admin.example
 
 # Logs
 *.log
@@ -38,3 +39,6 @@ Thumbs.db
 
 # Artes geradas a partir de art/cards/*/source (pnpm art:build)
 art/cards/*/web/
+
+# Dumps do banco de produção (pnpm/supabase db dump)
+backups/

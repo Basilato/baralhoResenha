@@ -23,7 +23,10 @@
     "users": "node --env-file=.env.admin scripts/admin-users.mjs",
     "art:build": "node scripts/build-card-art.mjs",
     "art:upload": "node --env-file=.env.admin scripts/upload-card-art.mjs",
-    "sim": "node --env-file=.env.local --env-file=.env.admin scripts/simulate.mjs"
+    "sim": "node --env-file=.env.local --env-file=.env.admin scripts/simulate.mjs",
+    "users:prod": "node --env-file=.env.production.admin scripts/admin-users.mjs",
+    "art:upload:prod": "node --env-file=.env.production.admin scripts/upload-card-art.mjs",
+    "prod:check": "node --env-file=.env.production.admin scripts/check-production.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

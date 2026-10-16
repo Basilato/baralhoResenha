@@ -10,3 +10,6 @@ BARALHO_DA_RESENHA_PLANO_TECNICO.md
 
 # Gerado por pnpm art:build
 art/cards/*/manifest.json
+
+# Gerado por pnpm sim
+docs/BALANCEAMENTO.md
