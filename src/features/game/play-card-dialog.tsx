@@ -112,7 +112,7 @@ function PlayCardForm({
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{card.name}</DialogTitle>
+        <DialogTitle className="text-2xl">{card.name}</DialogTitle>
         <DialogDescription className="flex flex-wrap items-center gap-1.5">
           <Badge variant="secondary">{CATEGORY_LABEL[card.category]}</Badge>
           {card.isReaction && <Badge variant="outline">Reação</Badge>}
@@ -129,7 +129,7 @@ function PlayCardForm({
         <div className="flex flex-col gap-4">
           {needed > 0 && (
             <fieldset className="flex flex-col gap-2">
-              <legend className="mb-2 text-sm font-medium">
+              <legend className="mb-2 font-heading text-base tracking-wide">
                 {needed === 2 ? 'Escolha 2 adversários' : 'Escolha o alvo'}
                 {card.targetRule === 'opponent_most_cards' && ' (quem tem mais cartas)'}
                 {card.targetRule === 'opponent_highest_hp' && ' (quem tem mais PV)'}
@@ -146,8 +146,10 @@ function PlayCardForm({
                     onClick={() => toggleTarget(player.id)}
                     aria-pressed={chosen}
                     className={cn(
-                      'flex items-center gap-3 rounded-lg border p-2 text-left transition-colors disabled:opacity-50',
-                      chosen ? 'border-primary bg-primary/10' : 'hover:bg-muted',
+                      'flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-left transition disabled:opacity-40',
+                      chosen
+                        ? 'border-cat-attack bg-cat-attack/15 shadow-[0_0_20px_-6px_var(--cat-attack)]'
+                        : 'hover:border-white/20 hover:bg-white/[0.07]',
                     )}
                   >
                     <PlayerAvatar name={player.displayName} className="size-8" />
@@ -202,7 +204,7 @@ function PlayCardForm({
         <DialogFooter>
           <Button
             size="lg"
-            className="h-11 w-full"
+            className="h-12 w-full text-lg"
             disabled={!ready || command.isPending}
             onClick={play}
           >
@@ -232,7 +234,7 @@ function CardPicker({
 }) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-2 text-sm font-medium">{legend}</legend>
+      <legend className="mb-2 font-heading text-base tracking-wide">{legend}</legend>
       {cards.length === 0 ? (
         <p className="text-sm text-muted-foreground">{empty}</p>
       ) : (

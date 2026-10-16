@@ -57,17 +57,20 @@ export function AppLayout() {
   return (
     <CardArtProvider>
       <div className="flex min-h-svh flex-col">
-        <header className="sticky top-0 z-10 border-b bg-background/90 backdrop-blur">
+        <header className="sticky top-0 z-20 border-b border-white/[0.07] bg-[oklch(0.13_0.035_285/0.96)] shadow-[0_10px_30px_-20px_oklch(0_0_0/0.9)]">
           <div className={cn('mx-auto flex h-14 items-center justify-between gap-3 px-4', width)}>
-            <Link to="/lobby" className="flex items-center gap-2">
-              <BrandMark className="size-8 text-base" />
-              <BrandName className="hidden text-lg sm:inline" />
+            <Link to="/lobby" className="group flex items-center gap-3">
+              <BrandMark className="h-9 text-lg transition-transform group-hover:-rotate-3" />
+              <BrandName className="hidden text-xl sm:inline" />
             </Link>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-10 gap-2 px-2">
-                  <Avatar className="size-7">
+                <Button
+                  variant="ghost"
+                  className="h-10 gap-2 rounded-full border border-white/10 bg-white/[0.04] pr-3 pl-1"
+                >
+                  <Avatar className="size-8">
                     <AvatarFallback>{initials(displayName)}</AvatarFallback>
                   </Avatar>
                   <span className="max-w-32 truncate">{displayName}</span>

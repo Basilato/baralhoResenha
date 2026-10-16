@@ -4,8 +4,7 @@ import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
-      // O app ainda não tem modo escuro; acompanhar quando ele existir.
-      theme="light"
+      theme="dark"
       className="toaster group"
       icons={{
         success: (

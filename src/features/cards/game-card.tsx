@@ -3,7 +3,7 @@ import { GhostIcon, Trash2Icon, ZapIcon } from 'lucide-react'
 import { CATEGORY_LABEL } from '@/lib/constants'
 import { initials } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { useCardArtUrl } from './card-art-context'
+import { CARD_BACK_PATH, useCardArtUrl } from './card-art-context'
 import type { CardDefinition } from './catalog'
 import { CATEGORY_ICON } from './category-icons'
 
@@ -134,27 +134,54 @@ export function CardBack({
   className?: string
 }) {
   const ghost = deckType === 'ghost'
+  const artUrl = useCardArtUrl(CARD_BACK_PATH[deckType], size === 'sm' ? 'thumb' : 'full')
+  const [failedUrl, setFailedUrl] = useState<string>()
+  const imageUrl = artUrl !== failedUrl ? artUrl : undefined
+
   return (
     <div
       className={cn(
         'relative flex aspect-card shrink-0 items-center justify-center overflow-hidden border-2 border-white/20 shadow-md',
         SIZE[size],
-        ghost ? 'bg-cat-ghost card-ghostly' : 'bg-resenha',
+        ghost
+          ? 'bg-linear-to-br from-[oklch(0.42_0.1_285)] via-[oklch(0.28_0.08_285)] to-[oklch(0.18_0.05_285)] card-ghostly'
+          : 'bg-resenha',
         className,
       )}
       style={ghost ? ({ '--cat': 'var(--cat-ghost)' } as CSSProperties) : undefined}
       aria-hidden
     >
-      {/* Moldura interna e medalhão: o logo definitivo entra aqui (C3). */}
-      <span className="absolute inset-[6%] rounded-[inherit] border border-white/25" />
-      {ghost && <span className="absolute inset-0 card-mist" />}
-      <span className="relative flex aspect-square w-1/2 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/30">
-        {ghost ? (
-          <GhostIcon className="size-1/2 text-white/80" />
-        ) : (
-          <span className="-rotate-6 font-heading text-[2.4em] font-black text-white/85">R</span>
-        )}
-      </span>
+      {imageUrl ? (
+        <>
+          <img
+            src={imageUrl}
+            alt=""
+            className="absolute inset-0 size-full object-cover"
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            onError={() => setFailedUrl(imageUrl)}
+          />
+          {/* O verso principal tem um medalhão vazio no centro: o "R" da marca entra ali. */}
+          {!ghost && (
+            <span className="relative -rotate-6 font-heading text-[2.6em] text-white [text-shadow:0_2px_0_oklch(0_0_0/0.35),0_0_14px_oklch(0.75_0.2_320/0.9)]">
+              R
+            </span>
+          )}
+        </>
+      ) : (
+        <>
+          <span className="absolute inset-[6%] rounded-[inherit] border border-white/25" />
+          {ghost && <span className="absolute inset-0 card-mist" />}
+          <span className="relative flex aspect-square w-1/2 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/30">
+            {ghost ? (
+              <GhostIcon className="size-1/2 text-white/80" />
+            ) : (
+              <span className="-rotate-6 font-heading text-[2.4em] text-white/85">R</span>
+            )}
+          </span>
+        </>
+      )}
     </div>
   )
 }

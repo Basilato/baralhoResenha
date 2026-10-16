@@ -145,14 +145,48 @@ function Table({
   return (
     <div className={cn('flex min-w-0 flex-col gap-6', isMyTurn && 'max-sm:pb-20')}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-xl font-black tracking-tight sm:text-2xl">
-            Rodada {game.round} de {game.maxRounds}
-          </h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl">
+              Rodada <span className="text-gradient-brand">{game.round}</span>
+              <span className="text-lg text-muted-foreground"> de {game.maxRounds}</span>
+            </h1>
+            {/* Uma bolinha por rodada: o quanto falta para a Ressaca apertar. */}
+            <div className="mt-1 flex gap-1" aria-hidden>
+              {Array.from({ length: game.maxRounds }, (_, index) => (
+                <span
+                  key={index}
+                  className={cn(
+                    'h-1.5 w-4 rounded-full',
+                    index < game.round
+                      ? index >= 4
+                        ? 'bg-cat-chaos shadow-[0_0_8px_var(--cat-chaos)]'
+                        : 'bg-primary shadow-[0_0_8px_var(--primary)]'
+                      : 'bg-white/10',
+                  )}
+                />
+              ))}
+            </div>
+          </div>
           {game.status === 'playing' && (
-            <p className="text-sm text-muted-foreground" data-testid="turn-status">
-              {isMyTurn ? 'Sua vez!' : `Vez de ${active?.displayName ?? '…'}`}
-            </p>
+            <span
+              className={cn(
+                'inline-flex items-center gap-2 rounded-full px-4 py-1.5 font-heading text-base tracking-wide',
+                isMyTurn
+                  ? 'glow-gold bg-linear-to-b from-[oklch(0.9_0.15_92)] to-[oklch(0.76_0.16_70)] text-gold-foreground'
+                  : 'border border-white/10 bg-white/[0.05] text-foreground/85',
+              )}
+            >
+              <span
+                className={cn(
+                  'size-2 rounded-full',
+                  isMyTurn ? 'bg-gold-foreground' : 'animate-pulse bg-neon',
+                )}
+              />
+              <span data-testid="turn-status">
+                {isMyTurn ? 'Sua vez!' : `Vez de ${active?.displayName ?? '…'}`}
+              </span>
+            </span>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -231,7 +265,7 @@ function Table({
           <section
             aria-label="Mesa"
             className={cn(
-              'flex items-end justify-center gap-6 rounded-2xl border bg-muted/40 p-3 transition-colors sm:gap-10 sm:p-4',
+              'felt flex items-end justify-center gap-6 rounded-[2rem] px-3 pt-5 pb-4 transition-colors sm:gap-12 sm:px-6 sm:pt-7 sm:pb-5',
               // Maldição da Ressaca: a mesa fica tomada pela névoa do Além.
               game.curseActive &&
                 game.status === 'playing' &&
@@ -368,10 +402,13 @@ function MyArea({
   return (
     <section
       aria-labelledby="my-hand-title"
-      className={cn('flex min-w-0 flex-col gap-3', className)}
+      className={cn(
+        'flex min-w-0 flex-col gap-3 rounded-[1.75rem] border border-white/[0.06] bg-linear-to-b from-white/[0.045] to-transparent p-3 sm:p-4',
+        className,
+      )}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="my-hand-title" className="flex items-center gap-2 font-heading text-lg font-bold">
+        <h2 id="my-hand-title" className="flex items-center gap-2 text-xl">
           {ghost ? 'Suas cartas do Além' : 'Sua mão'}
           <Badge variant={excess > 0 ? 'destructive' : 'secondary'} data-testid="my-hand-count">
             {hand.length}/{limit}
@@ -380,7 +417,7 @@ function MyArea({
 
         {isMyTurn && (
           // No celular, a barra fica presa embaixo da tela durante a sua vez.
-          <div className="flex flex-wrap items-center gap-2 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:justify-between max-sm:border-t max-sm:bg-background/95 max-sm:p-3 max-sm:backdrop-blur">
+          <div className="flex flex-wrap items-center gap-2 max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-10 max-sm:justify-between max-sm:border-t max-sm:border-white/10 max-sm:bg-[oklch(0.13_0.035_285/0.97)] max-sm:p-3">
             <span className="text-sm text-muted-foreground" data-testid="actions-left">
               {ghost
                 ? `Carta do Além: ${game.actionsUsed}/${game.maxGhostActions}`
@@ -563,12 +600,12 @@ function PlayerPanel({
   return (
     <li
       className={cn(
-        'relative flex min-w-38 snap-start flex-col gap-2 overflow-hidden rounded-xl border bg-card p-2.5 transition-shadow sm:min-w-0 sm:p-3',
+        'relative flex min-w-38 snap-start flex-col gap-2 overflow-hidden rounded-2xl p-2.5 panel transition-shadow sm:min-w-0 sm:p-3',
         compact && 'gap-1.5 sm:p-2.5',
-        isMe && 'border-primary/50',
+        isMe && 'border-primary/60',
         isLeader && player.alive && 'bg-linear-to-br from-cat-attack/12 to-card to-60%',
         !player.alive && 'border-cat-ghost/40 bg-linear-to-br from-cat-ghost/20 to-card to-70%',
-        isActive && 'bg-primary/5 shadow-md ring-2 ring-primary',
+        isActive && 'glow-gold border-gold/70',
         isTargeted && 'animate-target-pulse border-cat-attack',
         effects.some((effect) => effect.kind === 'damage') && 'animate-shake',
       )}
@@ -592,9 +629,7 @@ function PlayerPanel({
           className={compact ? 'size-7 text-xs' : 'size-8'}
         />
         <p className="flex min-w-0 flex-1 items-center gap-1 font-medium">
-          {player.isHost && (
-            <CrownIcon className="size-4 shrink-0 text-amber-500" aria-label="Host" />
-          )}
+          {player.isHost && <CrownIcon className="size-4 shrink-0 text-gold" aria-label="Host" />}
           <span className={cn('truncate', compact && 'text-sm')}>{player.displayName}</span>
           {isMe && (
             // No celular a borda já destaca o próprio painel.
@@ -667,7 +702,7 @@ function PlayerPanel({
         </p>
       )}
       {away > 60 && (
-        <p className="text-xs text-amber-600" data-testid="away">
+        <p className="text-xs text-amber-300" data-testid="away">
           Sem conexão há {Math.floor(away / 60)} min
         </p>
       )}
@@ -726,12 +761,12 @@ function EffectOverlay({ effect }: { effect: PlayerEffect }) {
     <span className="pointer-events-none absolute inset-0" aria-hidden data-effect={effect.kind}>
       <span className={cn('absolute inset-0 animate-fx-flash', FLASH[effect.kind])} />
       {effect.kind === 'damage' && (
-        <span className="absolute top-8 right-4 animate-float-up text-2xl font-black text-cat-attack [text-shadow:0_1px_0_white]">
+        <span className="absolute top-8 right-4 animate-float-up font-heading text-3xl text-cat-attack [text-shadow:0_2px_0_oklch(0_0_0/0.6),0_0_14px_var(--cat-attack)]">
           −{effect.amount}
         </span>
       )}
       {effect.kind === 'heal' && (
-        <span className="absolute top-8 right-4 animate-float-up text-2xl font-black text-cat-recovery [text-shadow:0_1px_0_white]">
+        <span className="absolute top-8 right-4 animate-float-up font-heading text-3xl text-cat-recovery [text-shadow:0_2px_0_oklch(0_0_0/0.6),0_0_14px_var(--cat-recovery)]">
           +{effect.amount}
         </span>
       )}
@@ -780,9 +815,9 @@ function Pile({
   return (
     <div className="flex flex-col items-center gap-1.5">
       {children}
-      <p className="text-xs text-muted-foreground">
-        {label} ·{' '}
-        <span className="font-semibold tabular-nums" data-testid={testId}>
+      <p className="flex items-center gap-1.5 rounded-full bg-black/35 px-2.5 py-0.5 text-xs text-white/75 ring-1 ring-white/10">
+        {label}
+        <span className="font-heading text-sm text-white tabular-nums" data-testid={testId}>
           {count}
         </span>
       </p>
@@ -812,7 +847,7 @@ function EventLog({
         Histórico
       </h2>
       <ol
-        className="flex flex-col divide-y rounded-xl border bg-card text-sm lg:min-h-0 lg:flex-1 lg:overflow-y-auto"
+        className="flex flex-col divide-y divide-white/[0.06] rounded-2xl text-sm panel lg:min-h-0 lg:flex-1 lg:overflow-y-auto"
         data-testid="event-log"
       >
         {secrets.map((event, index) => (
@@ -868,8 +903,8 @@ const EVENT_ICON: Record<string, EventIcon> = {
   card_to_bottom: { Icon: GhostIcon, color: 'text-cat-ghost' },
   curse_cast: { Icon: GhostIcon, color: 'text-cat-ghost' },
   revive_declined: { Icon: GhostIcon, color: 'text-cat-ghost' },
-  player_revived: { Icon: SparklesIcon, color: 'text-amber-500' },
-  game_finished: { Icon: TrophyIcon, color: 'text-amber-500' },
+  player_revived: { Icon: SparklesIcon, color: 'text-gold' },
+  game_finished: { Icon: TrophyIcon, color: 'text-gold' },
   player_removed: { Icon: UserMinusIcon, color: 'text-muted-foreground' },
 }
 
@@ -926,10 +961,13 @@ function ResultPanel({
   }[result.criteria]
 
   return (
-    <Card className="border-amber-400/60 bg-amber-50/60" data-testid="result">
+    <Card
+      className="border-gold/50 bg-linear-to-br from-gold/20 via-card/80 to-card/80 shadow-[0_0_50px_-12px_var(--gold)]"
+      data-testid="result"
+    >
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
-          <TrophyIcon className="size-6 text-amber-500" aria-hidden />
+          <TrophyIcon className="size-8 text-gold drop-shadow-[0_0_10px_var(--gold)]" aria-hidden />
           {iWon ? 'Você venceu!' : winners.length > 1 ? 'Vitória compartilhada' : 'Fim da resenha'}
         </CardTitle>
         <CardDescription>
@@ -982,7 +1020,7 @@ function PendingBanner({
 
   return (
     <div
-      className="flex flex-col gap-1 rounded-xl border border-cat-attack/40 bg-cat-attack/5 p-3 text-sm"
+      className="flex flex-col gap-1 rounded-2xl border border-cat-attack/45 bg-linear-to-r from-cat-attack/20 to-cat-attack/5 p-3 text-sm shadow-[0_0_24px_-8px_var(--cat-attack)]"
       role="status"
       data-testid="pending-banner"
     >
@@ -1011,7 +1049,7 @@ function ReviveChoice({ game }: { game: GameView }) {
 
   return (
     <div
-      className="flex flex-col gap-3 rounded-xl border border-cat-ghost/40 bg-cat-ghost/5 p-4"
+      className="flex flex-col gap-3 rounded-2xl border border-cat-ghost/50 bg-linear-to-br from-cat-ghost/25 to-cat-ghost/5 p-4 shadow-[0_0_30px_-10px_var(--cat-ghost)]"
       data-testid="revive-choice"
     >
       <p className="font-medium">Você juntou 3 fichas de ressaca!</p>
@@ -1035,7 +1073,7 @@ function ReviveChoice({ game }: { game: GameView }) {
 function ClaimHostBanner({ game }: { game: GameView }) {
   const command = useGameCommand(game)
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-400/60 bg-amber-50 p-3 text-sm">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-gold/10 p-3 text-sm">
       <p>O host está sem conexão há mais de 2 minutos.</p>
       <Button
         size="sm"

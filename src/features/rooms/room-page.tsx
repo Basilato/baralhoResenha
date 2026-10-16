@@ -154,7 +154,10 @@ function Lobby({
     <div className="flex flex-col gap-6 pb-56 sm:pb-0">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-black tracking-tight">Sala de espera</h1>
+          <p className="font-heading text-sm tracking-[0.25em] text-muted-foreground uppercase">
+            Antes da resenha
+          </p>
+          <h1 className="text-4xl">Sala de espera</h1>
           <p className="text-muted-foreground">
             {missing > 0
               ? missing === 1
@@ -194,9 +197,9 @@ function Lobby({
           ) : (
             <li
               key={`empty-${index}`}
-              className="flex h-16 items-center gap-3 rounded-xl border border-dashed px-3 text-sm text-muted-foreground"
+              className="flex h-20 items-center gap-3 rounded-2xl border border-dashed border-white/12 bg-white/[0.02] px-4 text-sm text-muted-foreground"
             >
-              <span className="flex size-9 items-center justify-center rounded-full border border-dashed">
+              <span className="flex size-10 items-center justify-center rounded-full border border-dashed border-white/20 font-heading text-base">
                 {index + 1}
               </span>
               Lugar vago
@@ -214,7 +217,7 @@ function Lobby({
             {room.removedPlayers.map((removed) => (
               <li
                 key={removed.userId}
-                className="flex items-center gap-2 rounded-full border bg-card py-1 pr-1 pl-3 text-sm"
+                className="flex items-center gap-2 rounded-full py-1 pr-1 pl-3 text-sm panel"
               >
                 {removed.displayName}
                 <Button
@@ -233,7 +236,7 @@ function Lobby({
         </section>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-10 border-t bg-background/95 p-4 backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0">
+      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-white/10 bg-[oklch(0.13_0.035_285/0.97)] p-4 sm:static sm:border-0 sm:bg-transparent sm:p-0">
         <div className="mx-auto flex max-w-5xl flex-col gap-2 sm:flex-row sm:items-center">
           <Button
             size="lg"
@@ -249,8 +252,9 @@ function Lobby({
 
           {isHost && (
             <Button
+              variant="gold"
               size="lg"
-              className="h-11 sm:w-56"
+              className="h-12 text-lg sm:w-60"
               disabled={missing > 0 || start.isPending}
               onClick={() => start.mutate()}
             >
@@ -338,12 +342,14 @@ function InviteCard({
   }
 
   return (
-    <Card>
+    <Card className="border-gold/30 bg-linear-to-r from-gold/[0.12] via-card/80 to-card/80 shadow-[0_0_50px_-18px_var(--gold)]">
       <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">Código da sala</p>
+          <p className="font-heading text-sm tracking-[0.2em] text-gold/80 uppercase">
+            Código da sala
+          </p>
           <p
-            className="font-mono text-3xl font-black tracking-[0.12em] whitespace-nowrap text-primary sm:text-4xl"
+            className="font-mono text-3xl font-black tracking-[0.12em] whitespace-nowrap text-gold text-glow sm:text-4xl"
             data-testid="room-code"
             data-code={code}
             aria-label={`Código da sala: ${code.split('').join(' ')}`}
@@ -409,23 +415,22 @@ function SeatCard({
   return (
     <li
       className={cn(
-        'flex h-16 items-center gap-3 rounded-xl border bg-card px-3',
-        isMe && 'border-primary/50 ring-1 ring-primary/30',
+        'flex h-20 animate-in items-center gap-3 rounded-2xl px-4 panel zoom-in-95 fade-in',
+        isMe && 'border-primary/60 shadow-[0_0_30px_-12px_var(--primary)]',
+        player.isReady && 'border-cat-recovery/50',
       )}
       data-testid="seat"
     >
-      <PlayerAvatar name={player.displayName} online={online} />
+      <PlayerAvatar name={player.displayName} online={online} className="size-11" />
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1 truncate font-medium">
-          {player.isHost && (
-            <CrownIcon className="size-4 shrink-0 text-amber-500" aria-label="Host" />
-          )}
+        <p className="flex items-center gap-1 truncate font-heading text-lg tracking-wide">
+          {player.isHost && <CrownIcon className="size-4 shrink-0 text-gold" aria-label="Host" />}
           <span className="truncate">{player.displayName}</span>
           {isMe && <span className="shrink-0 text-xs text-muted-foreground">(você)</span>}
         </p>
         <p className="text-xs text-muted-foreground">
           {player.isReady ? (
-            <span className="font-medium text-emerald-600">Pronto</span>
+            <span className="font-semibold text-cat-recovery">Pronto</span>
           ) : (
             'Aguardando'
           )}

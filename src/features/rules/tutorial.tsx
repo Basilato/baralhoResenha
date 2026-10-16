@@ -83,13 +83,13 @@ export function TutorialDialog({
     <Dialog open={open} onOpenChange={(next) => (next ? onOpenChange(true) : close())}>
       <DialogContent className="sm:max-w-md" data-testid="tutorial">
         <DialogHeader className="items-center text-center sm:text-center">
-          <span className="flex size-16 items-center justify-center rounded-full bg-muted">
+          <span className="flex size-20 items-center justify-center rounded-full bg-radial from-white/15 to-white/[0.03] shadow-[0_0_40px_-8px_var(--primary)] ring-1 ring-white/15 [&_svg]:size-10 [&_svg]:drop-shadow-[0_0_10px_currentColor]">
             {step.icon}
           </span>
-          <p className="text-xs font-medium text-muted-foreground">
+          <p className="font-heading text-xs tracking-[0.25em] text-muted-foreground uppercase">
             Passo {index + 1} de {STEPS.length}
           </p>
-          <DialogTitle className="text-xl">{step.title}</DialogTitle>
+          <DialogTitle className="text-3xl">{step.title}</DialogTitle>
           <DialogDescription>{step.summary}</DialogDescription>
         </DialogHeader>
 

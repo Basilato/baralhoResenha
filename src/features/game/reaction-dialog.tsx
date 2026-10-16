@@ -119,7 +119,7 @@ function ReactionForm({ game, decision, players, catalog }: FormProps) {
   return (
     <>
       <AlertDialogHeader>
-        <AlertDialogTitle>{title}</AlertDialogTitle>
+        <AlertDialogTitle className="text-2xl">{title}</AlertDialogTitle>
         <AlertDialogDescription>
           {description}
           {fatal && ' Esse golpe é fatal.'}
@@ -128,7 +128,7 @@ function ReactionForm({ game, decision, players, catalog }: FormProps) {
 
       {options.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="text-sm font-medium">Você pode reagir com:</p>
+          <p className="font-heading text-base tracking-wide">Você pode reagir com:</p>
           <ul className="flex flex-wrap justify-center gap-3">
             {options.map((item) => {
               const option = catalog.get(item.code)
@@ -225,7 +225,7 @@ function ChoiceForm({ game, decision, players, catalog }: FormProps) {
   return (
     <>
       <AlertDialogHeader>
-        <AlertDialogTitle>{title}</AlertDialogTitle>
+        <AlertDialogTitle className="text-2xl">{title}</AlertDialogTitle>
         <AlertDialogDescription>{description}</AlertDialogDescription>
       </AlertDialogHeader>
 
@@ -243,7 +243,7 @@ function ChoiceForm({ game, decision, players, catalog }: FormProps) {
                 aria-label={`Escolher ${option.name}`}
                 className={cn(
                   'rounded-xl transition-transform',
-                  chosen && '-translate-y-1 ring-3 ring-primary',
+                  chosen && '-translate-y-1 shadow-[0_0_24px_-4px_var(--gold)] ring-3 ring-gold',
                 )}
               >
                 <GameCard card={option} size="sm" />
