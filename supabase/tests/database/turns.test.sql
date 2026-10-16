@@ -22,7 +22,7 @@ create function pg_temp.uid(p_n text) returns uuid language sql
 as $$ select ('00000000-0000-4000-8000-00000000000' || p_n)::uuid $$;
 
 create temp table t (k text primary key, v text);
-create function pg_temp.v(p_k text) returns text language sql as $$ select v from t where k = p_k $$;
+create function pg_temp.v(p_k text) returns text language sql stable as $$ select v from t where k = p_k $$;
 
 create function pg_temp.started_game(p_users text[])
 returns uuid
@@ -275,7 +275,8 @@ select ok(
   not exists (
     select 1 from app_private.game_events e
     join app_private.game_cards c on c.game_id = e.game_id
-    where e.game_id = pg_temp.v('g')::uuid
+    -- (select …): avaliado uma vez, usa o índice em vez de varrer todas as partidas.
+    where e.game_id = (select pg_temp.v('g')::uuid)
       and position(c.id::text in e.public_payload::text) > 0
   ),
   'nenhum evento público traz id de carta');

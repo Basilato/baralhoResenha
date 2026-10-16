@@ -24,6 +24,18 @@ const card = (targetRule: string, effectCode = 'x') =>
 const ids = (players: Participant[]) => players.map((p) => p.id)
 
 describe('whyNotPlayable', () => {
+  it('sem adversário vivo, cartas que miram adversários ficam bloqueadas', () => {
+    // Achado pelas simulações: a tela liberava a Fofoca Mortal e o servidor recusava.
+    const alone = game({
+      myPlayerId: 'me',
+      participants: [player('me', 10, 5), player('b', 0, 0, false), player('c', 0, 0, false)],
+    })
+    expect(whyNotPlayable(card('up_to_two_opponents'), alone, true)).toMatch(/adversário vivo/)
+    expect(whyNotPlayable(card('opponent'), alone, true)).toMatch(/adversário vivo/)
+    expect(whyNotPlayable(card('self'), alone, true)).toBeNull()
+    expect(whyNotPlayable(card('all_alive'), alone, true)).toBeNull()
+  })
+
   it('libera carta na própria vez com ação sobrando', () => {
     expect(whyNotPlayable(attack, game(), true)).toBeNull()
   })

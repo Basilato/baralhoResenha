@@ -25,7 +25,7 @@ grant execute on function pg_temp.uid(text) to authenticated;
 create temp table t (k text primary key, v text);
 grant select, insert, update on t to authenticated;
 
-create function pg_temp.v(p_k text) returns text language sql
+create function pg_temp.v(p_k text) returns text language sql stable
 as $$ select v from t where k = p_k $$;
 grant execute on function pg_temp.v(text) to authenticated;
 

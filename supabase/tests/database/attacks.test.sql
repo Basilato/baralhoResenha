@@ -75,10 +75,10 @@ begin
   update app_private.pending_actions set status = 'resolved' where game_id = v_game and status = 'open';
   update app_private.games
   set phase = 'turn_main', actions_used = 0, active_seat = 1, leader_player_id = null, pending_action_id = null
-  where id = pg_temp.g();
+  where id = v_game;
   update app_private.game_players
   set life_status = 'alive', hp = 16, max_hp = 16, knockouts = 0
-  where game_id = pg_temp.g();
+  where game_id = v_game;
   -- Topo de cada baralho calculado uma vez (sem subconsulta por linha).
   select coalesce(max(pile_position) filter (where zone = 'main_deck'), 0),
          coalesce(max(pile_position) filter (where zone = 'ghost_deck'), 0)
@@ -455,7 +455,8 @@ select ok(
   not exists (
     select 1 from app_private.game_events e
     join app_private.game_cards c on c.game_id = e.game_id
-    where e.game_id = pg_temp.g() and position(c.id::text in e.public_payload::text) > 0
+    -- (select …): avaliado uma vez, usa o índice em vez de varrer todas as partidas.
+    where e.game_id = (select pg_temp.g()) and position(c.id::text in e.public_payload::text) > 0
   ),
   'eventos públicos não trazem ids de cartas');
 select ok(not has_function_privilege('authenticated', 'app_private.apply_damage_batch(app_private.pending_actions)', 'execute'),

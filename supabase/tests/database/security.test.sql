@@ -39,7 +39,7 @@ select public.start_game((select v::uuid from t where k = 'game'),
   (public.get_room_view((select v::uuid from t where k = 'game')) ->> 'version')::bigint);
 set local role postgres;
 
-create function pg_temp.g() returns uuid language sql as $$ select v::uuid from t where k = 'game' $$;
+create function pg_temp.g() returns uuid language sql stable as $$ select v::uuid from t where k = 'game' $$;
 grant execute on function pg_temp.g() to authenticated;
 
 -- 1. Funções expostas -----------------------------------------------------------

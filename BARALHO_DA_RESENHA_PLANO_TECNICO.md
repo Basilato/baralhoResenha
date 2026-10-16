@@ -895,15 +895,15 @@ export const supabase = createClient<Database>(
 
 ## Fase 10 — Segurança, testes e beta fechado (P0)
 
-- [ ] Testes pgTAP de RLS/RPC e usuário fora da sala.
-- [ ] Testes da integridade das 180 cartas durante a partida.
-- [ ] Testes de ataques simultâneos/duas abas e requests duplicadas.
-- [ ] Teste de reconexão, reload, trocas de mão e efeitos que aguardam resposta.
-- [ ] Testar 3/5/8 usuários em dispositivos diferentes.
-- [ ] Rodar simulações automatizadas com **motor de regras efetivamente implementado**, não apenas heurística paralela.
-- [ ] Registrar balanceamento: duração, número de turnos, mortes, renascimentos, final por PV, abandono.
-- [ ] Teste de autorização no Storage e se Broadcast não expõe mãos.
-- [ ] Corrigir erros bloqueantes e documentar alterações de regra.
+- [x] Testes pgTAP de RLS/RPC e usuário fora da sala. *(security.test.sql)*
+- [x] Testes da integridade das 180 cartas durante a partida. *(`admin_check_game_integrity` depois de cada jogada nas simulações; integrity.test.sql)*
+- [x] Testes de ataques simultâneos/duas abas e requests duplicadas. *(concurrency.spec.ts)*
+- [x] Teste de reconexão, reload, trocas de mão e efeitos que aguardam resposta. *(reconnect.spec.ts)*
+- [ ] Testar 3/5/8 usuários em dispositivos diferentes. *(Automatizado em desktop e Pixel 7, com mesa de 8 no e2e; falta o beta com aparelhos reais: docs/BETA.md.)*
+- [x] Rodar simulações automatizadas com **motor de regras efetivamente implementado**, não apenas heurística paralela. *(`pnpm sim`)*
+- [x] Registrar balanceamento: duração, número de turnos, mortes, renascimentos, final por PV, abandono. *(docs/BALANCEAMENTO.md)*
+- [x] Teste de autorização no Storage e se Broadcast não expõe mãos. *(card_art.test.sql e security.test.sql)*
+- [x] Corrigir erros bloqueantes e documentar alterações de regra. *(Nenhum bloqueante; a tela liberava carta de alvo sem adversário vivo, corrigido. Nenhuma regra mudou.)*
 
 **Entrega:** beta que permite jogar uma partida inteira sem intervenção manual no banco.
 

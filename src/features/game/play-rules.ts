@@ -14,8 +14,24 @@ export function whyNotPlayable(card: CardDefinition, game: GameView, isMyTurn: b
   }
   if (game.phase !== 'turn_main') return 'Espere a jogada atual terminar.'
   if (game.actionsUsed >= game.maxActions) return 'Você já usou as 2 ações deste turno.'
+  // Todos os adversários viraram fantasma (e ainda podem voltar): não há em quem mirar.
+  if (
+    OPPONENT_RULES.has(card.targetRule) &&
+    game.participants &&
+    !game.participants.some((player) => player.alive && player.id !== game.myPlayerId)
+  ) {
+    return 'Não há adversário vivo para mirar.'
+  }
   return null
 }
+
+/** Regras de alvo que exigem um adversário vivo (o servidor recusa sem ele). */
+const OPPONENT_RULES = new Set([
+  'opponent',
+  'opponent_most_cards',
+  'opponent_highest_hp',
+  'up_to_two_opponents',
+])
 
 /** Sabotagens que mexem na mão do alvo: não faz sentido mirar mão vazia. */
 const NEEDS_TARGET_CARDS = new Set([

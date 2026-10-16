@@ -500,7 +500,8 @@ select ok(
   not exists (
     select 1 from app_private.game_events e
     join app_private.game_cards c on c.game_id = e.game_id
-    where e.game_id = pg_temp.g() and position(c.id::text in e.public_payload::text) > 0
+    -- (select …): avaliado uma vez, usa o índice em vez de varrer todas as partidas.
+    where e.game_id = (select pg_temp.g()) and position(c.id::text in e.public_payload::text) > 0
   ),
   'eventos públicos não trazem ids de cartas');
 

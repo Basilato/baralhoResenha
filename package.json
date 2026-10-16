@@ -22,7 +22,8 @@
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
     "users": "node --env-file=.env.admin scripts/admin-users.mjs",
     "art:build": "node scripts/build-card-art.mjs",
-    "art:upload": "node --env-file=.env.admin scripts/upload-card-art.mjs"
+    "art:upload": "node --env-file=.env.admin scripts/upload-card-art.mjs",
+    "sim": "node --env-file=.env.local --env-file=.env.admin scripts/simulate.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
