@@ -41,7 +41,7 @@ Só as chaves públicas vão para a Vercel. A secret key nunca sai do `.env.prod
 ## 4. Conteúdo (Claude)
 
 - Artes: `pnpm art:upload:prod`.
-- Contas: cada pessoa cria a própria em **https://baralho-resenha.vercel.app/cadastro**. Para criar uma conta manualmente, trocar uma senha esquecida ou desativar alguém: `pnpm users:prod create|reset-password|disable …`.
+- Contas: cada pessoa cria a própria em **https://baralho-resenha.vercel.app/cadastro**. Para criar uma conta manualmente, trocar uma senha esquecida ou desativar alguém: `pnpm users:prod create|reset-password|disable …`. Se alguém ficar com "Conta criada, mas ainda precisa ser ativada", o **Confirm email** foi religado no painel: desligue de novo e rode `pnpm users:prod confirm-pending` para ativar quem ficou preso.
 
 ## 5. Verificação (Claude)
 

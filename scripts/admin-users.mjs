@@ -6,6 +6,9 @@
 //   pnpm users disable <username>
 //   pnpm users enable <username>
 //   pnpm users list
+//   pnpm users confirm-pending
+//     Ativa as contas criadas em /cadastro que ficaram esperando confirmação
+//     de e-mail (acontece se "Confirm email" estiver ligado no Supabase).
 //   pnpm users remove <username> --confirmar
 //     Exclui a conta. Se a pessoa já jogou, anonimiza em vez de excluir (E7):
 //     preserva as partidas, mas apaga nome, apelido, e-mail técnico e login.
@@ -177,6 +180,27 @@ async function list() {
   )
 }
 
+async function confirmPending() {
+  const pending = []
+  for (let page = 1; ; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 })
+    if (error) fail(error.message)
+    pending.push(...data.users.filter((user) => !user.email_confirmed_at))
+    if (data.users.length < 200) break
+  }
+
+  for (const user of pending) {
+    const { error } = await admin.auth.admin.updateUserById(user.id, { email_confirm: true })
+    if (error) fail(error.message)
+    console.log(`${user.user_metadata?.username ?? user.email} ativado.`)
+  }
+  console.log(
+    pending.length === 0
+      ? 'Nenhuma conta esperando ativação.'
+      : `${pending.length} conta(s) ativada(s).`,
+  )
+}
+
 const [command, ...args] = process.argv.slice(2)
 
 try {
@@ -199,8 +223,13 @@ try {
     case 'remove':
       await remove(args[0], args[1])
       break
+    case 'confirm-pending':
+      await confirmPending()
+      break
     default:
-      fail('comando inválido. Use: create, reset-password, disable, enable, list ou remove')
+      fail(
+        'comando inválido. Use: create, reset-password, disable, enable, list, remove ou confirm-pending',
+      )
   }
 } catch (error) {
   if (!(error instanceof CliError)) throw error
