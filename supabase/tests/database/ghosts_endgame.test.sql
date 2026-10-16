@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(43);
+select plan(48);
 
 -- Auxiliares ------------------------------------------------------------------
 
@@ -468,6 +468,48 @@ select app_private.end_round(pg_temp.g());
 select ok(pg_temp.result() ->> 'reason' = 'round_limit'
           and pg_temp.result() -> 'winnerPlayerIds' ->> 0 = pg_temp.p(1)::text,
   'fim da rodada 10 depois da Ressaca: vence quem ficou com mais PV');
+
+-- 5b. A Braba derruba o último rival, mas o dano próprio ainda vem (B6) ------
+-- Achado pelas simulações: a partida terminava antes do dano próprio, o autor
+-- vencia sem pagar o custo e a carta ficava presa "em resolução".
+
+select pg_temp.new_game();
+select pg_temp.reset();
+-- Rodada 10: quem cair agora não tem tempo de juntar fichas e voltar.
+update app_private.games set round_number = 10 where id = pg_temp.g();
+select pg_temp.make_ghost(3, 0, true); -- já voltou uma vez: não volta mais
+update app_private.game_players set hp = 1 where id = pg_temp.p(1);
+update app_private.game_players set hp = 2 where id = pg_temp.p(2);
+select pg_temp.set('rev', pg_temp.give(1, 'REV-01')::text); -- autor pode se salvar
+select pg_temp.play(1, pg_temp.give(1, 'ATK-07'), array[2]);
+select pg_temp.respond(2);
+select is(pg_temp.status(), 'playing',
+  'alvo caiu, mas a partida espera o dano próprio da A Braba');
+select pg_temp.respond(1);
+select results_eq(
+  format($$ select status, result_json ->> 'reason' from app_private.games where id = %L $$, pg_temp.g()),
+  $$ values ('finished'::text, 'all_dead'::text) $$,
+  'autor aceita o dano próprio fatal: todos caíram');
+select is(array_to_string(app_private.check_game_integrity(pg_temp.g()), ' | '), '',
+  'nenhuma carta presa em resolução no fim');
+
+select pg_temp.new_game();
+select pg_temp.reset();
+update app_private.games set round_number = 10 where id = pg_temp.g();
+select pg_temp.make_ghost(3, 0, true);
+update app_private.game_players set hp = 1 where id = pg_temp.p(1);
+update app_private.game_players set hp = 2 where id = pg_temp.p(2);
+select pg_temp.set('rev', pg_temp.give(1, 'REV-01')::text);
+select pg_temp.play(1, pg_temp.give(1, 'ATK-07'), array[2]);
+select pg_temp.respond(2);
+select pg_temp.respond(1, pg_temp.v('rev')::uuid);
+select results_eq(
+  format($$ select status, result_json ->> 'reason', result_json -> 'winnerPlayerIds' ->> 0
+            from app_private.games where id = %L $$, pg_temp.g()),
+  format($$ values ('finished'::text, 'last_alive'::text, %L::text) $$, pg_temp.p(1)),
+  'autor se salva com Ressuscitou o Tio Paulo: vence como último vivo');
+select is(array_to_string(app_private.check_game_integrity(pg_temp.g()), ' | '), '',
+  'A Braba e a reação vão para o descarte');
 
 -- 6. Ausência (E2) e sucessão de host ------------------------------------------
 
