@@ -37,6 +37,7 @@ import { cn } from '@/lib/utils'
 import { describeEvent, describePrivateEvent } from './event-messages'
 import { PlayCardDialog, type PlayableCard } from './play-card-dialog'
 import { whyNotPlayable } from './play-rules'
+import { useTableEffects, type PlayerEffect, type Spotlight } from './use-table-effects'
 import { ReactionDialog } from './reaction-dialog'
 import {
   newRequestId,
@@ -93,6 +94,7 @@ function Table({
   const isHost = game.hostUserId === user?.id
   const isMyTurn = game.status === 'playing' && !!me && me.id === game.activePlayerId
   const discardTop = game.mainDiscardTop ? catalog.get(game.mainDiscardTop) : undefined
+  const fx = useTableEffects(game, catalog)
   const targetedIds = new Set(
     game.pendingAction?.responses
       .filter((response) => TARGET_ROLES.includes(response.role))
@@ -174,6 +176,7 @@ function Table({
               isMarked={game.markedPlayerIds.includes(player.id)}
               isTargeted={targetedIds.has(player.id)}
               isAwaiting={awaitingIds.has(player.id)}
+              effects={fx.byPlayer.get(player.id) ?? NO_EFFECTS}
               online={onlineUserIds.has(player.userId)}
               presence={game.presence.find((item) => item.playerId === player.id)}
               absenceLimit={game.absenceLimitSeconds}
@@ -195,7 +198,10 @@ function Table({
         )}
       >
         <Pile label="Baralho" count={game.mainDeckCount} testId="main-deck-count">
-          <CardBack deckType="main" size="sm" />
+          {/* A key nova reinicia o "pulo" do monte a cada compra. */}
+          <div key={fx.deckDrawKey} className={cn(fx.deckDrawKey > 0 && 'animate-deck-bump')}>
+            <CardBack deckType="main" size="sm" />
+          </div>
         </Pile>
         <Pile label="Descarte" count={game.mainDiscardCount} testId="main-discard-count">
           {discardTop ? (
@@ -225,8 +231,13 @@ function Table({
           me={me}
           isMyTurn={isMyTurn}
           catalog={catalog}
+          drawnIds={fx.drawnIds}
           onOpenCard={(handCard, card) => setPlaying({ handCard, card })}
         />
+      )}
+
+      {fx.spotlight && (
+        <CardSpotlight key={fx.spotlight.id} spotlight={fx.spotlight} catalog={catalog} />
       )}
 
       <EventLog game={game} players={players} catalog={catalog} />
@@ -251,12 +262,15 @@ function MyArea({
   me,
   isMyTurn,
   catalog,
+  drawnIds,
   onOpenCard,
 }: {
   game: GameView
   me: Participant
   isMyTurn: boolean
   catalog: CardCatalog
+  /** Cartas recém-compradas: entram na mão com animação. */
+  drawnIds: ReadonlySet<string>
   onOpenCard: (handCard: HandCard, card: CardDefinition) => void
 }) {
   const command = useGameCommand(game)
@@ -356,7 +370,7 @@ function MyArea({
           className="relative -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pt-2 pb-3"
           data-testid="my-hand"
         >
-          {hand.map((handCard) => {
+          {hand.map((handCard, index) => {
             const card = catalog.get(handCard.code)
             // Na sua vez, destaca o que dá para jogar agora e apaga o resto.
             const blockedReason =
@@ -368,6 +382,11 @@ function MyArea({
                 card={card}
                 playable={blockedReason === null}
                 blockedReason={blockedReason ?? undefined}
+                drawnDelay={
+                  drawnIds.has(handCard.instanceId)
+                    ? (index - hand.findIndex((item) => drawnIds.has(item.instanceId))) * 120
+                    : undefined
+                }
                 selectable={mustDiscard}
                 selected={discarding.has(handCard.instanceId)}
                 onSelect={() => toggle(handCard.instanceId)}
@@ -386,6 +405,7 @@ function HandItem({
   card,
   playable,
   blockedReason,
+  drawnDelay,
   selectable,
   selected,
   onSelect,
@@ -397,6 +417,8 @@ function HandItem({
   playable: boolean
   /** Por que não pode ser jogada agora (só na sua vez). */
   blockedReason?: string
+  /** Recém-comprada: atraso (ms) da animação de entrada, para entrar em sequência. */
+  drawnDelay?: number
   selectable: boolean
   selected: boolean
   onSelect: () => void
@@ -404,7 +426,10 @@ function HandItem({
 }) {
   if (!card) return null
   return (
-    <li className="snap-start">
+    <li
+      className={cn('snap-start', drawnDelay !== undefined && 'animate-card-draw')}
+      style={drawnDelay ? { animationDelay: `${drawnDelay}ms` } : undefined}
+    >
       <button
         type="button"
         className={cn(
@@ -441,6 +466,7 @@ function PlayerPanel({
   isMarked,
   isTargeted,
   isAwaiting,
+  effects,
   online,
   presence,
   absenceLimit,
@@ -456,6 +482,8 @@ function PlayerPanel({
   isTargeted: boolean
   /** A jogada pendente espera uma resposta desta pessoa. */
   isAwaiting: boolean
+  /** Efeitos passageiros: dano, cura, golpe, morte e volta. */
+  effects: readonly PlayerEffect[]
   online: boolean
   presence: Presence | undefined
   absenceLimit: number
@@ -482,6 +510,7 @@ function PlayerPanel({
         !player.alive && 'border-cat-ghost/40 bg-linear-to-br from-cat-ghost/20 to-card to-70%',
         isActive && 'bg-primary/5 shadow-md ring-2 ring-primary',
         isTargeted && 'animate-target-pulse border-cat-attack',
+        effects.some((effect) => effect.kind === 'damage') && 'animate-shake',
       )}
       data-testid="table-player"
       data-active={isActive || undefined}
@@ -493,6 +522,9 @@ function PlayerPanel({
           aria-hidden
         />
       )}
+      {effects.map((effect) => (
+        <EffectOverlay key={effect.id} effect={effect} />
+      ))}
       <div className="flex items-center gap-2">
         <PlayerAvatar name={player.displayName} online={online} className="size-8" />
         <p className="flex min-w-0 flex-1 items-center gap-1 font-medium">
@@ -588,6 +620,62 @@ function PlayerPanel({
         />
       )}
     </li>
+  )
+}
+
+const NO_EFFECTS: readonly PlayerEffect[] = []
+
+const FLASH: Record<PlayerEffect['kind'], string> = {
+  damage: 'bg-cat-attack/30',
+  hit: 'bg-cat-attack/20',
+  heal: 'bg-cat-recovery/30',
+  death: 'bg-cat-ghost/40',
+  revive: 'bg-amber-300/40',
+}
+
+/** Camada passageira sobre o painel do jogador. Some sozinha (EFFECT_MS). */
+function EffectOverlay({ effect }: { effect: PlayerEffect }) {
+  return (
+    <span className="pointer-events-none absolute inset-0" aria-hidden data-effect={effect.kind}>
+      <span className={cn('absolute inset-0 animate-fx-flash', FLASH[effect.kind])} />
+      {effect.kind === 'damage' && (
+        <span className="absolute top-8 right-4 animate-float-up text-2xl font-black text-cat-attack [text-shadow:0_1px_0_white]">
+          −{effect.amount}
+        </span>
+      )}
+      {effect.kind === 'heal' && (
+        <span className="absolute top-8 right-4 animate-float-up text-2xl font-black text-cat-recovery [text-shadow:0_1px_0_white]">
+          +{effect.amount}
+        </span>
+      )}
+      {effect.kind === 'death' && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <GhostIcon className="size-14 animate-ghost-rise text-cat-ghost" />
+        </span>
+      )}
+      {effect.kind === 'revive' && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <span className="size-24 animate-revive-burst rounded-full bg-radial from-amber-200 to-transparent to-70%" />
+        </span>
+      )}
+    </span>
+  )
+}
+
+/** Carta que acabou de ser jogada, em destaque no meio da tela por um instante. */
+function CardSpotlight({ spotlight, catalog }: { spotlight: Spotlight; catalog: CardCatalog }) {
+  const card = catalog.get(spotlight.code)
+  if (!card) return null
+  return (
+    <div
+      className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center"
+      aria-hidden
+      data-testid="card-spotlight"
+    >
+      <div className="animate-card-spotlight drop-shadow-2xl">
+        <GameCard card={card} size="md" />
+      </div>
+    </div>
   )
 }
 

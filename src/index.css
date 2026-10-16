@@ -21,6 +21,16 @@
   /* Jogador na mira de uma jogada que espera resposta */
   --animate-target-pulse: target-pulse 1.6s ease-out infinite;
 
+  /* Efeitos passageiros da mesa (use-table-effects.ts) */
+  --animate-float-up: float-up 1.6s ease-out forwards;
+  --animate-shake: shake 0.45s ease-in-out;
+  --animate-fx-flash: fx-flash 0.9s ease-out forwards;
+  --animate-ghost-rise: ghost-rise 1.6s ease-out forwards;
+  --animate-revive-burst: revive-burst 1.2s ease-out forwards;
+  --animate-card-spotlight: card-spotlight 1.8s ease-in-out forwards;
+  --animate-card-draw: card-draw 0.5s ease-out backwards;
+  --animate-deck-bump: deck-bump 0.4s ease-out;
+
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -211,6 +221,124 @@
   }
   100% {
     box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1.15);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-1.75rem) scale(1);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px) rotate(-1deg);
+  }
+  40% {
+    transform: translateX(5px) rotate(1deg);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+
+/* Clarão sobre o painel (a cor vem da classe de texto: currentColor). */
+@keyframes fx-flash {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes ghost-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.6);
+  }
+  25% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-2.5rem) scale(1.3);
+  }
+}
+
+@keyframes revive-burst {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+
+@keyframes card-spotlight {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) translateY(2rem);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1.05) translateY(0);
+  }
+  28% {
+    transform: scale(1);
+  }
+  78% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.85) translateY(-1rem);
+  }
+}
+
+@keyframes card-draw {
+  0% {
+    opacity: 0;
+    transform: translateY(-3rem) scale(0.85) rotate(-4deg);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes deck-bump {
+  0%,
+  100% {
+    transform: none;
+  }
+  40% {
+    transform: translateY(-6px) rotate(-3deg);
   }
 }
 
