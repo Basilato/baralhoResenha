@@ -83,6 +83,23 @@ describe('describeEvent', () => {
     ).toBe('Rolê no Sítio: 9 cartas de 4 jogadores foram embaralhadas e redistribuídas.')
   })
 
+  it('Bonde da Tempestade lista quanto cada sobrevivente comprou', () => {
+    const storm = (draws: unknown[]) =>
+      describeEvent(
+        event('storm_draw', { cardCode: 'CAO-06', draws }, 'p1'),
+        players,
+        new Map([['CAO-06', { code: 'CAO-06', name: 'Bonde da Tempestade' } as CardDefinition]]),
+        'p1',
+      )
+    expect(
+      storm([
+        { playerId: 'p1', count: 2 },
+        { playerId: 'p2', count: 1 },
+      ]),
+    ).toBe('Bonde da Tempestade: quem sobreviveu comprou cartas. Você (2), Beto (1).')
+    expect(storm([])).toBe('Bonde da Tempestade: ninguém sobreviveu para comprar.')
+  })
+
   it('turno fantasma compra do Além', () => {
     expect(
       describeEvent(event('turn_started', { drew: 1, ghost: true }, 'p2'), players, catalog, 'p1'),

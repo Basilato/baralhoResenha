@@ -21,12 +21,12 @@ const base = join('art', 'cards', setVersion)
 const sourceDir = join(base, 'source')
 const webDir = join(base, 'web')
 
-// 40 faces + 2 versos (docs/ARTES_PROMPTS.md, seção 7).
+// 41 faces + 2 versos (docs/ARTES_PROMPTS.md, seção 7).
 const FACES = [
   ...['ATK-01', 'ATK-02', 'ATK-03', 'ATK-04', 'ATK-05', 'ATK-06', 'ATK-07'],
   ...['DEF-01', 'DEF-02', 'DEF-03', 'DEF-04', 'DEF-05', 'DEF-06', 'DEF-07'],
   ...['SAB-01', 'SAB-02', 'SAB-03', 'SAB-04', 'SAB-05', 'SAB-06', 'SAB-07'],
-  ...['CAO-01', 'CAO-02', 'CAO-03', 'CAO-04', 'CAO-05'],
+  ...['CAO-01', 'CAO-02', 'CAO-03', 'CAO-04', 'CAO-05', 'CAO-06'],
   ...['REC-01', 'REC-02', 'REC-03', 'REC-04', 'REC-05', 'REC-06'],
   ...['REV-01', 'REV-02', 'REV-03'],
   ...['GHO-01', 'GHO-02', 'GHO-03', 'GHO-04', 'GHO-05'],

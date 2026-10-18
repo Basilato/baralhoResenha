@@ -23,6 +23,7 @@ import {
   type GameView,
   type MyDecision,
   type Participant,
+  type ReactionRole,
 } from './game-service'
 
 /**
@@ -122,7 +123,12 @@ function ReactionForm({ game, decision, players, catalog }: FormProps) {
       description: `${decision.baseDamage} de dano de caos: não admite defesa comum.`,
       accept: `Aceitar ${decision.baseDamage} de dano`,
     },
-  }[decision.role as 'target' | 'counter' | 'self' | 'sabotage_target' | 'chaos_target']
+    chaos_self: {
+      title: 'A tempestade pegou você também!',
+      description: `${card}: ${decision.baseDamage} de dano de caos em você, que jogou.`,
+      accept: `Aceitar ${decision.baseDamage} de dano`,
+    },
+  }[decision.role as ReactionRole]
 
   const respond = (cardInstanceId?: string) => {
     sent.current = true

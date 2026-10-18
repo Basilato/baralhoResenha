@@ -114,6 +114,12 @@ export function describeEvent(
     }
     case 'hands_shuffled':
       return `Rolê no Sítio: ${p.count} cartas de ${p.players} jogadores foram embaralhadas e redistribuídas.`
+    case 'storm_draw': {
+      const draws = Array.isArray(p.draws) ? (p.draws as { playerId: string; count: number }[]) : []
+      if (draws.length === 0) return `${cardName(p.cardCode)}: ninguém sobreviveu para comprar.`
+      const who = draws.map((draw) => `${name(draw.playerId)} (${draw.count})`).join(', ')
+      return `${cardName(p.cardCode)}: quem sobreviveu comprou cartas. ${who}.`
+    }
     case 'hands_swapped':
       return `${actor} trocou a mão inteira com ${name(p.targetPlayerId)}.`
     case 'reaction_played':

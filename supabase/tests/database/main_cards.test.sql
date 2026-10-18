@@ -495,7 +495,7 @@ select ok(
      where game_id = pg_temp.g() and owner_player_id is not null and zone = 'player_hand'
      group by owner_player_id, pile_position) x),
   'nenhuma posição repetida dentro de uma mão depois das trocas');
-select is((select count(*)::int from app_private.game_cards where game_id = pg_temp.g()), 197,
+select is((select count(*)::int from app_private.game_cards where game_id = pg_temp.g()), 200,
   'nenhuma carta criada ou perdida');
 select ok(
   not exists (

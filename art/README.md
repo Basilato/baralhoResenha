@@ -37,7 +37,7 @@ O app mostra a arte sozinho quando ela existe no Storage. Sem arte, a carta cont
 
 ## Andamento (catálogo 7.1)
 
-**42 de 42 prontas.**
+**43 de 43 prontas.**
 
 | Código     | Carta                      | Status    |
 | ---------- | -------------------------- | --------- |
@@ -67,6 +67,7 @@ O app mostra a arte sozinho quando ela existe no Storage. Sem arte, a carta cont
 | CAO-03     | Família Basilato           | ✅ pronta |
 | CAO-04     | O Acre Existe!             | ✅ pronta |
 | CAO-05     | Rolê no Sítio              | ✅ pronta |
+| CAO-06     | Bonde da Tempestade        | ✅ pronta |
 | REC-01     | After do After             | ✅ pronta |
 | REC-02     | Inimiga do Fim             | ✅ pronta |
 | REC-03     | Consultório Lucboy         | ✅ pronta |

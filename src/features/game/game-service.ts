@@ -25,7 +25,8 @@ export type HandCard = { instanceId: string; code: string }
 
 export type GamePhase = 'turn_main' | 'turn_ghost' | 'ghost_decision' | 'awaiting_reactions'
 
-export type ReactionRole = 'target' | 'counter' | 'self' | 'sabotage_target' | 'chaos_target'
+export type ReactionRole =
+  'target' | 'counter' | 'self' | 'sabotage_target' | 'chaos_target' | 'chaos_self'
 export type ChoiceRole = 'actor_pick' | 'target_discard' | 'pass_pick' | 'discard_pick'
 export type ResponseRole = ReactionRole | ChoiceRole
 

@@ -956,6 +956,7 @@ const EVENT_ICON: Record<string, EventIcon> = {
   turn_steal_lapsed: { Icon: TicketIcon, color: 'text-muted-foreground' },
   hands_swapped: { Icon: RotateCcwIcon, color: 'text-cat-reversal' },
   hands_shuffled: { Icon: RotateCcwIcon, color: 'text-cat-chaos' },
+  storm_draw: { Icon: LayersIcon, color: 'text-cat-chaos' },
   player_died: { Icon: GhostIcon, color: 'text-cat-ghost' },
   ghost_peeked: { Icon: GhostIcon, color: 'text-cat-ghost' },
   card_to_bottom: { Icon: GhostIcon, color: 'text-cat-ghost' },
@@ -1151,7 +1152,12 @@ function ClaimHostBanner({ game }: { game: GameView }) {
 }
 
 /** Papéis de quem sofre a jogada (o resto são contra-ataques e escolhas). */
-const TARGET_ROLES: readonly ResponseRole[] = ['target', 'sabotage_target', 'chaos_target']
+const TARGET_ROLES: readonly ResponseRole[] = [
+  'target',
+  'sabotage_target',
+  'chaos_target',
+  'chaos_self',
+]
 
 function hostAway(game: GameView) {
   const host = game.participants.find((player) => player.userId === game.hostUserId)

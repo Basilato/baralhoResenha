@@ -50,7 +50,7 @@ function CardCatalogSection() {
           Todas as cartas
         </h2>
         <p className="text-sm text-muted-foreground">
-          Baralho principal com 177 cartas e Baralho do Além com 20. Toque numa carta para ampliar.
+          Baralho principal com 180 cartas e Baralho do Além com 20. Toque numa carta para ampliar.
         </p>
       </div>
 

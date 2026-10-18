@@ -53,15 +53,15 @@ $$;
 -- Catálogo -------------------------------------------------------------------
 
 select is((select count(*)::int from app_private.card_definitions where set_version = '7.1'),
-  40, '40 modelos de carta');
+  41, '41 modelos de carta');
 select is((select sum(copies)::int from app_private.card_definitions
-           where set_version = '7.1' and deck_type = 'main'), 177, 'baralho principal soma 177');
+           where set_version = '7.1' and deck_type = 'main'), 180, 'baralho principal soma 180');
 select is((select sum(copies)::int from app_private.card_definitions
            where set_version = '7.1' and deck_type = 'ghost'), 20, 'Além soma 20');
 select results_eq(
   $$ select category, sum(copies)::int from app_private.card_definitions
      where set_version = '7.1' and deck_type = 'main' group by category order by category $$,
-  $$ values ('attack', 50), ('chaos', 19), ('defense', 40), ('recovery', 21),
+  $$ values ('attack', 50), ('chaos', 22), ('defense', 40), ('recovery', 21),
             ('reversal', 12), ('sabotage', 35) $$,
   'proporções por categoria batem com o plano');
 select is((select count(*)::int from app_private.card_definitions
@@ -74,7 +74,7 @@ select ok((select not is_provisional and effect_code = 'ghost_peek_discard' from
 insert into t values ('g3', pg_temp.started_game(array['1', '2', '3'])::text);
 
 select is((select count(*)::int from app_private.game_cards where game_id = (select v::uuid from t where k = 'g3')),
-  197, '197 instâncias por partida');
+  200, '200 instâncias por partida');
 
 select results_eq(
   format($$ select d.code, d.copies::bigint
@@ -97,7 +97,7 @@ select ok(
   'cada um recebe 5; o lugar 1 já comprou as 2 do primeiro turno (A3)');
 select is((select count(*)::int from app_private.game_cards
            where game_id = (select v::uuid from t where k = 'g3') and zone = 'main_deck'),
-  160, 'sobram 160 no baralho principal');
+  163, 'sobram 163 no baralho principal');
 select is((select count(*)::int from app_private.game_cards
            where game_id = (select v::uuid from t where k = 'g3') and zone = 'ghost_deck'),
   20, 'Além intacto com 20');
@@ -112,8 +112,8 @@ select ok(
 select is(
   (select array_agg(pile_position order by pile_position) from app_private.game_cards
    where game_id = (select v::uuid from t where k = 'g3') and zone = 'main_deck'),
-  (select array_agg(n) from generate_series(1, 160) n),
-  'posições do baralho são 1..160, sem buracos nem repetição');
+  (select array_agg(n) from generate_series(1, 163) n),
+  'posições do baralho são 1..163, sem buracos nem repetição');
 
 -- PV por número de jogadores
 insert into t values ('g4', pg_temp.started_game(array['4', '5', '6', '7'])::text);
@@ -169,14 +169,14 @@ select ok(
   position('pile_position' in (select v from t where k = 'view1')) = 0
   and position('pilePosition' in (select v from t where k = 'view1')) = 0,
   'a ordem dos baralhos não sai do banco');
-select is(((select v::jsonb from t where k = 'view1') ->> 'mainDeckCount')::int, 160,
+select is(((select v::jsonb from t where k = 'view1') ->> 'mainDeckCount')::int, 163,
   'visão mostra só a contagem do baralho');
 
 select pg_temp.login('9');
 select throws_ok(
   format('select public.get_game_view(%L)', (select v from t where k = 'g3')),
   'P0001', 'ROOM_NOT_FOUND', 'quem não está na partida não vê a mesa');
-select is(jsonb_array_length(public.get_card_catalog()), 40, 'catálogo é legível por qualquer jogador');
+select is(jsonb_array_length(public.get_card_catalog()), 41, 'catálogo é legível por qualquer jogador');
 reset role;
 
 -- Compra e descarte ----------------------------------------------------------
@@ -246,7 +246,7 @@ select is(
    where game_id = (select v::uuid from t where k = 'g3') and zone = 'main_discard'),
   0, 'descarte foi todo para o baralho');
 select is((select count(*)::int from app_private.game_cards where game_id = (select v::uuid from t where k = 'g3')),
-  197, 'reciclagem não cria nem perde cartas');
+  200, 'reciclagem não cria nem perde cartas');
 
 -- Sem cartas sobrando: compra o que existe, nada é criado.
 update app_private.game_cards

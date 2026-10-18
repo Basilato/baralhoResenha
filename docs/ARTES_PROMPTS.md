@@ -1,7 +1,7 @@
 # Baralho da Resenha — briefing de artes para IA de imagem
 
 **Para quem é este arquivo:** uma IA (ou designer) que vai criar as artes das cartas.
-**O que entregar:** 40 artes de face (uma por modelo de carta) e 2 versos. São **42 imagens**.
+**O que entregar:** 41 artes de face (uma por modelo de carta) e 2 versos. São **43 imagens**.
 **Jogo:** Resenha Simples v7.1 · catálogo `7.1` · idioma do jogo: português do Brasil.
 
 Leia as seções 1 a 5 antes de gerar qualquer imagem. Elas valem para **todas** as artes. Os blocos da seção 6 trazem o prompt pronto de cada carta.
@@ -20,7 +20,7 @@ Leia as seções 1 a 5 antes de gerar qualquer imagem. Elas valem para **todas**
 
 ## 2. Especificações técnicas
 
-### 2.1 Arte de face (40 imagens)
+### 2.1 Arte de face (41 imagens)
 
 | Item                      | Valor                                                                                                                                                                                           |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -51,7 +51,7 @@ Depois, `pnpm art:upload` envia as artes para o Storage do Supabase, no bucket p
 
 ---
 
-## 3. Guia de estilo (igual para as 42 artes)
+## 3. Guia de estilo (igual para as 43 artes)
 
 **Estilo:** ilustração 2D cartunesca e vibrante, de carta colecionável. Contorno limpo e marcado, cores chapadas com sombreamento suave em células (cel shading), expressões de quadrinho bem exageradas e energia de meme. Clima de **resenha entre amigos brasileiros**: festa em casa, bar, churrasco, after de madrugada.
 
@@ -527,6 +527,13 @@ a generic young friend (original character, not resembling any real person) sque
 [[A_TURMA]] gathered around a long rustic wooden table outdoors at a Brazilian country house party at night, string lights overhead, a barbecue grill and a pool in the background, everyone has just thrown their playing cards into the air at the same time and the cards spin in a big orange whirlwind above the center of the table, raining back down into the wrong hands, each friend reacting differently to their new hand: one celebrating, one despairing, one suspiciously eyeing the neighbor, playing cards with blank faces and no text, chaotic orange accent lighting with confetti, front view slightly from above, whirlwind as the central focal point, vibrant 2D cartoon trading-card illustration, bold clean outlines, flat colors with soft cel shading, exaggerated comic expressions, meme humor, Brazilian friends party vibe, warm night lighting, strong readable silhouette, single clear focal point centered, full-bleed artwork, no text
 ```
 
+#### CAO-06 · Bonde da Tempestade
+
+- **Arquivo:** `CAO-06` · **Personagens:** Anna, Léo, Adeir, Manu, Victor e Artur · **Cópias:** 3
+- **O que a carta faz:** todos os vivos (inclusive quem jogou) sofrem 1 de dano de caos. Depois, quem jogou compra 2 cartas e cada outro sobrevivente compra 1.
+- **Piada interna:** ___
+- **Arte entregue:** o bonde na estrada à noite, debaixo de tempestade com raios: duas motos vermelhas com dois de capacete em cada uma, nas laterais, e um carro prata no meio com dois rindo lá dentro. Água espirrando, faróis acesos e a estrada molhada refletindo as luzes. Não houve prompt antes: a arte chegou pronta.
+
 ### Recuperação (cor: verde `#2E9E5B`)
 
 #### REC-01 · After do After
@@ -737,7 +744,7 @@ the ghost of [[JU_AMORIM]], translucent pale blue with a wispy smoke tail, holdi
 #### BACK-MAIN · Verso do baralho principal
 
 - **Arquivo:** `BACK-MAIN` · **Tamanho:** 1575 × 2200 px (retrato) · **Margem:** 80 px
-- **Uso:** costas de todas as 177 cartas do baralho principal.
+- **Uso:** costas de todas as 180 cartas do baralho principal.
 - **Ideia:** padrão simétrico de festa sobre um fundo roxo profundo, com um **medalhão vazio no centro** onde o logo será aplicado depois.
 - **Elementos obrigatórios:** simetria (a carta pode aparecer de cabeça para baixo), confete, copos, cartinhas e estrelas em padrão; brilhos laranja e magenta; nada de texto nem letra.
 - **Prompt:**
@@ -775,7 +782,7 @@ Antes de entregar cada imagem:
 - [ ] Arquivos com o nome do código: `PNG` mestre + `WebP` + miniatura `_thumb.webp`.
 - [ ] Os versos são simétricos e têm o medalhão central vazio.
 
-### Resumo das 42 imagens
+### Resumo das 43 imagens
 
 |   # | Arquivo    | Nome                       | Personagem       | Categoria   |
 | --: | ---------- | -------------------------- | ---------------- | ----------- |
@@ -805,19 +812,20 @@ Antes de entregar cada imagem:
 |  24 | CAO-03     | Família Basilato           | Família Basilato | Caos        |
 |  25 | CAO-04     | O Acre Existe!             | Letícia          | Caos        |
 |  26 | CAO-05     | Rolê no Sítio              | A Turma          | Caos        |
-|  27 | REC-01     | After do After             | Cadu             | Recuperação |
-|  28 | REC-02     | Inimiga do Fim             | Anna             | Recuperação |
-|  29 | REC-03     | Consultório Lucboy         | Luciano          | Recuperação |
-|  30 | REC-04     | Anestesia Alcoólica        | Giovanna         | Recuperação |
-|  31 | REC-05     | English Mode               | Letícia          | Recuperação |
-|  32 | REC-06     | Só Mais Uma!               | Anna             | Recuperação |
-|  33 | REV-01     | Ressuscitou o Tio Paulo    | Tio Paulo (Léo)  | Reviravolta |
-|  34 | REV-02     | Lucboy & Laragirl          | Luciano e Lara   | Reviravolta |
-|  35 | REV-03     | Última Palavra             | Stefânia         | Reviravolta |
-|  36 | GHO-01     | Victor Voltou Passando Mal | Victor           | Além        |
-|  37 | GHO-02     | Fantasma Fofoqueiro        | Lara             | Além        |
-|  38 | GHO-03     | Mão de Defunto             | Davi             | Além        |
-|  39 | GHO-04     | Maldição da Ressaca        | Artur            | Além        |
-|  40 | GHO-05     | Eu Sei o Que Você Fez      | Ju Amorim        | Além        |
-|  41 | BACK-MAIN  | Verso do baralho principal | —                | Verso       |
-|  42 | BACK-GHOST | Verso do Baralho do Além   | —                | Verso       |
+|  27 | CAO-06     | Bonde da Tempestade        | Bonde (6)        | Caos        |
+|  28 | REC-01     | After do After             | Cadu             | Recuperação |
+|  29 | REC-02     | Inimiga do Fim             | Anna             | Recuperação |
+|  30 | REC-03     | Consultório Lucboy         | Luciano          | Recuperação |
+|  31 | REC-04     | Anestesia Alcoólica        | Giovanna         | Recuperação |
+|  32 | REC-05     | English Mode               | Letícia          | Recuperação |
+|  33 | REC-06     | Só Mais Uma!               | Anna             | Recuperação |
+|  34 | REV-01     | Ressuscitou o Tio Paulo    | Tio Paulo (Léo)  | Reviravolta |
+|  35 | REV-02     | Lucboy & Laragirl          | Luciano e Lara   | Reviravolta |
+|  36 | REV-03     | Última Palavra             | Stefânia         | Reviravolta |
+|  37 | GHO-01     | Victor Voltou Passando Mal | Victor           | Além        |
+|  38 | GHO-02     | Fantasma Fofoqueiro        | Lara             | Além        |
+|  39 | GHO-03     | Mão de Defunto             | Davi             | Além        |
+|  40 | GHO-04     | Maldição da Ressaca        | Artur            | Além        |
+|  41 | GHO-05     | Eu Sei o Que Você Fez      | Ju Amorim        | Além        |
+|  42 | BACK-MAIN  | Verso do baralho principal | —                | Verso       |
+|  43 | BACK-GHOST | Verso do Baralho do Além   | —                | Verso       |

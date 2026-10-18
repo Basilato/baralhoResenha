@@ -11,7 +11,7 @@ A ideia é ser fácil de pegar: **comprar cartas, usar até duas ações por tur
 - Login privado com **usuário e senha** (sem cadastro aberto)
 - Lobby para criar uma sala ou entrar por código
 - Salas de **3 a 8 jogadores** com a mesa sincronizada em tempo real
-- Baralho principal com **177 cartas** (35 modelos) e Baralho do Além com **20 cartas** (5 modelos)
+- Baralho principal com **180 cartas** (36 modelos) e Baralho do Além com **20 cartas** (5 modelos)
 - Turnos, mãos privadas, dano, reações, cura, efeitos temporários, ressaca progressiva, fantasmas, ressurreição e vitória, tudo calculado automaticamente
 - Visual personalizado por personagem, painel de regras, histórico de jogadas e revanche
 - Interface web responsiva, que funciona no desktop e no celular

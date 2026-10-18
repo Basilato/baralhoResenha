@@ -131,7 +131,7 @@ await check('artes enviadas', async () => {
   assert(!error, error?.message)
   const faces = (data ?? []).filter((file) => /^[A-Z]{3}-\d{2}\.webp$/.test(file.name))
   assert(faces.length > 0, 'nenhuma arte no bucket (rode pnpm art:upload:prod)')
-  return `${faces.length} de 40 faces`
+  return `${faces.length} de 41 faces`
 })
 
 await check('contas de teste do seed NÃO existem', async () => {

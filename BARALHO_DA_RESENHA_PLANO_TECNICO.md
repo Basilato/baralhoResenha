@@ -20,7 +20,7 @@ O MVP terá:
 1. Login privado por **usuário e senha**.
 2. Lobby com criação/entrada em sala por código.
 3. Mesa multiplayer sincronizada em tempo real.
-4. Baralho principal com **177 cartas físicas virtuais** divididas entre 35 modelos.
+4. Baralho principal com **180 cartas físicas virtuais** divididas entre 36 modelos.
 5. Baralho do Além com **20 cartas** e 5 modelos.
 6. Gestão automática de turnos, mãos privadas, danos, reações, curas, efeitos temporários, ressaca, fantasmas, ressurreições e vitória.
 7. Visual personalizado por personagem, painel de regras, registro das jogadas e opção de revanche.
@@ -235,6 +235,7 @@ Cartas de defesa só podem ser usadas no momento apropriado. Ao jogar carta que 
 - `Família Basilato`: é dano de **caos**, e não recebe bônus de Mais Odiado. Alvo é o **oponente** vivo de maior PV; não exige existir líder único. **Não admite defesa comum**, mas, se o dano for fatal, a vítima pode usar **uma** reação de dano fatal: `Ressuscitou o Tio Paulo` (fica com 1 PV) **ou** `Última Palavra` (morre e causa 2 ao autor).
 - `Tem Alguém Seguindo`: marca o alvo; o **próximo ataque anunciado contra ele** recebe +2 e consome a marca, mesmo que depois seja defendido; expira **ao final da rodada seguinte à aplicação**. Marcas iguais não acumulam; nova marca apenas substitui/renova.
 - `Bate e Joga` (SAB-07): sabotagem direcionada (`Evento Raro` cancela tudo). Aceita, o alvo compra 1, o autor compra 1, e o alvo escolhe `min(2, tamanho da mão)` cartas para descartar. Pode mirar quem está sem cartas (ele compra 1 e descarta essa). Escolha privada, descarte público.
+- `Bonde da Tempestade` (CAO-06): 1 de dano de caos em todos os vivos, inclusive quem jogou, no mesmo lote (sem defesa comum nem bônus do Mais Odiado). Só quem cairia responde: adversários com papel `chaos_target` (reação de golpe fatal), quem jogou com papel `chaos_self` (só `Ressuscitou o Tio Paulo`). Depois do dano e da `Última Palavra`, os vivos atingidos compram em ordem de lugar: quem jogou 2, os outros 1 (evento público `storm_draw`). Abates contam para quem jogou; a própria morte não conta e encerra o turno (B5).
 - `Rolê no Sítio` (CAO-05): a carta jogada vai para o descarte; depois as mãos principais de todos os vivos (inclusive a do autor) são juntadas, embaralhadas no banco e redistribuídas em ordem de lugar, cada um com a mesma quantidade que tinha. Mão vazia continua vazia; fantasmas e cartas do Além ficam de fora. Sem reação (caos; `Evento Raro` não cancela). O histórico mostra só quantas cartas e jogadores entraram.
 - `Nem Bateu` (DEF-07): defesa comum contra ataque (alvo ou ataque devolvido). Reduz em 2; se o dano final ainda for maior que 0 e a pessoa continuar viva, compra 2. Reduzido a 0, não compra. Não vale contra a `Família Basilato` (B4). Diferente do `Último do After` (reduz 2 e compra 1 sempre), rende mais contra pancadas grandes.
 - `Só Mais Uma!` (REC-06): compra 2 e, depois, o autor escolhe 1 carta da mão para descartar (pode ser uma das recém-compradas; nunca a própria carta jogada, que está em resolução). Escolha privada, descarte público. Sem cartas para comprar nem descartar, não há escolha; com 1 carta só, o descarte é automático. Não recupera PV e não admite reação.
@@ -332,6 +333,7 @@ MVP **sem eliminação automática por desconexão**; estado fica persistido. Fe
 | CAO-03 | caos | Família Basilato | Família Basilato | 4 | 3 de dano ao adversário com maior PV |
 | CAO-04 | caos | O Acre Existe! | Letícia | 4 | Vivos compram 1 e descartam 1 |
 | CAO-05 | caos | Rolê no Sítio | A Turma | 3 | Junta, embaralha e redistribui as mãos dos vivos (mesma quantidade) |
+| CAO-06 | caos | Bonde da Tempestade | Anna, Léo, Adeir, Manu, Victor e Artur | 3 | 1 de dano de caos em todos os vivos (inclusive quem jogou); quem jogou compra 2, os outros sobreviventes 1 |
 | REC-01 | recuperação | After do After | Cadu | 4 | Cura 4 PV |
 | REC-02 | recuperação | Inimiga do Fim | Anna | 3 | Cura 4 PV |
 | REC-03 | recuperação | Consultório Lucboy | Luciano | 5 | Cura 3 e compra 1 |
@@ -342,7 +344,7 @@ MVP **sem eliminação automática por desconexão**; estado fica persistido. Fe
 | REV-02 | reviravolta/ação | Lucboy & Laragirl | Luciano/Lara | 4 | Troca mão inteira com adversário vivo |
 | REV-03 | reviravolta/reação | Última Palavra | Stefânia | 4 | Ao ser eliminado por jogador, causa 2 nele |
 
-**Contagem validável por seed:** ataque 50 + defesa 40 + sabotagem 35 + caos 19 + recuperação 21 + reviravolta 12 = **177**.
+**Contagem validável por seed:** ataque 50 + defesa 40 + sabotagem 35 + caos 22 + recuperação 21 + reviravolta 12 = **180**.
 
 ## 6.2 Além — 20 instâncias / 5 modelos
 
@@ -356,7 +358,7 @@ MVP **sem eliminação automática por desconexão**; estado fica persistido. Fe
 
 **Decisão aprovada (B1):** GHO-05 mantém informação privada, como GHO-02, mas acrescenta o descarte escolhido pelo fantasma. O ajuste altera apenas o **efeito** de 2 cópias, não o total de cartas.
 
-**TOTAL: 40 modelos e 197 instâncias.** As artes não são por cópia: 40 faces de carta + **2 versos** (principal/Além). *(SAB-06, REC-06, DEF-07, CAO-05 e SAB-07 entraram depois, pelas decisões H1 a H5.)*
+**TOTAL: 41 modelos e 200 instâncias.** As artes não são por cópia: 41 faces de carta + **2 versos** (principal/Além). *(SAB-06, REC-06, DEF-07, CAO-05, SAB-07 e CAO-06 entraram depois, pelas decisões H1 a H6.)*
 
 ## 6.3 Estrutura de definição de cartas
 
@@ -1048,7 +1050,7 @@ export const supabase = createClient<Database>(
 - **Sem backend separado**.
 - Login simples por username/senha, cadastro privado.
 - 3–8 pessoas no primeiro lançamento.
-- 197 cartas, 40 modelos, dois baralhos.
+- 200 cartas, 41 modelos, dois baralhos.
 - Sem objetivos secretos e sem Pontos de Resenha.
 - Sobrevivência com Ressaca Progressiva 7.1.
 - O host não vê dados secretos de ninguém.

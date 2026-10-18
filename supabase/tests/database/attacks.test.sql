@@ -450,7 +450,7 @@ select is((select active_seat::int from app_private.games where id = pg_temp.g()
 
 -- 12. Integridade -------------------------------------------------------------
 
-select is((select count(*)::int from app_private.game_cards where game_id = pg_temp.g()), 197,
+select is((select count(*)::int from app_private.game_cards where game_id = pg_temp.g()), 200,
   'nenhuma carta criada ou perdida nos cenários');
 select ok(
   not exists (
