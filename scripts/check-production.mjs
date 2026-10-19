@@ -72,11 +72,29 @@ await check('cabeçalhos de segurança', async () => {
   }
 })
 
-await check('site aponta para este Supabase', async () => {
+/**
+ * Todos os arquivos JS do app: o código é dividido por rota, então segue os
+ * imports a partir do HTML (inclusive os das páginas carregadas sob demanda).
+ */
+async function fetchAllScripts() {
   const html = await (await fetch(APP_URL)).text()
-  const script = html.match(/src="(\/assets\/[^"]+\.js)"/)?.[1]
-  assert(script, 'não achei o bundle principal')
-  const bundle = await (await fetch(new URL(script, APP_URL))).text()
+  const pending = [...html.matchAll(/(?:src|href)="\/assets\/([^"]+\.js)"/g)].map((m) => m[1])
+  assert(pending.length > 0, 'não achei o bundle principal')
+  const seen = new Map()
+  while (pending.length > 0) {
+    const name = pending.pop()
+    if (seen.has(name)) continue
+    const response = await fetch(new URL(`/assets/${name}`, APP_URL))
+    assert(response.ok, `arquivo /assets/${name} não abre (${response.status})`)
+    const code = await response.text()
+    seen.set(name, code)
+    for (const m of code.matchAll(/(?:\.\/|assets\/)([\w-]+\.js)\b/g)) pending.push(m[1])
+  }
+  return [...seen.values()].join('\n')
+}
+
+await check('site aponta para este Supabase', async () => {
+  const bundle = await fetchAllScripts()
   assert(bundle.includes(new URL(SUPABASE_URL).host), 'o bundle usa outro SUPABASE_URL')
   assert(!bundle.includes('127.0.0.1:54321'), 'o bundle ainda aponta para o Supabase local')
   assert(!bundle.includes(SUPABASE_SECRET_KEY), 'A SECRET KEY ESTÁ NO BUNDLE')
