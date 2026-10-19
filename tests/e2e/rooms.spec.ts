@@ -4,6 +4,11 @@ import { expectNoHorizontalOverflow, playerPage } from './support.ts'
 // Vários navegadores por teste: 30 s fica no limite quando a suíte roda em paralelo.
 test.describe.configure({ timeout: 60_000 })
 
+// Cópias do baralho principal na versão 7.1 (carta nova muda este número).
+const MAIN_DECK = 180
+/** Baralho depois de dar 5 cartas a cada um e o lugar 1 comprar as 2 do turno. */
+const deckAfterDeal = (players: number) => String(MAIN_DECK - 5 * players - 2)
+
 test('três pessoas entram, veem tudo em tempo real e o host inicia', async ({
   browser,
   contextOptions,
@@ -52,7 +57,7 @@ test('três pessoas entram, veem tudo em tempo real e o host inicia', async ({
     const expected = myTurn ? 7 : 5
     await expect(page.getByTestId('my-hand').getByRole('button')).toHaveCount(expected)
     await expect(page.getByTestId('my-hand-count')).toHaveText(`${expected}/7`)
-    await expect(page.getByTestId('main-deck-count')).toHaveText('143')
+    await expect(page.getByTestId('main-deck-count')).toHaveText(deckAfterDeal(3))
     await expect(page.getByTestId('ghost-deck-count')).toHaveText('20')
     await expect(page.getByTestId('cards-in-hand').filter({ hasText: '5' })).toHaveCount(2)
     await expect(page.getByTestId('cards-in-hand').filter({ hasText: '7' })).toHaveCount(1)
@@ -174,7 +179,7 @@ test('mesa cheia: oito pessoas veem tudo ao vivo e a nona é recusada', async ({
   for (const page of [host, ...guests]) {
     await expect(page).toHaveURL(/\/jogo\//)
     await expect(page.getByTestId('table-player')).toHaveCount(8)
-    await expect(page.getByTestId('main-deck-count')).toHaveText('118')
+    await expect(page.getByTestId('main-deck-count')).toHaveText(deckAfterDeal(8))
   }
 
   await host.getByRole('button', { name: 'Encerrar partida' }).click()
