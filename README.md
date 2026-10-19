@@ -112,6 +112,21 @@ O Supabase Auth só aceita senha junto com e-mail ou telefone. Por isso, cada us
 - O navegador nunca lê `game_cards`. A RPC `get_game_view` devolve a sua mão; dos outros jogadores, só a quantidade de cartas. A ordem dos baralhos nunca sai do banco.
 - **GHO-05 ("Eu Sei o Que Você Fez")** está marcada como provisória (`is_provisional`) até o grupo aprovar o efeito novo.
 
+#### Como o motor executa cada carta
+
+O núcleo (`cmd_play_card`, `cmd_play_ghost_card`, `resolve_pending`, `resolve_sabotage`, `finish_pending`, `apply_choices`) não conhece nenhum efeito. Ele valida alvos e custo, gasta a ação e chama a função registrada em `app_private.card_effect_handlers` para o `effect_code` da carta.
+
+| Ponto          | Quando roda                                           | Retorno                      |
+| -------------- | ----------------------------------------------------- | ---------------------------- |
+| `validate`     | antes de gastar a ação (ex.: alvo precisa ter cartas) | —                            |
+| `play`         | a jogada em si (obrigatório para toda carta jogável)  | `jsonb` da resposta          |
+| `resolve`      | sabotagem, depois da defesa                           | `false` se abriu uma escolha |
+| `after_damage` | depois do dano em lote de ataque ou caos              | `false` se abriu outra etapa |
+| `finish`       | ao fechar a jogada                                    | —                            |
+| `choices`      | ao aplicar as escolhas (sem handler: descarta)        | —                            |
+
+**Carta nova:** uma migração com o `insert` em `card_definitions` (e as cópias nas partidas em andamento), a função do efeito e o `insert` em `card_effect_handlers`. Se o efeito já existe (outro ataque `damage`, por exemplo), basta o `insert` da carta. As assinaturas de cada ponto estão no topo de `20261020100000_effect_handlers.sql`, e o teste `effect_handlers.test.sql` acusa carta sem handler, assinatura errada ou efeito escrito à mão no núcleo.
+
 ### Turnos
 
 - Toda jogada passa por `submit_game_command`, com a versão da mesa e um `request_id` por clique. O banco trava a partida, valida quem está na vez e a fase, aplica tudo numa transação e grava um evento público. O mesmo `request_id` nunca é aplicado duas vezes, então clique duplo e retry de rede são seguros.
