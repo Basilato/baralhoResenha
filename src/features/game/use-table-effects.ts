@@ -9,8 +9,23 @@ export type PlayerEffect = {
   amount?: number
 }
 
-/** Carta jogada mostrada em destaque no centro da tela. */
-export type Spotlight = { id: number; code: string }
+/**
+ * Carta jogada: sai de quem jogou, passa em destaque pelo centro da tela e
+ * pousa no monte (o descarte, ou o Além para as cartas do Além).
+ */
+export type Spotlight = {
+  id: number
+  code: string
+  /** Quem jogou (a carta sai do painel dessa pessoa, ou da minha mão). */
+  playerId: string | null
+  to: 'discard' | 'ghost'
+  /**
+   * A carta de cima do descarte antes da jogada, ou null se estava vazio.
+   * Enquanto a carta voa, a mesa mostra esta: a nova só aparece ao pousar.
+   * undefined quando o descarte não mudou.
+   */
+  previousTop?: string | null
+}
 
 export type TableEffects = {
   byPlayer: ReadonlyMap<string, readonly PlayerEffect[]>
@@ -71,7 +86,17 @@ export function useTableEffects(game: GameView, catalog: CardCatalog): TableEffe
     if (played && typeof played.payload.cardCode === 'string') {
       const code = played.payload.cardCode
       const card = catalog.get(code)
-      setSpotlight({ id: nextId++, code })
+      const to = card?.deckType === 'ghost' ? 'ghost' : 'discard'
+      setSpotlight({
+        id: nextId++,
+        code,
+        playerId: played.actorPlayerId,
+        to,
+        previousTop:
+          to === 'discard' && game.mainDiscardTop !== before.mainDiscardTop
+            ? before.mainDiscardTop
+            : undefined,
+      })
       later(SPOTLIGHT_MS, () => setSpotlight(null))
       const targets = Array.isArray(played.payload.targets)
         ? (played.payload.targets as { playerId?: unknown }[])

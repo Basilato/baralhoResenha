@@ -78,10 +78,26 @@ describe('useTableEffects', () => {
         ?.map((effect) => effect.kind)
         .sort(),
     ).toEqual(['damage', 'hit'])
-    expect(result.current.spotlight?.code).toBe('ATK-01')
+    expect(result.current.spotlight).toMatchObject({
+      code: 'ATK-01',
+      playerId: 'a',
+      to: 'discard',
+      previousTop: undefined,
+    })
 
     act(() => vi.advanceTimersByTime(EFFECT_MS))
     expect(result.current.byPlayer.size).toBe(0)
+  })
+
+  it('a carta jogada guarda o topo antigo do descarte enquanto voa', () => {
+    const { result, rerender } = setup(view(1, { mainDiscardTop: null }))
+    rerender({ game: view(2, { mainDiscardTop: 'ATK-01', events: [played(1, [])] }) })
+    expect(result.current.spotlight?.previousTop).toBeNull()
+
+    rerender({
+      game: view(3, { mainDiscardTop: 'DEF-01', events: [played(1, []), played(2, [])] }),
+    })
+    expect(result.current.spotlight?.previousTop).toBe('ATK-01')
   })
 
   it('morte e ressurreição sem número de dano', () => {

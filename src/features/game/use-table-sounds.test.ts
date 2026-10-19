@@ -43,7 +43,7 @@ describe('useTableSounds', () => {
     const { rerender } = setup()
     rerender({
       value: fx({
-        spotlight: { id: 1, code: 'ATK-01' },
+        spotlight: { id: 1, code: 'ATK-01', playerId: 'a', to: 'discard' },
         byPlayer: effects(
           ['a', { id: 2, kind: 'damage', amount: 3 }],
           ['b', { id: 3, kind: 'death' }],

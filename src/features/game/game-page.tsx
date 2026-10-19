@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -118,8 +118,16 @@ function Table({
   )
   const isHost = game.hostUserId === user?.id
   const isMyTurn = game.status === 'playing' && !!me && me.id === game.activePlayerId
-  const discardTop = game.mainDiscardTop ? catalog.get(game.mainDiscardTop) : undefined
   const fx = useTableEffects(game, catalog)
+  // Com uma carta voando para o descarte, a mesa mostra o topo de antes: a nova
+  // aparece quando pousa.
+  const previousTop = fx.spotlight?.previousTop
+  const landing = previousTop !== undefined
+  const discardCode = landing ? previousTop : game.mainDiscardTop
+  const discardTop = discardCode ? catalog.get(discardCode) : undefined
+  const discardPileCount = game.mainDiscardCount - (landing ? 1 : 0)
+  // Onde estava a última carta que abri na mão: se eu jogá-la, ela sai dali.
+  const [handOrigin, setHandOrigin] = useState<FlightOrigin | null>(null)
   const iQuit = !!me && !!game.presence.find((item) => item.playerId === me.id)?.quit
   // Prazo vencido: qualquer participante cobra (o banco confere a hora).
   useDeadlineEnforcer(game, !!me && !iQuit)
@@ -283,41 +291,49 @@ function Table({
             </ul>
           </section>
 
-          <section
-            aria-label="Mesa"
-            className={cn(
-              'felt flex items-end justify-center gap-6 rounded-[2rem] px-3 pt-5 pb-4 transition-colors sm:gap-12 sm:px-6 sm:pt-7 sm:pb-5',
+          {/* Visto de quem está sentado: o pano inclina um pouco para longe. */}
+          <div className="perspective-[1100px]">
+            <section
+              aria-label="Mesa"
               // Maldição da Ressaca: a mesa fica tomada pela névoa do Além.
-              game.curseActive &&
-                game.status === 'playing' &&
-                'border-cat-ghost/40 bg-linear-to-t from-cat-ghost/25 to-cat-ghost/5',
-            )}
-          >
-            <Pile label="Baralho" count={game.mainDeckCount} testId="main-deck-count">
-              {/* A key nova reinicia o "pulo" do monte a cada compra. */}
-              <div key={fx.deckDrawKey} className={cn(fx.deckDrawKey > 0 && 'animate-deck-bump')}>
-                <CardBack deckType="main" size="sm" className={PILE_CARD} />
-              </div>
-            </Pile>
-            <Pile label="Descarte" count={game.mainDiscardCount} testId="main-discard-count">
-              {discardTop ? (
-                <button
-                  type="button"
-                  onClick={() => setSelected(discardTop)}
-                  aria-label={`Ver ${discardTop.name}`}
-                >
-                  <GameCard card={discardTop} size="sm" className={PILE_CARD} />
-                </button>
-              ) : (
-                <div className="flex aspect-card w-16 items-center justify-center rounded-lg border-2 border-dashed text-xs text-muted-foreground sm:w-24">
-                  vazio
+              data-curse={(game.curseActive && game.status === 'playing') || undefined}
+              className="felt flex rotate-x-[10deg] items-end justify-center gap-6 rounded-[999px] px-10 pt-6 pb-5 sm:gap-14 sm:px-20 sm:pt-8 sm:pb-6"
+            >
+              <Pile label="Baralho" count={game.mainDeckCount} testId="main-deck-count">
+                {/* A key nova reinicia o "pulo" do monte a cada compra. */}
+                <div key={fx.deckDrawKey} className={cn(fx.deckDrawKey > 0 && 'animate-deck-bump')}>
+                  <PileStack count={game.mainDeckCount}>
+                    <CardBack deckType="main" size="sm" className={PILE_CARD} />
+                  </PileStack>
                 </div>
-              )}
-            </Pile>
-            <Pile label="Além" count={game.ghostDeckCount} testId="ghost-deck-count">
-              <CardBack deckType="ghost" size="sm" className={PILE_CARD} />
-            </Pile>
-          </section>
+              </Pile>
+              <Pile label="Descarte" count={game.mainDiscardCount} testId="main-discard-count">
+                {discardTop ? (
+                  <DiscardPile count={discardPileCount}>
+                    <button
+                      type="button"
+                      onClick={() => setSelected(discardTop)}
+                      aria-label={`Ver ${discardTop.name}`}
+                    >
+                      <GameCard card={discardTop} size="sm" className={PILE_CARD} />
+                    </button>
+                  </DiscardPile>
+                ) : (
+                  <div
+                    className="flex aspect-card w-16 items-center justify-center rounded-lg border-2 border-dashed border-white/25 text-xs text-white/60 sm:w-24"
+                    data-flight-target="discard"
+                  >
+                    vazio
+                  </div>
+                )}
+              </Pile>
+              <Pile label="Além" count={game.ghostDeckCount} testId="ghost-deck-count">
+                <PileStack count={game.ghostDeckCount} flightTarget="ghost">
+                  <CardBack deckType="ghost" size="sm" className={PILE_CARD} />
+                </PileStack>
+              </Pile>
+            </section>
+          </div>
         </div>
 
         <div className="min-w-0 max-lg:order-last lg:relative">
@@ -339,13 +355,26 @@ function Table({
             catalog={catalog}
             drawnIds={fx.drawnIds}
             className="lg:col-span-2"
-            onOpenCard={(handCard, card) => setPlaying({ handCard, card })}
+            onOpenCard={(handCard, card, origin) => {
+              setHandOrigin(origin)
+              setPlaying({ handCard, card })
+            }}
           />
         )}
       </div>
 
       {fx.spotlight && (
-        <CardSpotlight key={fx.spotlight.id} spotlight={fx.spotlight} catalog={catalog} />
+        <CardFlight
+          key={fx.spotlight.id}
+          spotlight={fx.spotlight}
+          catalog={catalog}
+          origin={
+            fx.spotlight.playerId === game.myPlayerId && handOrigin?.code === fx.spotlight.code
+              ? handOrigin
+              : undefined
+          }
+          landingTilt={fx.spotlight.to === 'discard' ? discardTilt(game.mainDiscardCount) : 0}
+        />
       )}
 
       <PlayCardDialog
@@ -379,7 +408,7 @@ function MyArea({
   /** Cartas recém-compradas: entram na mão com animação. */
   drawnIds: ReadonlySet<string>
   className?: string
-  onOpenCard: (handCard: HandCard, card: CardDefinition) => void
+  onOpenCard: (handCard: HandCard, card: CardDefinition, origin: FlightOrigin) => void
 }) {
   const command = useGameCommand(game)
   const [discarding, setDiscarding] = useState<ReadonlySet<string>>(new Set())
@@ -500,7 +529,8 @@ function MyArea({
         <p className="text-sm text-muted-foreground">Sem cartas na mão.</p>
       ) : (
         <ul
-          className="relative -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pt-2 pb-3"
+          className="hand-fan relative -mx-4 flex justify-center-safe overflow-x-auto px-8 pt-12 pb-4"
+          style={{ '--n': hand.length } as React.CSSProperties}
           data-testid="my-hand"
         >
           {hand.map((handCard, index) => {
@@ -513,6 +543,7 @@ function MyArea({
                 key={handCard.instanceId}
                 handCard={handCard}
                 card={card}
+                fan={fanPosition(index, hand.length)}
                 playable={blockedReason === null}
                 blockedReason={blockedReason ?? undefined}
                 drawnDelay={
@@ -533,9 +564,21 @@ function MyArea({
   )
 }
 
+/**
+ * Lugar de uma carta no leque: gira a partir da base, e as do meio ficam mais
+ * altas, formando um arco. Quanto mais cartas, menor o giro entre elas.
+ */
+function fanPosition(index: number, total: number) {
+  const offset = index - (total - 1) / 2
+  const step = total > 1 ? Math.min(3, 18 / (total - 1)) : 0
+  const edge = (total - 1) / 2
+  return { rotate: offset * step, lift: (edge * edge - offset * offset) * 0.09 }
+}
+
 function HandItem({
   handCard,
   card,
+  fan,
   playable,
   blockedReason,
   drawnDelay,
@@ -546,6 +589,8 @@ function HandItem({
 }: {
   handCard: HandCard
   card: CardDefinition | undefined
+  /** Giro (graus) e altura (rem) da carta no leque. */
+  fan: { rotate: number; lift: number }
   /** Pode ser jogada agora (só na sua vez). */
   playable: boolean
   /** Por que não pode ser jogada agora (só na sua vez). */
@@ -555,19 +600,28 @@ function HandItem({
   selectable: boolean
   selected: boolean
   onSelect: () => void
-  onOpen: (handCard: HandCard, card: CardDefinition) => void
+  onOpen: (handCard: HandCard, card: CardDefinition, origin: FlightOrigin) => void
 }) {
   if (!card) return null
   return (
     <li
-      className={cn('snap-start', drawnDelay !== undefined && 'animate-card-draw')}
-      style={drawnDelay ? { animationDelay: `${drawnDelay}ms` } : undefined}
+      className={cn(
+        // Na mão, a carta apontada (ou com foco) endireita, sobe e vai para a frente.
+        'relative shrink-0 origin-bottom translate-y-(--fan-y) rotate-(--fan-rotate) transition-[translate,rotate] duration-200 ease-out hover:z-10 hover:translate-y-[calc(var(--fan-y)-1.25rem)] hover:rotate-0 has-focus-visible:z-10 has-focus-visible:translate-y-[calc(var(--fan-y)-1.25rem)] has-focus-visible:rotate-0',
+        drawnDelay !== undefined && 'animate-card-draw',
+      )}
+      style={
+        {
+          '--fan-rotate': `${fan.rotate}deg`,
+          '--fan-y': `${-fan.lift}rem`,
+          animationDelay: drawnDelay ? `${drawnDelay}ms` : undefined,
+        } as React.CSSProperties
+      }
     >
       <button
         type="button"
         className={cn(
-          'relative rounded-xl transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none',
-          !selectable && 'hover:-translate-y-1 focus-visible:-translate-y-1',
+          'relative rounded-xl shadow-[-0.4rem_0.3rem_1rem_oklch(0_0_0/0.45)] transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none',
           playable && 'shadow-[0_0_0.9em_var(--cat)] ring-2 ring-(--cat)',
           blockedReason && 'opacity-60 saturate-[0.35] hover:opacity-90 hover:saturate-100',
           selected && '-translate-y-2 opacity-60 ring-3 ring-destructive',
@@ -575,12 +629,16 @@ function HandItem({
         style={{ '--cat': `var(--cat-${card.category})` } as React.CSSProperties}
         title={blockedReason}
         data-playable={playable || undefined}
-        onClick={() => (selectable ? onSelect() : onOpen(handCard, card))}
+        onClick={(event) =>
+          selectable
+            ? onSelect()
+            : onOpen(handCard, card, flightOrigin(card.code, event.currentTarget, fan.rotate))
+        }
         aria-label={selectable ? `Descartar ${card.name}` : `Ver ${card.name}`}
         aria-pressed={selectable ? selected : undefined}
         data-instance={handCard.instanceId}
       >
-        <GameCard card={card} size="md" />
+        <GameCard card={card} size="md" className="max-sm:w-32 max-sm:text-[0.68rem]" />
         {selected && (
           <span className="absolute inset-x-0 top-1/2 mx-auto w-fit -translate-y-1/2 rounded-full bg-destructive px-2 py-0.5 text-xs font-bold text-white">
             Descartar
@@ -653,6 +711,7 @@ function PlayerPanel({
         effects.some((effect) => effect.kind === 'damage') && 'animate-shake',
       )}
       data-testid="table-player"
+      data-player={player.id}
       data-active={isActive || undefined}
       data-targeted={isTargeted || undefined}
     >
@@ -837,18 +896,162 @@ function EffectOverlay({ effect }: { effect: PlayerEffect }) {
   )
 }
 
-/** Carta que acabou de ser jogada, em destaque no meio da tela por um instante. */
-function CardSpotlight({ spotlight, catalog }: { spotlight: Spotlight; catalog: CardCatalog }) {
+/** Centro, largura e giro de uma carta na tela, de onde uma jogada sai voando. */
+type FlightOrigin = { code: string; x: number; y: number; width: number; rotate: number }
+
+function flightOrigin(code: string, element: HTMLElement, rotate = 0): FlightOrigin {
+  const box = element.getBoundingClientRect()
+  // offsetWidth ignora o giro: é a largura da carta, não da caixa girada.
+  return {
+    code,
+    x: box.left + box.width / 2,
+    y: box.top + box.height / 2,
+    width: element.offsetWidth,
+    rotate,
+  }
+}
+
+/** Dura o mesmo que o destaque (SPOTLIGHT_MS): a carta some quando pousa. */
+const FLIGHT_MS = 1800
+
+function reducedMotion() {
+  return (
+    document.documentElement.dataset.motion === 'reduced' ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
+/**
+ * Carta que acabou de ser jogada: sai da minha mão (ou do painel de quem jogou),
+ * para em destaque no meio da tela e voa até pousar no monte, já com o giro
+ * que vai ter lá. Sem animações (preferência do sistema ou do menu), não aparece.
+ */
+function CardFlight({
+  spotlight,
+  catalog,
+  origin,
+  landingTilt,
+}: {
+  spotlight: Spotlight
+  catalog: CardCatalog
+  /** Onde a carta estava na minha mão; sem isso, sai do painel de quem jogou. */
+  origin?: FlightOrigin
+  landingTilt: number
+}) {
   const card = catalog.get(spotlight.code)
-  if (!card) return null
+  const ref = useRef<HTMLDivElement>(null)
+  // Lidos só ao montar (a key muda a cada jogada): mudar no meio não refaz o voo.
+  const start = useRef({ spotlight, origin, landingTilt })
+
+  useLayoutEffect(() => {
+    const element = ref.current
+    if (!element?.animate) return
+    const { spotlight: played, origin: fromHand, landingTilt: tilt } = start.current
+    const home = element.getBoundingClientRect()
+    const place = (to: FlightOrigin | undefined, scale = 1) =>
+      to
+        ? `translate(${to.x - (home.left + home.width / 2)}px, ${to.y - (home.top + home.height / 2)}px) scale(${(to.width / home.width) * scale}) rotate(${to.rotate}deg)`
+        : `translateY(2rem) scale(0.6)`
+    const find = (selector: string) => {
+      const target = document.querySelector<HTMLElement>(selector)
+      return target ? flightOrigin(played.code, target) : undefined
+    }
+
+    const from =
+      fromHand ??
+      (played.playerId ? find(`[data-player="${CSS.escape(played.playerId)}"]`) : undefined)
+    const landing = find(`[data-flight-target="${played.to}"]`)
+    const center = 'translate(0, 0) scale(1) rotate(0deg)'
+
+    const animation = element.animate(
+      [
+        {
+          offset: 0,
+          // Do painel de alguém a carta nasce pequena; da minha mão, já inteira.
+          transform: place(from, fromHand ? 1 : 0.4),
+          opacity: fromHand ? 1 : 0,
+          easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+        },
+        { offset: 0.08, opacity: 1 },
+        { offset: 0.24, transform: 'translate(0, 0) scale(1.08) rotate(0deg)' },
+        { offset: 0.32, transform: center },
+        { offset: 0.66, transform: center, easing: 'cubic-bezier(0.5, 0, 0.3, 1)' },
+        landing
+          ? { offset: 0.9, transform: place({ ...landing, rotate: tilt }), opacity: 1 }
+          : { offset: 0.9, transform: 'translateY(-1rem) scale(0.85)', opacity: 0 },
+        landing
+          ? { offset: 1, transform: place({ ...landing, rotate: tilt }), opacity: 1 }
+          : { offset: 1, opacity: 0 },
+      ],
+      { duration: FLIGHT_MS, fill: 'forwards' },
+    )
+    return () => animation.cancel()
+  }, [])
+
+  if (!card || reducedMotion()) return null
   return (
     <div
       className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center"
       aria-hidden
       data-testid="card-spotlight"
     >
-      <div className="animate-card-spotlight drop-shadow-2xl">
+      <div ref={ref} className="rounded-xl shadow-[0_1.2rem_2.5rem_oklch(0_0_0/0.6)]">
         <GameCard card={card} size="md" />
+      </div>
+    </div>
+  )
+}
+
+/** Monte virado para baixo com espessura: afina conforme as cartas saem. */
+function PileStack({
+  count,
+  flightTarget,
+  children,
+}: {
+  count: number
+  /** Monte onde pousam as cartas jogadas (CardFlight). */
+  flightTarget?: Spotlight['to']
+  children: React.ReactNode
+}) {
+  const depth = count > 1 ? Math.min(4, Math.ceil(count / 12)) : 0
+  return (
+    <div
+      className={cn('relative', count > 1 && 'pile-stack')}
+      style={{ '--depth': depth } as React.CSSProperties}
+      data-flight-target={flightTarget}
+    >
+      {children}
+    </div>
+  )
+}
+
+/** Giro de uma carta do descarte, estável para a mesma posição na pilha (−7° a 7°). */
+function discardTilt(position: number) {
+  return ((position * 37) % 15) - 7
+}
+
+/**
+ * Descarte como numa mesa de verdade: cartas jogadas umas sobre as outras, cada
+ * uma meio torta. Só a de cima é conhecida; as de baixo são silhuetas.
+ */
+function DiscardPile({ count, children }: { count: number; children: React.ReactNode }) {
+  const below = Math.min(2, count - 1)
+  return (
+    <div className="relative">
+      {Array.from({ length: below }, (_, index) => (
+        <span
+          key={index}
+          className="absolute inset-0 rounded-lg border-2 border-white/15 bg-card shadow-md"
+          style={{ rotate: `${discardTilt(count - below + index)}deg` }}
+          aria-hidden
+        />
+      ))}
+      <div
+        className="relative drop-shadow-[0_6px_6px_oklch(0_0_0/0.5)]"
+        style={{ rotate: `${discardTilt(count)}deg` }}
+        data-flight-target="discard"
+      >
+        {children}
       </div>
     </div>
   )
