@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
-import { z } from 'zod'
+import * as z from 'zod/mini'
 import { CircleAlertIcon, EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -17,10 +17,9 @@ import { isValidUsername, normalizeUsername } from './username'
 
 const loginSchema = z.object({
   username: z
-    .string()
-    .transform(normalizeUsername)
-    .refine(isValidUsername, 'Use 3 a 20 letras, números ou _.'),
-  password: z.string().min(1, 'Digite sua senha.'),
+    .pipe(z.string(), z.transform(normalizeUsername))
+    .check(z.refine(isValidUsername, 'Use 3 a 20 letras, números ou _.')),
+  password: z.string().check(z.minLength(1, 'Digite sua senha.')),
 })
 
 type LoginInput = z.input<typeof loginSchema>

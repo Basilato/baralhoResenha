@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link, Outlet, useMatch } from 'react-router'
 import { toast } from 'sonner'
 import { BookOpenIcon, GraduationCapIcon, LogOutIcon } from 'lucide-react'
+import { preloadPlayPages } from '@/app/pages'
 import { BrandMark, BrandName } from '@/components/brand'
 import { FullPageSpinner } from '@/components/full-page-spinner'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -42,6 +43,9 @@ export function AppLayout() {
   const width = wide ? 'max-w-7xl' : 'max-w-5xl'
   // null = conta do Auth sem perfil (provisionada sem username).
   const isInactive = profile.data === null || profile.data?.is_active === false
+
+  // Logado: adianta o download das telas de jogo enquanto o aparelho está ocioso.
+  useEffect(() => preloadPlayPages(), [])
 
   // Conta desativada ou incompleta: encerra a sessão local.
   useEffect(() => {

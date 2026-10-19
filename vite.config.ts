@@ -11,4 +11,25 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        // Bibliotecas grandes que mudam pouco ganham arquivos próprios: o hash
+        // delas não muda a cada deploy, e quem já abriu o jogo usa o cache.
+        // O resto (páginas, componentes) é dividido sozinho pelas rotas lazy.
+        codeSplitting: {
+          groups: [
+            {
+              name: 'react',
+              test: /node_modules[\\/](?:\.pnpm[\\/][^\\/]+[\\/]node_modules[\\/])?(?:react|react-dom|scheduler|react-router)[\\/]/,
+            },
+            {
+              name: 'supabase',
+              test: /node_modules[\\/](?:\.pnpm[\\/][^\\/]+[\\/]node_modules[\\/])?(?:@supabase[\\/]|iceberg-js[\\/])/,
+            },
+          ],
+        },
+      },
+    },
+  },
 })

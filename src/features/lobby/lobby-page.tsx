@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { z } from 'zod'
+import * as z from 'zod/mini'
 import { ChevronRightIcon, Loader2Icon, LogInIcon, PlusIcon, TicketIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
@@ -29,11 +29,12 @@ import { cn } from '@/lib/utils'
 
 const joinSchema = z.object({
   code: z
-    .string()
-    .transform(extractRoomCode)
-    .refine(
-      (code) => code.length === ROOM_CODE_LENGTH,
-      `O código tem ${ROOM_CODE_LENGTH} letras e números.`,
+    .pipe(z.string(), z.transform(extractRoomCode))
+    .check(
+      z.refine(
+        (code) => code.length === ROOM_CODE_LENGTH,
+        `O código tem ${ROOM_CODE_LENGTH} letras e números.`,
+      ),
     ),
 })
 

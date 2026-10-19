@@ -1,11 +1,21 @@
+import { useEffect, useState } from 'react'
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router'
+import { FullPageSpinner } from '@/components/full-page-spinner'
 import { Button } from '@/components/ui/button'
+import { canReloadForNewVersion, reloadForNewVersion } from '@/lib/page-load'
 
 export function RouteError() {
   const error = useRouteError()
+  // Arquivo da tela sumiu (deploy novo): recarrega já na URL de destino.
+  const [reloading] = useState(() => canReloadForNewVersion(error))
   // Sem erro de rota = renderizado pela rota curinga (*), ou seja, 404.
   const notFound = !error || (isRouteErrorResponse(error) && error.status === 404)
 
+  useEffect(() => {
+    if (reloading) reloadForNewVersion()
+  }, [reloading])
+
+  if (reloading) return <FullPageSpinner label="Atualizando…" />
   if (!notFound) console.error(error)
 
   return (

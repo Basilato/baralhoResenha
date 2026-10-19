@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
-import { z } from 'zod'
+import * as z from 'zod/mini'
 import { CircleAlertIcon, EyeIcon, EyeOffIcon, Loader2Icon } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -18,21 +18,26 @@ import { isValidUsername, normalizeUsername } from './username'
 const signupSchema = z
   .object({
     username: z
-      .string()
-      .transform(normalizeUsername)
-      .refine(isValidUsername, 'Use 3 a 20 letras, números ou _ (sem espaços nem acentos).'),
+      .pipe(z.string(), z.transform(normalizeUsername))
+      .check(
+        z.refine(isValidUsername, 'Use 3 a 20 letras, números ou _ (sem espaços nem acentos).'),
+      ),
     displayName: z
       .string()
-      .trim()
-      .min(1, 'Como o grupo te chama?')
-      .max(32, 'No máximo 32 caracteres.'),
-    password: z.string().min(8, 'Use pelo menos 8 caracteres.'),
+      .check(
+        z.trim(),
+        z.minLength(1, 'Como o grupo te chama?'),
+        z.maxLength(32, 'No máximo 32 caracteres.'),
+      ),
+    password: z.string().check(z.minLength(8, 'Use pelo menos 8 caracteres.')),
     confirm: z.string(),
   })
-  .refine((values) => values.password === values.confirm, {
-    path: ['confirm'],
-    message: 'As senhas não batem.',
-  })
+  .check(
+    z.refine((values) => values.password === values.confirm, {
+      path: ['confirm'],
+      message: 'As senhas não batem.',
+    }),
+  )
 
 type SignupInput = z.input<typeof signupSchema>
 type SignupValues = z.output<typeof signupSchema>
